@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Read", "Edit", "Write", "Glob", "Grep",
+      "Bash(git status*)", "Bash(git add *)", "Bash(git commit *)", "Bash(git push)", "Bash(git push origin *)",
+      "Bash(git pull*)", "Bash(git log*)", "Bash(git diff*)", "Bash(git mv *)", "Bash(git-crypt status*)", "Bash(git-crypt unlock*)",
+      "Bash(gh run *)", "Bash(gh workflow run *)", "Bash(gh workflow list*)", "Bash(gh release list*)", "Bash(gh release view*)",
+      "Bash(python tools/*)", "Bash(python -m factory.*)", "Bash(py tools/*)", "Bash(py -m factory.*)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File tools/fetch_videos.ps1*)",
+      "Bash(tail *)", "Bash(head *)", "Bash(ls*)", "Bash(du *)",
+      "Bash(git init*)", "Bash(git branch*)", "Bash(git remote*)", "Bash(git config*)", "Bash(git rev-parse*)", "Bash(git ls-files*)", "Bash(git show*)", "Bash(git update-index*)", "Bash(git-crypt init*)",
+      "Bash(gh repo create*)", "Bash(gh repo view*)", "Bash(gh api *)", "Bash(gh auth status*)", "Bash(gh run download*)",
+      "Bash(python -m unittest*)", "Bash(python -I *)"
+    ],
+    "ask": [
+      "Bash(git-crypt export-key*)", "Bash(git rm *)", "Bash(git reset*)", "Bash(git revert*)"
+    ],
+    "deny": [
+      "Bash(git push --force*)", "Bash(git push -f*)", "Bash(gh repo edit*)", "Bash(gh repo delete*)",
+      "Bash(gh release delete*)", "Bash(gh secret*)", "Bash(gh api *secrets*)", "Bash(rm -rf*)", "Bash(npm install*)", "Bash(npm i *)",
+      "Bash(pip install*)", "Bash(git lfs*)", "Read(./**/*.key)", "Read(~/.story-factory/**)"
+    ]
+  }
+}

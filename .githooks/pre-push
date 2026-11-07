@@ -1,0 +1,12 @@
+#!/bin/sh
+# Blocks a push if any commit that is about to leave this machine holds an unencrypted protected path.
+root=$(git rev-parse --show-toplevel)
+zero=0000000000000000000000000000000000000000
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [ "$local_sha" = "$zero" ] && continue   # branch deletion
+  for c in $(git rev-list "$local_sha" --not --remotes 2>/dev/null); do
+    sh "$root/.githooks/check_encryption.sh" tree "$c" || exit 1
+  done
+done
+# also verify the working index (covers pushes with no new commits)
+exec sh "$root/.githooks/check_encryption.sh" index

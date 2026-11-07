@@ -1,0 +1,37 @@
+# Videos and renders are outputs, never committed
+public/**/*.mp4
+public/**/*.mov
+public/**/*.mkv
+public/**/*.webm
+public/**/*.avi
+*.mp4
+!reference/**/*.mp4
+out/
+renders/
+build/
+dist/
+.cache/
+
+# Dependencies and caches (never installed locally)
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# Secrets and keys (never commit)
+*.key
+*.age
+.env
+.env.*
+secrets/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log
+
+# local-only Claude settings
+.claude/settings.local.json

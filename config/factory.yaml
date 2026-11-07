@@ -1,0 +1,153 @@
+# story-factory: every knob lives here. Quality knobs are floors, never lowered for speed.
+version: 1
+style_version: 1
+
+output:
+  width: 1920
+  height: 1080
+  fps: 30
+  video_codec: libx264
+  profile: high
+  pix_fmt: yuv420p
+  crf: 18
+  maxrate: 14M
+  bufsize: 28M
+  preset: slow
+  audio_codec: aac
+  audio_rate: 48000
+  audio_bitrate: 192k
+  lufs: -14.0
+  lufs_tolerance: 1.0
+  true_peak_db: -1.0
+  lra: 3.5
+
+script:
+  wpm: 170
+  wpm_tolerance: 0.05
+  min_len_min: 3          # 3-4 min pilots are allowed; production range is 10-30
+  max_len_min: 30
+  default_len_min: 15
+  hook_seconds: 45
+  chapter_min_s: 90
+  chapter_max_s: 150
+  cta_min: 0.28
+  cta_max: 0.38
+  min_facts_per_10min: 8
+  facts_every_s: [30, 60]
+  shot_sentences: [2, 3]
+  similarity_max: 0.35
+
+shots:
+  min_s: 1.2
+  max_s: 8.0
+  long_shot_needs_inner_animation: true
+  median_target_s: 4.0
+  first_minute_median_s: 3.5
+
+camera:
+  zoom_min: 1.00
+  zoom_max: 1.35
+  speed_min_pct_s: 2.0
+  speed_max_pct_s: 8.0
+  overscan: 0.12
+  motion_share_min: 0.88   # share of shots that move (reference ~0.90)
+  background_blur_px: [6, 10]
+  max_flash_per_s: 3
+
+audio:
+  pause_comma_s: 0.15
+  pause_period_s: 0.30
+  pause_chapter_s: 0.80
+  max_silence_s: 1.2
+  duck_db: 18
+  music_bed_db: -26        # bed level before ducking, relative to voice
+  voice_hp_hz: 80
+  clip_threshold: 0.999
+
+tts:
+  engine_order: [chatterbox_turbo, chatterbox, kokoro]   # turbo needs a reference clip; skipped while none exists
+  voice: default           # default | me  (voices/default.wav or voices/me.wav, encrypted)
+  exaggeration: 0.5
+  cfg_weight: 0.5
+  wer_max: 0.08
+  duration_ratio: [0.6, 1.6]
+  max_regen: 3
+  matrix: 4                # shards (benchmark.yml retunes)
+  seed: 1234
+
+images:
+  engine_order: [sdxl_lightning, procedural]
+  width: 1344
+  height: 768
+  upscale: 2.25            # stored source = 3024x1728
+  steps: 4
+  guidance: 0.0
+  variant_mode: img2img    # img2img | grade
+  variant_strength: 0.55
+  matrix: 4
+  seed: 777
+  new_background_share_min: 0.60
+  style_prompt: "hand-drawn ink outlines, muted painted background, flat gouache colours, visible paper grain, soft vignette, 2D storybook illustration, wide establishing shot, no people, no text"
+  negative_prompt: "photo, photorealistic, 3d render, text, letters, watermark, logo, people, faces, hands, signature, frame, border"
+
+depth:
+  engine: depth_anything_v2_small
+  layers: 3
+
+render:
+  chunk_seconds: 30
+  max_chunks: 20
+  concurrency: 2           # videos in parallel
+  quality: premium
+
+qa:
+  max_fix_rounds: 2
+  asr_wer_max: 0.08
+  clip_relevance_min: 0.18
+  style_similarity_min: 0.55
+  phash_distance_min: 10
+  motion_share_min: 0.88
+
+thumbnails:
+  width: 1280
+  height: 720
+  max_bytes: 2000000
+  candidates: 8
+  max_words: 4
+  face_min_share: 0.35
+  legible_size: [168, 94]
+  keep_clear: bottom_right
+
+delivery:
+  folder_name: "Animated Long Video 1st Channel"
+  min_free_gb: 30
+  age_recipient: "age1a29zkhm3egxk30kdylsygf6pdkvkk2j6dz4h5qqacvga8ezf550qwl54rq"
+  part_max_gb: 1.9
+  release_tag_prefix: "video-"
+
+youtube:
+  privacy: private
+  made_for_kids: false
+  publish_rate_per_day: 2
+  quota_daily_units: 10000
+  quota_video_insert: 1600
+  quota_thumbnail: 50
+  quota_caption: 400
+  upload_captions: true
+
+reference:
+  # provisional (owner's measurements) until analyze_reference.yml can decrypt the real file
+  provisional: true
+  duration_s: 591
+  shots: 107
+  median_shot_s: 4.1
+  motion_share: 0.90
+  words: 1720
+  wpm: 175
+  lufs: -14.6
+  lra: 3.5
+  has_cta: false
+  width: 1280
+  height: 720
+  fps: 30
+  video_kbps: 482

@@ -1,0 +1,11 @@
+# Machine-checkable preferences. Every key maps to a P-xxx rule in docs/PREFERENCES.md.
+version: 1
+workflow:               # P-001
+  phase_gating: false   # never wait for "go" between build phases
+# Examples that later rules fill in (kept here so the validator knows the shape):
+thumbnail:
+  max_words: 4
+  banned_pairs: []      # e.g. ["red/black"]
+script:
+  banned_words: []
+  required_tags: []

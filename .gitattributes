@@ -1,0 +1,24 @@
+# Line endings: LF everywhere (Windows editors are fine with it)
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.mp4 binary
+*.wav binary
+*.mp3 binary
+*.ogg binary
+*.ttf binary
+*.otf binary
+*.woff2 binary
+
+# git-crypt protected paths (everything below is encrypted before it leaves this machine)
+jobs/** filter=git-crypt diff=git-crypt -text
+voices/** filter=git-crypt diff=git-crypt -text
+inbox/** filter=git-crypt diff=git-crypt -text
+reference/** filter=git-crypt diff=git-crypt -text
+library/history.json filter=git-crypt diff=git-crypt -text
+**/facts.md filter=git-crypt diff=git-crypt -text
+**/review.md filter=git-crypt diff=git-crypt -text
+.gitattributes !filter !diff

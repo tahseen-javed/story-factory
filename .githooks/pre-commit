@@ -1,0 +1,4 @@
+#!/bin/sh
+# Blocks a commit if any protected path would be committed unencrypted, or the repo is locked.
+root=$(git rev-parse --show-toplevel)
+exec sh "$root/.githooks/check_encryption.sh" index

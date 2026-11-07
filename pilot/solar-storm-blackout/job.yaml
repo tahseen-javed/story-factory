@@ -1,0 +1,20 @@
+nnn: 1
+slug: solar-storm-blackout
+mode: pilot
+short_title: Solar Storm Blackout
+length_min: 4
+base_name: "001 Solar Storm Blackout 04min"
+style_version: 1
+style_seed:
+  opening: flash_forward
+  ritual: tracker_update
+  ending: twist_loop
+  accent: amber
+  lut: cold_night
+  music_set: dread_pad
+  camera_rhythm: steady_push
+  transition: hard_cuts
+  titlecard: clock_strip
+  thumbnail_layout: close_left
+  outfit: teal_cap
+  wpm: 170
