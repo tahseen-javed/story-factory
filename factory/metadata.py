@@ -85,7 +85,7 @@ def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--plan", required=True)
     ap.add_argument("--chapters", required=True)
-    ap.add_argument("--job-dir", required=True)
+    ap.add_argument("--job-dir", default=None)
     ap.add_argument("--base", required=True)
     ap.add_argument("--out", required=True)
     a = ap.parse_args(argv)
@@ -93,7 +93,8 @@ def main(argv=None):
     chapters = json.load(open(a.chapters, encoding="utf-8"))
     settings = {"privacy": "private", "madeForKids": "false", "category": "Film & Animation", "language": "en", "captions": "SRT provided",
                 "altered/synthetic content": "cartoon visuals + AI narration voice (not realistic people or events)"}
-    txt = build_info(plan, chapters, read_sources(a.job_dir), a.base, settings)
+    sources = [(x['fact'], x['url']) for x in plan.get('sources', [])] or (read_sources(a.job_dir) if a.job_dir else [])
+    txt = build_info(plan, chapters, sources, a.base, settings)
     open(a.out, "w", encoding="utf-8").write(txt)
     print(f"wrote {a.out} ({len(txt)} chars)")
     return 0

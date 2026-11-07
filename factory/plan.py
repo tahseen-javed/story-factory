@@ -109,6 +109,8 @@ def build_plan(job_dir: str, cfg=None) -> dict:
     for b in bases:
         image_groups.append({"location": b["location"], "base": b, "variants": [v for v in variants if v["location"] == b["location"]]})
 
+    from .metadata import read_sources
+
     total_words = sum(s["words"] for s in sentences)
     plan = {
         "slug": slug, "mode": mode, "title": sc.title, "length_min": sc.length_min, "voice": sc.voice,
@@ -116,7 +118,7 @@ def build_plan(job_dir: str, cfg=None) -> dict:
         "style": dict(job.get("style_seed") or {}), "style_version": job.get("style_version", cfg.get("style_version", 1)),
         "wpm": wpm, "total_words": total_words, "est_narration_s": round(sum(s["expected_s"] + s["pause_after_s"] for s in sentences), 1),
         "characters": sc.characters, "locations": sc.locations, "chapters": chapters, "shots": shots, "sentences": sentences,
-        "image_groups": image_groups,
+        "image_groups": image_groups, "sources": [{"fact": f, "url": u} for f, u in read_sources(job_dir)],
         "tts_shards": int(cfg["tts"]["matrix"]), "image_shards": int(img["matrix"]),
     }
     return plan

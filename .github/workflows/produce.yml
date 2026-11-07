@@ -201,3 +201,242 @@ jobs:
           path: build/images
           mode: ${{ needs.prepare.outputs.mode }}
           recipient: ${{ env.AGE_RECIPIENT }}
+
+  assemble:
+    needs: [prepare, tts, images]
+    if: ${{ !contains('plan tts images', inputs.until || 'all') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    outputs:
+      chunks: ${{ steps.asm.outputs.chunks }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.11"
+      - name: Install audio dependencies
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg libsndfile1
+          python -m pip install numpy==1.26.4 scipy==1.13.1 soundfile==0.12.1
+      - uses: ./.github/actions/unpack
+        with:
+          name: plan
+          dest: build/plan
+          mode: ${{ needs.prepare.outputs.mode }}
+          key: ${{ secrets.BACKUP_KEY }}
+      - uses: ./.github/actions/unpack
+        with:
+          name: tts-all
+          pattern: tts-*
+          dest: build/tts
+          mode: ${{ needs.prepare.outputs.mode }}
+          key: ${{ secrets.BACKUP_KEY }}
+      - uses: ./.github/actions/unpack
+        with:
+          name: images-all
+          pattern: images-*
+          dest: build/images
+          mode: ${{ needs.prepare.outputs.mode }}
+          key: ${{ secrets.BACKUP_KEY }}
+      - name: Assemble timeline, captions, chapters
+        id: asm
+        run: python -m factory.assemble --plan build/plan/plan.json --tts build/tts --images build/images --out build/assembled
+      - name: Mix audio (voice chain, music, sfx, ducking, loudnorm -14 LUFS)
+        run: |
+          python -m factory.mix --plan build/assembled/audio_plan.json --voice build/assembled/voice --out build/assembled
+          cp build/plan/plan.json build/assembled/plan.json
+      - uses: ./.github/actions/pack
+        with:
+          name: assembled
+          path: build/assembled
+          mode: ${{ needs.prepare.outputs.mode }}
+          recipient: ${{ env.AGE_RECIPIENT }}
+
+  thumbs:
+    needs: [prepare, images]
+    if: ${{ !contains('plan tts images', inputs.until || 'all') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "20"
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.11"
+      - name: System libraries
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg libnss3 libdbus-1-3 libatk1.0-0t64 libasound2t64 libxrandr2 libxkbcommon-x11-0 libxfixes3 libxcomposite1 libxdamage1 libgbm-dev libcups2t64 libatk-bridge2.0-0t64 libpango-1.0-0 libcairo2
+          python -m pip install numpy==1.26.4 pillow==10.4.0 opencv-python-headless==4.10.0.84 rapidocr-onnxruntime==1.3.24
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: video/node_modules
+          key: node-${{ runner.os }}-${{ hashFiles('video/package.json', 'video/package-lock.json') }}
+      - name: Install video dependencies
+        working-directory: video
+        run: npm install --no-audit --no-fund --loglevel=error
+      - uses: ./.github/actions/unpack
+        with:
+          name: plan
+          dest: build/plan
+          mode: ${{ needs.prepare.outputs.mode }}
+          key: ${{ secrets.BACKUP_KEY }}
+      - uses: ./.github/actions/unpack
+        with:
+          name: images-all
+          pattern: images-*
+          dest: build/images
+          mode: ${{ needs.prepare.outputs.mode }}
+          key: ${{ secrets.BACKUP_KEY }}
+      - name: Stage backgrounds and render thumbnail candidates
+        run: |
+          mkdir -p video/public/bg build/thumbs
+          find build/images -name '*.jpg' ! -name '*.far.jpg' -exec cp {} video/public/bg/ \;
+          python -m factory.thumbnails --plan build/plan/plan.json --bg video/public/bg --video video --out build/thumbs
+          find build/thumbs -type d -name 'seq_*' -prune -exec rm -r {} +
+      - uses: ./.github/actions/pack
+        with:
+          name: thumbs
+          path: build/thumbs
+          mode: ${{ needs.prepare.outputs.mode }}
+          recipient: ${{ env.AGE_RECIPIENT }}
+
+  render:
+    needs: [prepare, assemble]
+    if: ${{ !contains('plan tts images assemble', inputs.until || 'all') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        chunk: ${{ fromJson(needs.assemble.outputs.chunks) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "20"
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.11"
+      - name: System libraries
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg libnss3 libdbus-1-3 libatk1.0-0t64 libasound2t64 libxrandr2 libxkbcommon-x11-0 libxfixes3 libxcomposite1 libxdamage1 libgbm-dev libcups2t64 libatk-bridge2.0-0t64 libpango-1.0-0 libcairo2
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: video/node_modules
+          key: node-${{ runner.os }}-${{ hashFiles('video/package.json', 'video/package-lock.json') }}
+      - name: Install video dependencies
+        working-directory: video
+        run: npm install --no-audit --no-fund --loglevel=error
+      - uses: ./.github/actions/unpack
+        with:
+          name: assembled
+          dest: build/assembled
+          mode: ${{ needs.prepare.outputs.mode }}
+          key: ${{ secrets.BACKUP_KEY }}
+      - name: Render chunk ${{ matrix.chunk }} (video only, 1080p30, CRF 18)
+        run: |
+          mkdir -p video/public/bg build/chunk
+          cp -r build/assembled/bg/. video/public/bg/
+          read FROM TO < <(python -c "import json;c=[x for x in json.load(open('build/assembled/chunks.json')) if x['i']==${{ matrix.chunk }}][0];print(c['from'],c['to'])")
+          cd video
+          npx remotion render src/index.ts Story ../build/chunk/chunk_${{ matrix.chunk }}.mp4 --props="$GITHUB_WORKSPACE/build/assembled/props.json" --frames=$FROM-$TO --concurrency=4 --muted --log=warn
+      - uses: ./.github/actions/pack
+        with:
+          name: chunk-${{ matrix.chunk }}
+          path: build/chunk
+          mode: ${{ needs.prepare.outputs.mode }}
+          recipient: ${{ env.AGE_RECIPIENT }}
+
+  finalize:
+    needs: [prepare, assemble, thumbs, render]
+    if: ${{ !contains('plan tts images assemble render', inputs.until || 'all') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "20"
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.11"
+      - name: System libraries
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg age libnss3 libdbus-1-3 libatk1.0-0t64 libasound2t64 libxrandr2 libxkbcommon-x11-0 libxfixes3 libxcomposite1 libxdamage1 libgbm-dev libcups2t64 libatk-bridge2.0-0t64 libpango-1.0-0 libcairo2
+          python -m pip install numpy==1.26.4 scipy==1.13.1 soundfile==0.12.1 pillow==10.4.0 opencv-python-headless==4.10.0.84
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: video/node_modules
+          key: node-${{ runner.os }}-${{ hashFiles('video/package.json', 'video/package-lock.json') }}
+      - name: Install video dependencies (for chunk re-renders)
+        working-directory: video
+        run: npm install --no-audit --no-fund --loglevel=error
+      - uses: ./.github/actions/unpack
+        with:
+          name: assembled
+          dest: build/assembled
+          mode: ${{ needs.prepare.outputs.mode }}
+          key: ${{ secrets.BACKUP_KEY }}
+      - uses: ./.github/actions/unpack
+        with:
+          name: chunks-all
+          pattern: chunk-*
+          dest: build/chunks
+          mode: ${{ needs.prepare.outputs.mode }}
+          key: ${{ secrets.BACKUP_KEY }}
+      - uses: ./.github/actions/unpack
+        with:
+          name: thumbs
+          dest: build/thumbs
+          mode: ${{ needs.prepare.outputs.mode }}
+          key: ${{ secrets.BACKUP_KEY }}
+      - name: Concat, mux, QA, auto-fix loop (max 2 rounds), scorecard
+        id: fin
+        run: |
+          mkdir -p video/public/bg build/final
+          cp -r build/assembled/bg/. video/public/bg/
+          N=$(python -c "import json;print(len(json.load(open('build/assembled/plan.json'))['sources']))")
+          python -m factory.finalize --chunks-dir build/chunks --assembled build/assembled --video-dir video --thumbs build/thumbs --out build/final --plan build/assembled/plan.json --sources $N
+      - name: Contact sheet (20 frames)
+        run: |
+          D=$(python -c "import json;print(json.load(open('build/final/qa_report.json'))['duration']['actual'])")
+          ffmpeg -v error -y -i build/final/final.mp4 -vf "fps=20/$D,scale=480:-1,tile=5x4" -frames:v 1 build/final/contact.jpg
+      - name: Metadata and YouTube Info
+        if: steps.fin.outputs.status == 'ok'
+        run: |
+          NNN=$(python -c "import json;print(json.load(open('build/assembled/plan.json'))['nnn'])")
+          ST=$(python -c "import json;print(json.load(open('build/assembled/plan.json'))['short_title'])")
+          python -m factory.metadata --plan build/assembled/plan.json --chapters build/assembled/chapters.json --base "$(printf '%03d' $NNN) $ST $(printf '%02d' ${{ steps.fin.outputs.minutes }})min" --out build/final/info.txt
+      - name: Bundle (age-encrypted), release, notify
+        if: steps.fin.outputs.status == 'ok'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          NNN=$(python -c "import json;print(json.load(open('build/assembled/plan.json'))['nnn'])")
+          ST=$(python -c "import json;print(json.load(open('build/assembled/plan.json'))['short_title'])")
+          python -m factory.bundle --nnn "$NNN" --short-title "$ST" --minutes ${{ steps.fin.outputs.minutes }} --video build/final/final.mp4 --thumb1 build/thumbs/thumb1.jpg --thumb2 build/thumbs/thumb2.jpg --info build/final/info.txt --srt build/assembled/captions.srt --recipient "$AGE_RECIPIENT" --out build/bundle
+          TAG="video-$(printf '%03d' $NNN)"
+          if gh release view "$TAG" >/dev/null 2>&1; then gh release upload "$TAG" build/bundle/* --clobber; else gh release create "$TAG" build/bundle/* --title "$TAG" --notes "video $(printf '%03d' $NNN): ready"; fi
+          gh issue create --title "video $(printf '%03d' $NNN): ready" --body "status: ok" || true
+      - name: Report held video
+        if: steps.fin.outputs.status != 'ok'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          NNN=$(python -c "import json;print(json.load(open('build/assembled/plan.json'))['nnn'])")
+          gh issue create --title "video $(printf '%03d' $NNN): needs_review" --body "status: needs_review (see qa-report artifact)" || true
+      - uses: ./.github/actions/pack
+        if: always()
+        with:
+          name: qa-report
+          path: build/final
+          mode: ${{ needs.prepare.outputs.mode }}
+          recipient: ${{ env.AGE_RECIPIENT }}

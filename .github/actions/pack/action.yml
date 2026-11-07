@@ -25,9 +25,8 @@ runs:
       shell: bash
       run: |
         sudo apt-get install -y -qq age >/dev/null
-        d="$(dirname "${{ inputs.path }}")"; b="$(basename "${{ inputs.path }}")"
         mkdir -p "$RUNNER_TEMP/enc"
-        tar -C "$d" -cf - "$b" | age -r "${{ inputs.recipient }}" > "$RUNNER_TEMP/enc/${{ inputs.name }}.tar.age"
+        tar -C "${{ inputs.path }}" -cf - . | age -r "${{ inputs.recipient }}" > "$RUNNER_TEMP/enc/${{ inputs.name }}.tar.age"
     - name: Upload encrypted
       if: inputs.mode == 'job'
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
