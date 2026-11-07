@@ -454,10 +454,15 @@ jobs:
         run: |
           NNN=$(python -c "import json;print(json.load(open('build/assembled/plan.json'))['nnn'])")
           gh issue create --title "video $(printf '%03d' $NNN): needs_review" --body "status: needs_review (see qa-report artifact)" || true
+      - name: Small QA bundle (no video)
+        if: always()
+        run: |
+          mkdir -p build/qa
+          cp build/final/qa_report.json build/final/scorecard.txt build/final/status.json build/final/contact.jpg build/final/info.txt build/qa/ 2>/dev/null || true
       - uses: ./.github/actions/pack
         if: always()
         with:
           name: qa-report
-          path: build/final
+          path: build/qa
           mode: ${{ needs.prepare.outputs.mode }}
           recipient: ${{ env.AGE_RECIPIENT }}
