@@ -204,7 +204,8 @@ jobs:
 
   assemble:
     needs: [prepare, tts, images]
-    if: ${{ !contains('plan tts images', inputs.until || 'all') }}
+    # images may fail: assemble then falls back to the procedural SVG backdrops and records it in the QA warnings
+    if: ${{ always() && !cancelled() && needs.prepare.result == 'success' && needs.tts.result == 'success' && !contains('plan tts images', inputs.until || 'all') }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     outputs:
@@ -232,6 +233,7 @@ jobs:
           mode: ${{ needs.prepare.outputs.mode }}
           key: ${{ secrets.BACKUP_KEY }}
       - uses: ./.github/actions/unpack
+        continue-on-error: true
         with:
           name: images-all
           pattern: images-*
@@ -240,7 +242,9 @@ jobs:
           key: ${{ secrets.BACKUP_KEY }}
       - name: Assemble timeline, captions, chapters
         id: asm
-        run: python -m factory.assemble --plan build/plan/plan.json --tts build/tts --images build/images --out build/assembled
+        run: |
+          mkdir -p build/images
+          python -m factory.assemble --plan build/plan/plan.json --tts build/tts --images build/images --out build/assembled
       - name: Mix audio (voice chain, music, sfx, ducking, loudnorm -14 LUFS)
         run: |
           python -m factory.mix --plan build/assembled/audio_plan.json --voice build/assembled/voice --out build/assembled
@@ -254,7 +258,7 @@ jobs:
 
   thumbs:
     needs: [prepare, images]
-    if: ${{ !contains('plan tts images', inputs.until || 'all') }}
+    if: ${{ always() && !cancelled() && needs.prepare.result == 'success' && !contains('plan tts images', inputs.until || 'all') }}
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -284,6 +288,7 @@ jobs:
           mode: ${{ needs.prepare.outputs.mode }}
           key: ${{ secrets.BACKUP_KEY }}
       - uses: ./.github/actions/unpack
+        continue-on-error: true
         with:
           name: images-all
           pattern: images-*
@@ -292,7 +297,7 @@ jobs:
           key: ${{ secrets.BACKUP_KEY }}
       - name: Stage backgrounds and render thumbnail candidates
         run: |
-          mkdir -p video/public/bg build/thumbs
+          mkdir -p video/public/bg build/thumbs build/images
           find build/images -name '*.jpg' ! -name '*.far.jpg' -exec cp {} video/public/bg/ \;
           python -m factory.thumbnails --plan build/plan/plan.json --bg video/public/bg --video video --out build/thumbs
           find build/thumbs -type d -name 'seq_*' -prune -exec rm -r {} +

@@ -84,6 +84,7 @@ def main(argv=None):
     rep["scorecard"] = card
     rep["categories"]["reference_scorecard"] = card["ok"]
     rep["pass"] = all(rep["categories"].values()) and rep["duration"]["ok"]
+    rep["warnings"] = ([f"procedural backdrops used for: {', '.join(ar['backdrop_fallbacks'])}"] if ar.get("backdrop_fallbacks") else []) +         ([f"TTS flagged sentences: {len(ar['tts_flagged'])}"] if ar.get("tts_flagged") else []) +         (["TTS fallback engine used (voice consistency)"] if any(e != "chatterbox" and e != "chatterbox_turbo" for e in ar.get("tts_engines", [])) else [])
     rep["fix_rounds"] = rounds
     rep["fixes"] = fixes_log
     json.dump(rep, open(os.path.join(a.out, "qa_report.json"), "w"), indent=1)
