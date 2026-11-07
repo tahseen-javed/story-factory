@@ -31,7 +31,7 @@ def encode_prompts(prompts: dict):
     import torch
     from diffusers import StableDiffusionXLPipeline
 
-    pipe = StableDiffusionXLPipeline.from_pretrained(BASE, unet=None, vae=None, torch_dtype=torch.float32, variant="fp16", use_safetensors=True)
+    pipe = StableDiffusionXLPipeline.from_pretrained(BASE, unet=None, torch_dtype=torch.float32, variant="fp16", use_safetensors=True)
     out = {}
     with torch.no_grad():
         for k, p in prompts.items():

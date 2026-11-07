@@ -25,6 +25,10 @@ jobs:
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.11"
+      - name: Audio dependencies (numpy/scipy/soundfile + ffmpeg for the mix test)
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg libsndfile1
+          python -m pip install numpy==1.26.4 scipy==1.13.1 soundfile==0.12.1
       - name: Unit tests (stdlib unittest)
         run: python -m unittest discover -s tests -v
       - name: Validate pilot scripts

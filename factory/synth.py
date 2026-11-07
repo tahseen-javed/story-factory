@@ -111,7 +111,7 @@ def render_music(mood: str, seconds: float, seed: int = 0) -> np.ndarray:
     beat = 60.0 / m["tempo"]
     bar = beat * 4
     nbar = int(np.ceil(seconds / bar)) + 1
-    L = np.zeros(n + int(bar * SR) * 2)
+    L = np.zeros(n + int(bar * SR) * 4)
     R = np.zeros_like(L)
     bn = int(bar * SR)
     for b in range(nbar):
