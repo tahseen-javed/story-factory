@@ -1,0 +1,5 @@
+# TTS + ASR stage (Python 3.11, CPU). torch/torchaudio come from the PyTorch CPU index first (see produce.yml).
+chatterbox-tts==0.1.7
+sherpa-onnx==2.0.1
+soundfile==0.12.1
+scipy==1.13.1

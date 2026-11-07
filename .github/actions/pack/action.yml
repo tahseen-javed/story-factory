@@ -1,0 +1,45 @@
+name: pack
+description: Upload a stage output. Production jobs are encrypted with age (public recipient); pilot/test content is public by design.
+inputs:
+  name:
+    description: artifact name
+    required: true
+  path:
+    description: file or directory to upload
+    required: true
+  mode:
+    description: pilot or job
+    required: true
+  recipient:
+    description: age public recipient (not a secret)
+    required: false
+    default: ""
+  retention-days:
+    required: false
+    default: "3"
+runs:
+  using: composite
+  steps:
+    - name: Encrypt (production jobs)
+      if: inputs.mode == 'job'
+      shell: bash
+      run: |
+        sudo apt-get install -y -qq age >/dev/null
+        d="$(dirname "${{ inputs.path }}")"; b="$(basename "${{ inputs.path }}")"
+        mkdir -p "$RUNNER_TEMP/enc"
+        tar -C "$d" -cf - "$b" | age -r "${{ inputs.recipient }}" > "$RUNNER_TEMP/enc/${{ inputs.name }}.tar.age"
+    - name: Upload encrypted
+      if: inputs.mode == 'job'
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: ${{ inputs.name }}
+        path: ${{ runner.temp }}/enc/${{ inputs.name }}.tar.age
+        retention-days: ${{ inputs.retention-days }}
+    - name: Upload plain (pilot / public test content)
+      if: inputs.mode != 'job'
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: ${{ inputs.name }}
+        path: ${{ inputs.path }}
+        retention-days: ${{ inputs.retention-days }}
+        include-hidden-files: true

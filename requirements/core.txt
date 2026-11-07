@@ -1,0 +1,9 @@
+# Assemble / mix / QA / thumbnails stage (Python 3.11).
+numpy==1.26.4
+scipy==1.13.1
+soundfile==0.12.1
+pillow==10.4.0
+opencv-python-headless==4.10.0.84
+imagehash==4.3.1
+rapidocr-onnxruntime==1.3.24
+pyyaml==6.0.2

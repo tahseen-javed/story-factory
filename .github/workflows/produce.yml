@@ -1,0 +1,203 @@
+name: produce
+# Turns jobs/<slug>/script.md (encrypted) or pilot/<slug>/script.md (public test content) into a finished video bundle.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "jobs/**/script.md"
+      - "pilot/**/script.md"
+  workflow_dispatch:
+    inputs:
+      job_dir:
+        description: "jobs/<slug> or pilot/<slug>"
+        required: true
+      until:
+        description: "stop after: plan | tts | images | assemble | render | all"
+        default: all
+
+permissions:
+  contents: read
+
+concurrency:
+  group: produce-${{ inputs.job_dir || github.sha }}
+  cancel-in-progress: true
+
+env:
+  AGE_RECIPIENT: age1a29zkhm3egxk30kdylsygf6pdkvkk2j6dz4h5qqacvga8ezf550qwl54rq
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      job_dir: ${{ steps.dir.outputs.job_dir }}
+      slug: ${{ steps.plan.outputs.slug }}
+      mode: ${{ steps.plan.outputs.mode }}
+      tts_hash: ${{ steps.plan.outputs.tts_hash }}
+      img_hash: ${{ steps.plan.outputs.img_hash }}
+      tts_shards: ${{ steps.plan.outputs.tts_shards }}
+      img_shards: ${{ steps.plan.outputs.img_shards }}
+      n_tts: ${{ steps.plan.outputs.n_tts }}
+      n_img: ${{ steps.plan.outputs.n_img }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.11"
+      - name: Resolve job directory
+        id: dir
+        env:
+          INPUT_DIR: ${{ inputs.job_dir }}
+        run: |
+          if [ -n "$INPUT_DIR" ]; then d="$INPUT_DIR"; else
+            f=$(git diff --name-only HEAD~1 HEAD | grep -E '^(jobs|pilot)/[^/]+/script\.md$' | head -1)
+            d=$(dirname "$f")
+          fi
+          test -n "$d" || { echo "::error::no job directory found"; exit 1; }
+          echo "job_dir=$d" >> "$GITHUB_OUTPUT"
+          echo "Job: $d"
+      - name: Preflight (fail fast, one clear line)
+        id: pre
+        env:
+          GIT_CRYPT_KEY: ${{ secrets.GIT_CRYPT_KEY }}
+          BACKUP_KEY: ${{ secrets.BACKUP_KEY }}
+        run: |
+          d="${{ steps.dir.outputs.job_dir }}"
+          case "$d" in
+            pilot/*) echo "mode=pilot (public test content, no secrets needed)";;
+            jobs/*)
+              [ -n "$GIT_CRYPT_KEY" ] || { echo "::error::PREFLIGHT: GIT_CRYPT_KEY secret missing - add it (docs/USER_CHECKLIST.md step 1)"; exit 1; }
+              [ -n "$BACKUP_KEY" ] || { echo "::error::PREFLIGHT: BACKUP_KEY secret missing - add it (docs/USER_CHECKLIST.md step 1)"; exit 1; }
+              sudo apt-get install -y -qq git-crypt >/dev/null
+              umask 077; printf '%s' "$GIT_CRYPT_KEY" | base64 -d > "$RUNNER_TEMP/gc.key"
+              git-crypt unlock "$RUNNER_TEMP/gc.key"; rm -f "$RUNNER_TEMP/gc.key"
+              head -c 9 "$d/script.md" | grep -q GITCRYPT && { echo "::error::PREFLIGHT: unlock failed"; exit 1; } || true;;
+            *) echo "::error::unknown job directory $d"; exit 1;;
+          esac
+          df -h / | tail -1
+      - name: Validate + plan
+        id: plan
+        run: |
+          d="${{ steps.dir.outputs.job_dir }}"
+          python -m factory.validate "$d"
+          python -m factory.plan "$d" --out build/plan
+      - uses: ./.github/actions/pack
+        with:
+          name: plan
+          path: build/plan
+          mode: ${{ steps.plan.outputs.mode }}
+          recipient: ${{ env.AGE_RECIPIENT }}
+
+  tts:
+    needs: prepare
+    if: inputs.until != 'plan'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJson(needs.prepare.outputs.tts_shards) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/unpack
+        with:
+          name: plan
+          dest: build/plan
+          mode: ${{ needs.prepare.outputs.mode }}
+          key: ${{ secrets.BACKUP_KEY }}
+      - name: Reuse finished shard (content-hash cache)
+        id: shardcache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: build/tts
+          key: tts-v1-${{ needs.prepare.outputs.tts_hash }}-${{ matrix.shard }}
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        if: steps.shardcache.outputs.cache-hit != 'true'
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements/tts.txt
+      - name: Model cache
+        if: steps.shardcache.outputs.cache-hit != 'true'
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cache/huggingface
+            build/.asr
+          key: models-tts-v1
+      - name: Install
+        if: steps.shardcache.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg libsndfile1
+          python -m pip install --upgrade pip
+          python -m pip install torch==2.6.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -r requirements/tts.txt
+      - name: Unlock voices (production only)
+        if: needs.prepare.outputs.mode == 'job' && steps.shardcache.outputs.cache-hit != 'true'
+        env:
+          GIT_CRYPT_KEY: ${{ secrets.GIT_CRYPT_KEY }}
+        run: |
+          sudo apt-get install -y -qq git-crypt >/dev/null
+          umask 077; printf '%s' "$GIT_CRYPT_KEY" | base64 -d > "$RUNNER_TEMP/gc.key"
+          git-crypt unlock "$RUNNER_TEMP/gc.key"; rm -f "$RUNNER_TEMP/gc.key"
+      - name: Synthesise + ASR-check this shard
+        if: steps.shardcache.outputs.cache-hit != 'true'
+        run: python -m factory.tts build/plan/plan.json --out build/tts --shard ${{ matrix.shard }} --shards ${{ needs.prepare.outputs.n_tts || 8 }}
+      - uses: ./.github/actions/pack
+        with:
+          name: tts-${{ matrix.shard }}
+          path: build/tts
+          mode: ${{ needs.prepare.outputs.mode }}
+          recipient: ${{ env.AGE_RECIPIENT }}
+
+  images:
+    needs: prepare
+    if: inputs.until != 'plan' && inputs.until != 'tts'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJson(needs.prepare.outputs.img_shards) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/unpack
+        with:
+          name: plan
+          dest: build/plan
+          mode: ${{ needs.prepare.outputs.mode }}
+          key: ${{ secrets.BACKUP_KEY }}
+      - name: Reuse finished shard (content-hash cache)
+        id: shardcache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: build/images
+          key: images-v1-${{ needs.prepare.outputs.img_hash }}-${{ matrix.shard }}
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        if: steps.shardcache.outputs.cache-hit != 'true'
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements/images.txt
+      - name: Free disk
+        if: steps.shardcache.outputs.cache-hit != 'true'
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/boost || true
+          df -h / | tail -1
+      - name: Install
+        if: steps.shardcache.outputs.cache-hit != 'true'
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -r requirements/images.txt
+      - name: SDXL-Lightning backgrounds + depth layers
+        if: steps.shardcache.outputs.cache-hit != 'true'
+        run: python -m factory.images build/plan/plan.json --out build/images --shard ${{ matrix.shard }} --shards ${{ needs.prepare.outputs.n_img || 7 }}
+      - uses: ./.github/actions/pack
+        with:
+          name: images-${{ matrix.shard }}
+          path: build/images
+          mode: ${{ needs.prepare.outputs.mode }}
+          recipient: ${{ env.AGE_RECIPIENT }}
