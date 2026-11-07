@@ -65,7 +65,7 @@ jobs:
       - name: Verify output and build contact sheet
         run: |
           ffprobe -v error -select_streams v:0 -show_entries stream=width,height,r_frame_rate,codec_name,pix_fmt,nb_frames -of default=nw=1 out/smoke.mp4
-          ffmpeg -v error -y -i out/smoke.mp4 -vf "select='not(mod(n,60))',scale=640:-1,tile=5x2" -frames:v 1 out/contact.png
+          ffmpeg -v error -y -i out/smoke.mp4 -vf "select='eq(mod(n,60),32)',scale=640:-1,tile=5x2" -frames:v 1 out/contact.png
           test -s out/contact.png
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:

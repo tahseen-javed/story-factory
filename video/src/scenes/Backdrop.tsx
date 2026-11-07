@@ -11,7 +11,7 @@ const PALS: Record<string, Pal> = {
   night: { wall: "#47557a", wall2: "#3b4666", floor: "#3a3548", floor2: "#2c2938", sky1: "#0f1a3d", sky2: "#26376b", light: "#ffd27a", win: true, glow: 0.55, dark: "#1c2036", trim: "#8392b8" },
   alarm: { wall: "#6b3f4c", wall2: "#58303d", floor: "#3c2c36", floor2: "#2d2029", sky1: "#2a0f1e", sky2: "#5a1d2f", light: "#ff9a7a", win: true, glow: 0.5, dark: "#2a1822", trim: "#b8808c" },
   dusk: { wall: "#c79a74", wall2: "#b18564", floor: "#7d5a47", floor2: "#684a3a", sky1: "#f2b36b", sky2: "#7e5c9a", light: "#ffd49a", win: true, glow: 0.35, dark: "#4a3340", trim: "#e8cfa8" },
-  blackout: { wall: "#2c3a4a", wall2: "#243140", floor: "#1f2630", floor2: "#181e27", sky1: "#05101c", sky2: "#102233", light: "#9fd7ff", win: false, glow: 0.0, dark: "#0d141c", trim: "#4f6578" },
+  blackout: { wall: "#3d5168", wall2: "#32445a", floor: "#2b3644", floor2: "#222b38", sky1: "#0a1a2c", sky2: "#1a3550", light: "#9fd7ff", win: false, glow: 0.0, dark: "#1a2735", trim: "#6a8299" },
 };
 
 const S = { stroke: INK, strokeWidth: 5, strokeLinejoin: "round" as const };

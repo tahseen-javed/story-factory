@@ -65,7 +65,7 @@ export const MOODS: Record<string, { filter: string; tint: string; tintOpacity: 
   night: { filter: "saturate(0.88) contrast(1.05) brightness(0.8)", tint: "#1d2f66", tintOpacity: 0.34, blend: "multiply" },
   alarm: { filter: "saturate(1.1) contrast(1.08) brightness(0.84)", tint: "#ff1f2d", tintOpacity: 0.26, blend: "multiply" },
   dusk: { filter: "saturate(1.0) contrast(1.04) brightness(0.9)", tint: "#ff7a3d", tintOpacity: 0.22, blend: "soft-light" },
-  blackout: { filter: "saturate(0.7) contrast(1.08) brightness(0.62)", tint: "#0b2a3a", tintOpacity: 0.45, blend: "multiply" },
+  blackout: { filter: "saturate(0.75) contrast(1.06) brightness(0.84)", tint: "#0b2a3a", tintOpacity: 0.30, blend: "multiply" },
 };
 
 export const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
