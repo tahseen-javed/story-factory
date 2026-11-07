@@ -60,12 +60,12 @@ export const HAIR: Record<string, string> = {
 };
 
 // Mood grading per location variant. tint = multiply/soft overlay; filter = css filter on the world.
-export const MOODS: Record<string, { filter: string; tint: string; tintOpacity: number; blend: string }> = {
-  day: { filter: "saturate(1.05) contrast(1.03) brightness(1.02)", tint: "#ffb85a", tintOpacity: 0.09, blend: "soft-light" },
-  night: { filter: "saturate(0.88) contrast(1.05) brightness(0.8)", tint: "#1d2f66", tintOpacity: 0.34, blend: "multiply" },
-  alarm: { filter: "saturate(1.1) contrast(1.08) brightness(0.84)", tint: "#ff1f2d", tintOpacity: 0.26, blend: "multiply" },
-  dusk: { filter: "saturate(1.0) contrast(1.04) brightness(0.9)", tint: "#ff7a3d", tintOpacity: 0.22, blend: "soft-light" },
-  blackout: { filter: "saturate(0.75) contrast(1.06) brightness(0.84)", tint: "#0b2a3a", tintOpacity: 0.30, blend: "multiply" },
+export const MOODS: Record<string, { filter: string; charFilter: string; tint: string; tintOpacity: number; blend: string; vignette: number }> = {
+  day: { filter: "saturate(1.05) contrast(1.03) brightness(1.02)", charFilter: "none", tint: "#ffb85a", tintOpacity: 0.09, blend: "soft-light", vignette: 0.4 },
+  night: { filter: "saturate(0.9) contrast(1.06) brightness(0.56)", charFilter: "brightness(0.86) saturate(0.95)", tint: "#1d2f66", tintOpacity: 0.3, blend: "multiply", vignette: 0.6 },
+  alarm: { filter: "saturate(1.1) contrast(1.08) brightness(0.62)", charFilter: "brightness(0.9)", tint: "#ff1f2d", tintOpacity: 0.24, blend: "multiply", vignette: 0.6 },
+  dusk: { filter: "saturate(1.0) contrast(1.04) brightness(0.82)", charFilter: "none", tint: "#ff7a3d", tintOpacity: 0.22, blend: "soft-light", vignette: 0.5 },
+  blackout: { filter: "saturate(0.7) contrast(1.1) brightness(0.4)", charFilter: "brightness(0.74)", tint: "#0b2a3a", tintOpacity: 0.28, blend: "multiply", vignette: 0.72 },
 };
 
 export const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));

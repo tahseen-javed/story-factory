@@ -69,4 +69,4 @@ export function cameraAt(cam: CamSpec, frame: number, dur: number): CamState {
 }
 
 // Parallax multipliers per layer (far moves least, near most). Characters ride with the mid plane.
-export const PARALLAX = { far: 0.55, mid: 0.85, near: 1.2, chars: 0.95 };
+export const PARALLAX = { far: 0.75, mid: 0.95, near: 1.15, chars: 0.95 };

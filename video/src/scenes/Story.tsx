@@ -52,10 +52,12 @@ export const ShotView: React.FC<{ shot: Shot; tl: Timeline }> = ({ shot, tl }) =
 
   return (
     <AbsoluteFill style={{ overflow: "hidden", background: "#000" }}>
-      <div style={{ position: "absolute", inset: 0, filter: `${mood.filter}${blur > 0.2 ? ` blur(${blur.toFixed(2)}px)` : ""}` }}>
+      <div style={{ position: "absolute", inset: 0, filter: blur > 0.2 ? `blur(${blur.toFixed(2)}px)` : "none" }}>
         <div style={{ position: "absolute", inset: 0, transformOrigin: `${cam.fx * 100}% ${cam.fy * 100}%`, transform: `scale(${cam.z}) rotate(${cam.rot}deg)` }}>
-          <Backdrop shot={shot} tx={cam.tx} ty={cam.ty} />
-          <svg width={W} height={H} style={{ position: "absolute", inset: 0, overflow: "visible", transform: `translate(${cam.tx * PARALLAX.chars}px, ${cam.ty * PARALLAX.chars}px)` }}>
+          <div style={{ position: "absolute", inset: 0, filter: mood.filter }}>
+            <Backdrop shot={shot} tx={cam.tx} ty={cam.ty} />
+          </div>
+          <svg width={W} height={H} style={{ position: "absolute", inset: 0, overflow: "visible", filter: mood.charFilter, transform: `translate(${cam.tx * PARALLAX.chars}px, ${cam.ty * PARALLAX.chars}px)` }}>
             {shot.chars.map((c, i) => (
               <Rig key={c.id + i} params={c.params} pose={c.pose} expr={c.expr} frame={frame} fps={fps} seed={(c.id.charCodeAt(0) || 1) + i * 7} x={c.x * W} y={shot.floorY * H} scale={charScale} facing={c.facing} progress={progress} prop={(c as any).prop || null} />
             ))}
@@ -64,7 +66,7 @@ export const ShotView: React.FC<{ shot: Shot; tl: Timeline }> = ({ shot, tl }) =
         <MoodTint variant={shot.variant} />
         <FxLayer fx={shot.fx} variant={shot.variant} />
       </div>
-      <Vignette strength={shot.variant === "day" ? 0.4 : 0.6} />
+      <Vignette strength={mood.vignette} />
       <Grain />
       {ovOn && Ov ? (
         <Ov args={ov!.args} frame={frame - ov!.inFrame} total={ov!.outFrame - ov!.inFrame} accent={tl.style.accent} fps={fps} track={shot.track} prevTrack={shot.prevTrack} />
