@@ -1,0 +1,23 @@
+{
+  "name": "story-factory-video",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Remotion project: puppet rig, overlays, camera presets, FX and scenes for story-factory",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts Story",
+    "still": "remotion still src/index.ts"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.541",
+    "@remotion/bundler": "4.0.541",
+    "@remotion/renderer": "4.0.541",
+    "remotion": "4.0.541",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.12",
+    "typescript": "5.6.3"
+  }
+}
