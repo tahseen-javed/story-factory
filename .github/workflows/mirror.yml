@@ -1,0 +1,23 @@
+name: mirror
+# Manual backup: pushes the repo (encrypted parts stay encrypted) to a second free git host.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Push mirror
+        env:
+          MIRROR_URL: ${{ secrets.MIRROR_URL }}
+          MIRROR_TOKEN: ${{ secrets.MIRROR_TOKEN }}
+        run: |
+          [ -n "$MIRROR_URL" ] || { echo "PREFLIGHT: MIRROR_URL secret missing (docs/BACKUP.md)"; exit 1; }
+          git push --mirror "https://oauth2:${MIRROR_TOKEN}@${MIRROR_URL#https://}"

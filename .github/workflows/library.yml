@@ -1,0 +1,38 @@
+name: library
+# Manual. Builds library/music.json and sfx.json from the owner's encrypted zip (Release library-music-v1) and records every licence.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Preflight
+        env:
+          BACKUP_KEY: ${{ secrets.BACKUP_KEY }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [ -n "$BACKUP_KEY" ] || { echo "::error::PREFLIGHT: BACKUP_KEY secret missing (docs/USER_CHECKLIST.md step 1)"; exit 1; }
+          gh release view library-music-v1 >/dev/null 2>&1 || { echo "::error::PREFLIGHT: release library-music-v1 not found (docs/USER_CHECKLIST.md step 4)"; exit 1; }
+          sudo apt-get update -qq && sudo apt-get install -y -qq age ffmpeg unzip
+          mkdir -p build/lib && gh release download library-music-v1 -D build/lib
+          umask 077; printf '%s\n' "$BACKUP_KEY" > "$RUNNER_TEMP/age.key"
+          for f in build/lib/*.age; do age -d -i "$RUNNER_TEMP/age.key" -o "${f%.age}" "$f"; done
+          rm -f "$RUNNER_TEMP/age.key"
+          cd build/lib && for z in *.zip; do unzip -q -o "$z" -d extracted; done
+      - name: Build manifests (licence field mandatory)
+        run: python -m factory.library build/lib/extracted library
+      - name: Commit manifests
+        run: |
+          git config user.name "github-actions"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add library/music.json library/sfx.json
+          git commit -m "library: music and sfx manifests" || echo "no changes"
+          git push origin HEAD:main

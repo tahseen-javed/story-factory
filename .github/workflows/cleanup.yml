@@ -1,0 +1,39 @@
+name: cleanup
+# Manual. Deletes video bundles (tags video-NNN) older than N days. Never touches the reference, library-* or ledger releases.
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "delete bundles older than this many days"
+        default: "30"
+      dry_run:
+        description: "true = only list"
+        default: "true"
+
+permissions:
+  contents: read
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - name: Delete old bundles
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cutoff=$(date -u -d "${{ inputs.days }} days ago" +%Y-%m-%dT%H:%M:%SZ)
+          gh release list --repo "$GITHUB_REPOSITORY" --limit 200 --json tagName,createdAt --jq ".[] | select(.tagName|test(\"^video-[0-9]{3}\$\")) | select(.createdAt < \"$cutoff\") | .tagName" | while read -r tag; do
+            echo "old bundle: $tag"
+            if [ "${{ inputs.dry_run }}" = "false" ]; then gh release delete "$tag" --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag; fi
+          done
+      - name: Delete old caches (keep the newest)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh cache list --repo "$GITHUB_REPOSITORY" --limit 100 --sort last_accessed_at --order asc --json id,lastAccessedAt --jq ".[0:-20][] | .id" | while read -r id; do
+            echo "old cache $id"
+            if [ "${{ inputs.dry_run }}" = "false" ]; then gh cache delete "$id" --repo "$GITHUB_REPOSITORY" || true; fi
+          done

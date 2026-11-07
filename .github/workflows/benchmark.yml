@@ -1,4 +1,4 @@
-name: probe
+name: benchmark
 # Manual only. Measures install time, speed and memory of the heavy models on the real runner (feeds benchmark.yml later).
 on:
   workflow_dispatch:

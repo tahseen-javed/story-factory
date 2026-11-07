@@ -1,0 +1,33 @@
+name: analytics
+# Manual learning loop: reads YouTube Analytics for published videos and writes docs/LEARNINGS.md (max 20 lines).
+# Needs the extra scope https://www.googleapis.com/auth/yt-analytics.readonly on the refresh token (docs/SETUP_YOUTUBE.md).
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analytics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.11"
+      - name: Fetch analytics
+        env:
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+        run: python -m factory.analytics --out docs/LEARNINGS.md
+      - name: Commit learnings
+        run: |
+          git config user.name "github-actions"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/LEARNINGS.md
+          git commit -m "docs: learnings from analytics" || echo "no changes"
+          git push origin HEAD:main || true
