@@ -73,7 +73,7 @@ tts:
   wer_max: 0.08
   duration_ratio: [0.6, 1.6]
   max_regen: 3
-  matrix: 4                # shards (benchmark.yml retunes)
+  matrix: 8                # shards (benchmark.yml retunes)
   seed: 1234
   speed: 1.0
 
@@ -85,8 +85,8 @@ images:
   steps: 4
   guidance: 0.0
   variant_mode: img2img    # img2img | grade
-  variant_strength: 0.55
-  matrix: 4
+  variant_strength: 0.75
+  matrix: 7
   seed: 777
   new_background_share_min: 0.60
   style_prompt: "hand-drawn ink outlines, muted painted background, flat gouache colours, visible paper grain, soft vignette, 2D storybook illustration, wide establishing shot, no people, no text"
