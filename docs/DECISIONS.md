@@ -17,3 +17,6 @@ Voice: Chatterbox built-in default voice (no cloning) until voices/default.wav o
 
 ## 2026-11-08 | Background resolution
 SDXL-Lightning renders 1344x768; backgrounds are upscaled 2.25x to 3024x1728 (Lanczos + detail pass) so zoom 1.35 with 12% overscan never exceeds 1.0x of the stored source.
+
+## 2026-11-08 | Delivery space guard and bitrate
+min_free_gb lowered 30 -> 15: the laptop had 27 GB free, so the 30 GB guard would block every delivery; a video bundle is about 300 MB. Final video pass: H.264 High CRF 18 maxrate 9M (grain made raw chunks 16 Mbps = 515 MB for 4.4 min), preset medium (slow was too slow for a 30-minute video on 4 vCPU; no visible difference at this bitrate).

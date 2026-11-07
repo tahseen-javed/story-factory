@@ -11,9 +11,9 @@ output:
   profile: high
   pix_fmt: yuv420p
   crf: 18
-  maxrate: 14M
-  bufsize: 28M
-  preset: slow
+  maxrate: 9M
+  bufsize: 18M
+  preset: medium
   audio_codec: aac
   audio_rate: 48000
   audio_bitrate: 192k
@@ -122,7 +122,7 @@ thumbnails:
 
 delivery:
   folder_name: "Animated Long Video 1st Channel"
-  min_free_gb: 30
+  min_free_gb: 15
   age_recipient: "age1a29zkhm3egxk30kdylsygf6pdkvkk2j6dz4h5qqacvga8ezf550qwl54rq"
   part_max_gb: 1.9
   release_tag_prefix: "video-"

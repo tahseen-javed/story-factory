@@ -3,7 +3,7 @@
 # One output line per delivered video. No installs, nothing heavy.
 param(
   [string]$Repo = "tahseen-javed/story-factory",
-  [double]$MinFreeGB = 30,
+  [double]$MinFreeGB = 15,   # mirrors delivery.min_free_gb in config/factory.yaml
   [switch]$All
 )
 $ErrorActionPreference = "Stop"

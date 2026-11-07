@@ -29,6 +29,13 @@ def concat(chunks_dir: str, out: str):
     return len(files)
 
 
+def reencode(src: str, dst: str, cfg: dict):
+    """Final video pass: H.264 High, CRF 18 with a sensible maxrate cap (grain makes raw chunks 16 Mbps) so 30-minute videos stay manageable."""
+    o = cfg["output"]
+    run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-i", src, "-an", "-c:v", "libx264", "-profile:v", o["profile"], "-preset", o["preset"],
+         "-crf", str(o["crf"]), "-maxrate", str(o["maxrate"]), "-bufsize", str(o["bufsize"]), "-pix_fmt", o["pix_fmt"], "-g", "60", dst])
+
+
 def mux(video: str, audio: str, out: str, cfg: dict):
     o = cfg["output"]
     run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-i", video, "-i", audio, "-map", "0:v:0", "-map", "1:a:0", "-c:v", "copy",
@@ -61,11 +68,12 @@ def main(argv=None):
     ar = json.load(open(os.path.join(a.assembled, "assemble_report.json")))
     plan["_wer_mean"] = ar.get("wer_mean")
     thumbs_rep = os.path.join(a.thumbs, "thumbs_report.json") if a.thumbs else None
-    vid_only, final = os.path.join(a.out, "video_only.mp4"), os.path.join(a.out, "final.mp4")
+    vid_only, vid_enc, final = os.path.join(a.out, "video_only.mp4"), os.path.join(a.out, "video_enc.mp4"), os.path.join(a.out, "final.mp4")
     rounds, fixes_log, rep = 0, [], None
     while True:
         n = concat(a.chunks_dir, vid_only)
-        mux(vid_only, os.path.join(a.assembled, "master.wav"), final, cfg)
+        reencode(vid_only, vid_enc, cfg)
+        mux(vid_enc, os.path.join(a.assembled, "master.wav"), final, cfg)
         qa_json = os.path.join(a.out, "qa_report.json")
         rc = qa.run(final, props, os.path.join(a.assembled, "chunks.json"), os.path.join(a.assembled, "captions.srt"), qa_json,
                     os.path.join(a.assembled, "assemble_report.json"), thumbs_rep)
