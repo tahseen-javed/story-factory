@@ -24,7 +24,8 @@ def ff(*args):
 
 def make(path, video_filter, dur=6, size="1920x1080", audio=None):
     a = ["-f", "lavfi", "-i", audio or "sine=frequency=440:sample_rate=48000"]
-    ff("-f", "lavfi", "-i", f"{video_filter}:size={size}:rate=30:duration={dur}" if "geq" not in video_filter else video_filter, *a, "-t", str(dur),
+    sep = ":" if "=" in video_filter else "="
+    ff("-f", "lavfi", "-i", f"{video_filter}{sep}size={size}:rate=30:duration={dur}", *a, "-t", str(dur),
        "-c:v", "libx264", "-pix_fmt", "yuv420p", "-preset", "veryfast", "-crf", "20", "-c:a", "aac", "-b:a", "192k", "-ar", "48000", path)
 
 
