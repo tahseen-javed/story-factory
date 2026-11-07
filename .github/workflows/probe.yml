@@ -1,0 +1,119 @@
+name: probe
+# Manual only. Measures install time, speed and memory of the heavy models on the real runner (feeds benchmark.yml later).
+on:
+  workflow_dispatch:
+    inputs:
+      what:
+        description: "tts | images | both"
+        default: both
+
+permissions:
+  contents: read
+
+jobs:
+  tts_asr:
+    if: inputs.what != 'images'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.11"
+      - name: System packages
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg libsndfile1
+      - name: Install torch (CPU) + chatterbox + sherpa-onnx
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install torch==2.6.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install chatterbox-tts==0.1.7 sherpa-onnx==2.0.1 soundfile
+          python -m pip list 2>/dev/null | grep -i -E "^(torch|torchaudio|chatterbox|transformers|numpy|sherpa|diffusers) " || true
+      - name: TTS probe
+        run: |
+          python - <<'EOF'
+          import time, resource, torch, torchaudio as ta
+          torch.set_num_threads(4)
+          from chatterbox.tts import ChatterboxTTS
+          t=time.time(); m=ChatterboxTTS.from_pretrained(device="cpu"); print("LOAD s", round(time.time()-t,1), flush=True)
+          texts=["It's Friday, three twelve in the morning.","And your phone is screaming.","Fifteen hours. That's all you have before a solar storm hits Earth.","Ready dot gov says one gallon of water, per person, per day."]
+          for i,x in enumerate(texts):
+              torch.manual_seed(1234+i)
+              t=time.time(); w=m.generate(x); el=time.time()-t
+              d=w.shape[-1]/m.sr
+              print(f"GEN {i} audio={d:.2f}s took={el:.1f}s rtf={el/d:.2f} sr={m.sr}", flush=True)
+              ta.save(f"probe_{i}.wav", w, m.sr)
+          print("PEAK_RSS_MB", resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1024)
+          EOF
+      - name: ASR probe (sherpa-onnx Moonshine base int8)
+        run: |
+          curl -sSL -o m.tar.bz2 https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-moonshine-base-en-int8.tar.bz2
+          tar xjf m.tar.bz2 && ls sherpa-onnx-moonshine-base-en-int8
+          python - <<'EOF'
+          import time, soundfile as sf, sherpa_onnx, numpy as np
+          d="sherpa-onnx-moonshine-base-en-int8/"
+          r=sherpa_onnx.OfflineRecognizer.from_moonshine(preprocessor=d+"preprocess.onnx",encoder=d+"encode.int8.onnx",uncached_decoder=d+"uncached_decode.int8.onnx",cached_decoder=d+"cached_decode.int8.onnx",tokens=d+"tokens.txt",num_threads=4)
+          for i in range(4):
+              a,sr=sf.read(f"probe_{i}.wav",dtype="float32")
+              if a.ndim>1: a=a[:,0]
+              t=time.time(); s=r.create_stream(); s.accept_waveform(sr,a); r.decode_stream(s)
+              print("ASR",i,repr(s.result.text),round(time.time()-t,2),"s")
+          EOF
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: probe-tts
+          path: probe_*.wav
+          retention-days: 3
+
+  images:
+    if: inputs.what != 'tts'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        dt: [fp32, bf16]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.11"
+      - name: Free disk
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/boost || true
+          df -h / | tail -1; free -g | head -2; nproc; lscpu | grep -E "Model name|Flags" | cut -c1-200
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install diffusers==0.31.0 transformers==4.46.3 accelerate==1.1.1 safetensors==0.4.5 huggingface_hub==0.26.2 "numpy<2" pillow sentencepiece protobuf
+      - name: SDXL-Lightning probe
+        env:
+          DT: ${{ matrix.dt }}
+        run: |
+          python - <<'EOF'
+          import time, os, resource, torch
+          from diffusers import StableDiffusionXLPipeline, UNet2DConditionModel, EulerDiscreteScheduler
+          from huggingface_hub import hf_hub_download
+          from safetensors.torch import load_file
+          torch.set_num_threads(4)
+          dt = torch.bfloat16 if os.environ["DT"]=="bf16" else torch.float32
+          base="stabilityai/stable-diffusion-xl-base-1.0"
+          t=time.time()
+          unet=UNet2DConditionModel.from_config(base, subfolder="unet").to(dt)
+          unet.load_state_dict(load_file(hf_hub_download("ByteDance/SDXL-Lightning","sdxl_lightning_4step_unet.safetensors")))
+          pipe=StableDiffusionXLPipeline.from_pretrained(base, unet=unet, torch_dtype=dt, variant="fp16", use_safetensors=True)
+          pipe.scheduler=EulerDiscreteScheduler.from_config(pipe.scheduler.config, timestep_spacing="trailing")
+          print("LOAD s", round(time.time()-t,1), "RSS MB", resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1024, flush=True)
+          prompt="hand-drawn ink outlines, muted painted background, flat gouache colours, visible paper grain, soft vignette, 2D storybook illustration, wide establishing shot, no people, no text, cramped one-room city apartment at night with a single bed under a big window, warm lamp"
+          for i in range(2):
+              t=time.time()
+              g=torch.Generator().manual_seed(777+i)
+              img=pipe(prompt, num_inference_steps=4, guidance_scale=0.0, width=1344, height=768, generator=g).images[0]
+              print("IMG",i,"took",round(time.time()-t,1),"s RSS MB", resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1024, flush=True)
+              img.save(f"probe_img_{os.environ['DT']}_{i}.png")
+          EOF
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: probe-images-${{ matrix.dt }}
+          path: probe_img_*.png
+          retention-days: 3
