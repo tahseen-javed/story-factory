@@ -34,12 +34,23 @@ _EQUIV = [
     (r"\bwi[- ]?fi\b", "wifi"), (r"\bwhy[- ]fy\b", "wifi"),
     (r"\bg\s?5\b", "g five"), (r"\bg five\b", "g five"),
     (r"\b3b\b", "three b"), (r"\bthree bee\b", "three b"), (r"\bthree-b\b", "three b"),
-    (r"\bokay\b", "ok"), (r"\bkay\b", "ok"),
+    (r"\bokay\b", "ok"), (r"\bkay\b", "ok"), (r"\btoo\b", "two"),
 ]
+
+
+def year_words(n: int) -> str:
+    """1989 -> nineteen eighty nine; 1905 -> nineteen oh five; 2005 -> two thousand five."""
+    if 1100 <= n <= 1999 or 2010 <= n <= 2099:
+        hi, lo = divmod(n, 100)
+        lo_w = "hundred" if lo == 0 else (("oh " + int_to_words(lo)) if lo < 10 else int_to_words(lo))
+        return f"{int_to_words(hi)} {lo_w}".strip()
+    return int_to_words(n)
 
 
 def _num_tokens(m: "re.Match") -> str:
     s = m.group(0)
+    if re.fullmatch(r"\d{4}", s):
+        return year_words(int(s))
     if ":" in s:  # clock times like 3:12 -> "three twelve"
         h, mi = s.split(":")[:2]
         mi_w = "" if int(mi) == 0 else (("oh " + int_to_words(int(mi))) if int(mi) < 10 else int_to_words(int(mi)))
@@ -49,6 +60,7 @@ def _num_tokens(m: "re.Match") -> str:
 
 def normalize(text: str) -> list:
     t = text.lower().replace("’", "'")
+    t = re.sub(r"\b(\d+)([a-z])\b", r"\1 \2", t)  # 3b -> 3 b
     t = re.sub(r"(\d+)\s*%", r"\1 percent", t)
     t = re.sub(r"\$\s*(\d[\d,]*)", r"\1 dollars", t)
     t = re.sub(r"\d{1,3}(?:,\d{3})+|\d+:\d{2}|\d+", _num_tokens, t)

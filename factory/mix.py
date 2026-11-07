@@ -102,10 +102,10 @@ def ffmpeg_measure(path):
     return json.loads(m.group(0))
 
 
-def loudnorm_two_pass(src, dst, I=-14.0, TP=-1.0, LRA=7.0):
+def loudnorm_two_pass(src, dst, I=-14.0, TP=-1.5, LRA=7.0):
     m = ffmpeg_measure(src)
     flt = (f"loudnorm=I={I}:TP={TP}:LRA={LRA}:measured_I={m['input_i']}:measured_TP={m['input_tp']}:measured_LRA={m['input_lra']}:"
-           f"measured_thresh={m['input_thresh']}:offset={m['target_offset']}:linear=true:print_format=summary,alimiter=limit=0.891:level=disabled")
+           f"measured_thresh={m['input_thresh']}:offset={m['target_offset']}:linear=true:print_format=summary,alimiter=limit=0.841:level=disabled")
     subprocess.run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-i", src, "-af", flt, "-ar", "48000", "-c:a", "pcm_s24le", dst], check=True)
     return m
 

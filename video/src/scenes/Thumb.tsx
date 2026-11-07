@@ -73,8 +73,10 @@ const Bg: React.FC<{ spec: ThumbSpec }> = ({ spec }) => {
 
 const Headline: React.FC<{ text: string; x: number; y: number; accent: string; size?: number; rot?: number; width?: number }> = ({ text, x, y, accent, size = 230, rot = -3, width = 900 }) => {
   const words = text.split(" ");
+  const longest = Math.max(...words.map((w) => w.length), 3);
+  const fit = Math.min(size, Math.floor((width - 40) / (longest * 0.6))); // keep the longest word inside the frame (Anton is about 0.6 em per capital with stroke)
   return (
-    <div style={{ position: "absolute", left: x, top: y, width, transform: `rotate(${rot}deg)`, fontFamily: FONT.display, fontSize: size, lineHeight: 0.95, letterSpacing: 4, textTransform: "uppercase" }}>
+    <div style={{ position: "absolute", left: x, top: y, width, transform: `rotate(${rot}deg)`, fontFamily: FONT.display, fontSize: fit, lineHeight: 0.95, letterSpacing: 4, textTransform: "uppercase" }}>
       {words.map((w, i) => (
         <div key={i} style={{ color: i === 0 && /\d|^[A-Z]/.test(w) && words.length > 1 ? ACCENT[accent] : "#fff", WebkitTextStroke: "16px #0d0b10", paintOrder: "stroke fill", textShadow: "0 12px 0 rgba(0,0,0,0.55)" }}>{w}</div>
       ))}
@@ -108,7 +110,7 @@ export const ThumbFrame: React.FC<{ spec: ThumbSpec }> = ({ spec }) => {
       ) : (
         <>
           {Obj ? (
-            <div style={{ position: "absolute", left: left ? 860 : 120, top: 40, width: W, height: H, transform: "scale(0.82)", transformOrigin: "0 0" }}>
+            <div style={{ position: "absolute", left: left ? 690 : -300, top: 60, width: W, height: H, transform: "scale(0.82)", transformOrigin: "0 0" }}>
               <Obj args={spec.object!.args} frame={40} total={999} accent={spec.accent} fps={30} track={{}} prevTrack={{}} />
             </div>
           ) : null}
@@ -123,7 +125,7 @@ export const ThumbFrame: React.FC<{ spec: ThumbSpec }> = ({ spec }) => {
               </filter>
             </defs>
             <g filter="url(#rim2)">
-              <Rig params={spec.hero.params} pose={spec.hero.pose} expr={spec.hero.expr} frame={10} seed={5} x={left ? 330 : 1560} y={1090} scale={1.45} facing={left ? 1 : -1} />
+              <Rig params={spec.hero.params} pose={spec.hero.pose} expr={spec.hero.expr} frame={10} seed={5} x={left ? 300 : 1560} y={1110} scale={1.3} facing={left ? 1 : -1} />
             </g>
           </svg>
         </>
@@ -131,7 +133,7 @@ export const ThumbFrame: React.FC<{ spec: ThumbSpec }> = ({ spec }) => {
       {isA ? (
         <Headline text={spec.text} x={left ? 960 : 90} y={80} accent={spec.accent} size={250} width={900} />
       ) : (
-        <Headline text={spec.text} x={left ? 70 : 860} y={60} accent={spec.accent} size={200} width={1000} />
+        <Headline text={spec.text} x={left ? 70 : 900} y={50} accent={spec.accent} size={200} width={left ? 980 : 940} />
       )}
       <AbsoluteFill style={{ background: "radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.5) 100%)" }} />
     </div>

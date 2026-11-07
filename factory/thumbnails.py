@@ -45,7 +45,7 @@ def hook_words(plan):
     last = title[-1].upper() if title else "STORY"
     q = next((s["text"] for s in plan["sentences"][:40] if s["text"].strip().endswith("?")), "")
     ql = q.lower()
-    qhook = "WHY ME?" if ql.startswith("why") else "WHAT NOW?" if ql.startswith("what") else "WHO KNEW?" if ql.startswith("who") else "NO WARNING?"
+    qhook = "WHY ME?" if re.search(r"\bwhy\b", ql) else "WHAT NOW?" if re.search(r"\bwhat\b", ql) else "WHO KNEW?" if re.search(r"\bwho\b", ql) else "NO WARNING?"
     timers = [a for sh in plan["shots"] if sh.get("overlay") and sh["overlay"]["name"] == "timer" for a in [sh["overlay"]["args"][0]]]
     num = None
     if timers:
@@ -191,6 +191,7 @@ def run(plan_path, bg_dir, video_dir, out_dir, cfg_path=None):
     ocr = _ocr()
     thr = 0.62
     best = {}
+    pool = []
     all_scores = []
     rounds = 0
     specs = candidates(plan, bg_dir, accent)
@@ -200,8 +201,14 @@ def run(plan_path, bg_dir, video_dir, out_dir, cfg_path=None):
             img = Image.open(f)
             sc = score_image(img, sp["text"], sp["concept"], ocr)
             all_scores.append({"concept": sp["concept"], "text": sp["text"], "layout": sp["layout"], "expr": sp["hero"]["expr"], "round": rounds, **{k: round(v, 3) for k, v in sc.items()}})
-            if sp["concept"] not in best or sc["total"] > best[sp["concept"]][0]:
-                best[sp["concept"]] = (sc["total"], f, sp)
+            pool.append((sc["total"], f, sp))
+        best = {}
+        a_best = max((x for x in pool if x[2]["concept"] == "A"), key=lambda x: x[0], default=None)
+        if a_best:
+            best["A"] = a_best
+            b_pool = [x for x in pool if x[2]["concept"] == "B" and x[2]["text"] != a_best[2]["text"]] or [x for x in pool if x[2]["concept"] == "B"]
+            if b_pool:
+                best["B"] = max(b_pool, key=lambda x: x[0])
         if all(best.get(c, (0,))[0] >= thr for c in ("A", "B")):
             break
         rounds += 1  # regenerate with mutated layout/accent

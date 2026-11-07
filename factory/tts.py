@@ -142,7 +142,8 @@ def run(plan_path: str, out_dir: str, shard: int, nshards: int, only: list | Non
             seed = int(t["seed"]) + s["idx"] * 31 + attempt * 1009
             ex = 0.7 if s.get("emotional") else float(t["exaggeration"])
             try:
-                raw = eng.generate(s["tts_text"], seed, ex, float(t["cfg_weight"]) if not s.get("emotional") else 0.35)
+                cfgw = (float(t["cfg_weight"]) if not s.get("emotional") else 0.35) + [0.0, 0.12, -0.12, 0.2, -0.2, 0.0][attempt % 6]
+                raw = eng.generate(s["tts_text"], seed, ex + 0.05 * (attempt % 3), min(0.95, max(0.1, cfgw)))
             except Exception as e:  # noqa: BLE001
                 print(f"[tts] {s['id']} generation error: {e!r}")
                 continue
@@ -154,7 +155,7 @@ def run(plan_path: str, out_dir: str, shard: int, nshards: int, only: list | Non
             if asr.ok:
                 hyp = asr.transcribe(tmp)
                 w = wer(s["text"], hyp)
-            ratio = dur / max(0.3, s["expected_s"])
+            ratio = dur / max(1.0, s["expected_s"])  # floor: one-word sentences are naturally slower than the wpm average
             ok = w <= wer_max and lo <= ratio <= hi
             cand = {"id": s["id"], "dur": round(dur, 3), "wer": round(w, 3), "ratio": round(ratio, 2), "attempts": attempt + 1,
                     "seed": seed, "engine": eng.name, "hyp": hyp, "ok": ok}
