@@ -69,3 +69,27 @@ class TestPlan(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestPublishQuota(unittest.TestCase):
+    def test_quota_and_rate(self):
+        from factory import publish
+
+        cfg = load_cfg()
+        day = "2026-11-08"
+        self.assertEqual(publish.pacific_day(__import__("datetime").datetime(2026, 11, 8, 7, 0, tzinfo=__import__("datetime").timezone.utc)), "2026-11-07")
+        ledger = {"1": {"day": day, "captions": True}}
+        ok, _ = publish.can_upload(ledger, cfg, True, day)
+        self.assertTrue(ok)
+        ledger["2"] = {"day": day, "captions": True}
+        ok, why = publish.can_upload(ledger, cfg, True, day)
+        self.assertFalse(ok)
+        self.assertIn("publish_rate", why)
+        self.assertEqual(publish.quota_used_today(ledger, day), 2 * (1600 + 50 + 400))
+
+    def test_skips_without_secrets(self):
+        from factory import publish
+
+        for k in ("YT_CLIENT_ID", "YT_CLIENT_SECRET", "YT_REFRESH_TOKEN"):
+            os.environ.pop(k, None)
+        self.assertEqual(publish.main(["--nnn", "1", "--base", "x", "--video", "v", "--thumb", "t", "--srt", "s", "--info", "i", "--ledger", "l"]), 0)

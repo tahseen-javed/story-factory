@@ -421,6 +421,7 @@ jobs:
           ST=$(python -c "import json;print(json.load(open('build/assembled/plan.json'))['short_title'])")
           python -m factory.metadata --plan build/assembled/plan.json --chapters build/assembled/chapters.json --base "$(printf '%03d' $NNN) $ST $(printf '%02d' ${{ steps.fin.outputs.minutes }})min" --out build/final/info.txt
       - name: Bundle (age-encrypted), release, notify
+        id: bundle
         if: steps.fin.outputs.status == 'ok'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -431,6 +432,21 @@ jobs:
           TAG="video-$(printf '%03d' $NNN)"
           if gh release view "$TAG" >/dev/null 2>&1; then gh release upload "$TAG" build/bundle/* --clobber; else gh release create "$TAG" build/bundle/* --title "$TAG" --notes "video $(printf '%03d' $NNN): ready"; fi
           gh issue create --title "video $(printf '%03d' $NNN): ready" --body "status: ok" || true
+      - name: YouTube private upload (skipped without secrets, never fails the video)
+        if: steps.fin.outputs.status == 'ok'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+        run: |
+          NNN=$(python -c "import json;print(json.load(open('build/assembled/plan.json'))['nnn'])")
+          gh release download ledger -p youtube-ledger.json -D build --clobber 2>/dev/null || echo '{}' > build/youtube-ledger.json
+          python -m factory.publish --nnn "$NNN" --base "${{ steps.bundle.outputs.base_name }}" --video build/final/final.mp4 --thumb build/thumbs/thumb1.jpg --srt build/assembled/captions.srt --info build/final/info.txt --ledger build/youtube-ledger.json || true
+          if [ -n "$YT_REFRESH_TOKEN" ]; then
+            gh release view ledger >/dev/null 2>&1 || gh release create ledger --title ledger --notes "upload ledger (video numbers and ids only)"
+            gh release upload ledger build/youtube-ledger.json --clobber || true
+          fi
       - name: Report held video
         if: steps.fin.outputs.status != 'ok'
         env:
