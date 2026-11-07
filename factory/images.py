@@ -31,7 +31,11 @@ def encode_prompts(prompts: dict):
     import torch
     from diffusers import StableDiffusionXLPipeline
 
-    pipe = StableDiffusionXLPipeline.from_pretrained(BASE, unet=None, torch_dtype=torch.float32, variant="fp16", use_safetensors=True)
+    from diffusers import UNet2DConditionModel
+
+    with torch.device("meta"):  # config-only UNet stub: the pipeline needs unet.config, not its weights
+        stub = UNet2DConditionModel.from_config(BASE, subfolder="unet")
+    pipe = StableDiffusionXLPipeline.from_pretrained(BASE, unet=stub, torch_dtype=torch.float32, variant="fp16", use_safetensors=True)
     out = {}
     with torch.no_grad():
         for k, p in prompts.items():
