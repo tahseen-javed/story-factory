@@ -131,19 +131,13 @@ def emit_outputs(plan: dict) -> None:
     img_hash = sha(*[g["base"]["hash"] for g in plan["image_groups"]], *[v["hash"] for g in plan["image_groups"] for v in g["variants"]])
     n_tts = min(plan["tts_shards"], max(1, len(plan["sentences"])))
     n_img = min(plan["image_shards"], max(1, len(plan["image_groups"])))
+    lines = [
+        f"slug={plan['slug']}", f"mode={plan['mode']}", f"tts_hash={tts_hash}", f"img_hash={img_hash}",
+        "tts_shards=" + json.dumps(list(range(n_tts))), "img_shards=" + json.dumps(list(range(n_img))),
+        f"n_tts={n_tts}", f"n_img={n_img}",
+    ]
     with open(path, "a", encoding="utf-8") as fh:
-        fh.write(f"slug={plan['slug']}
-mode={plan['mode']}
-tts_hash={tts_hash}
-img_hash={img_hash}
-")
-        fh.write("tts_shards=" + json.dumps(list(range(n_tts))) + "
-")
-        fh.write("img_shards=" + json.dumps(list(range(n_img))) + "
-")
-        fh.write(f"n_tts={n_tts}
-n_img={n_img}
-")
+        fh.write(chr(10).join(lines) + chr(10))
 
 
 def main(argv=None):

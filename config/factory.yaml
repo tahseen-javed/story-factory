@@ -1,6 +1,7 @@
 # story-factory: every knob lives here. Quality knobs are floors, never lowered for speed.
 version: 1
 style_version: 1
+end_screen_s: 20
 
 output:
   width: 1920
@@ -74,6 +75,7 @@ tts:
   max_regen: 3
   matrix: 4                # shards (benchmark.yml retunes)
   seed: 1234
+  speed: 1.0
 
 images:
   engine_order: [sdxl_lightning, procedural]
