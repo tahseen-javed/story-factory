@@ -66,7 +66,9 @@ foreach ($rel in $todo) {
     & $age -d -i $key -o $tar $enc
     if ($LASTEXITCODE -ne 0) { throw "age decrypt failed (wrong backup.key?)" }
     $before = @(Get-ChildItem $dest -File | Select-Object -ExpandProperty Name)
-    & tar.exe -xf $tar -C $dest
+    $tarExe = Join-Path $env:SystemRoot "System32\tar.exe"   # Windows bsdtar (GNU tar from Git treats "C:" as a remote host)
+    if (-not (Test-Path $tarExe)) { $tarExe = "tar.exe" }
+    & $tarExe -xf $tar -C $dest
     if ($LASTEXITCODE -ne 0) { throw "tar extract failed" }
     $new = @(Get-ChildItem $dest -File | Where-Object { $before -notcontains $_.Name } | Select-Object -ExpandProperty Name)
     $mp4 = $new | Where-Object { $_ -like "*.mp4" } | Select-Object -First 1

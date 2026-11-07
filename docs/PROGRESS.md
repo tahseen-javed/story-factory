@@ -26,4 +26,10 @@ Last updated: 2026-11-08 (UTC 20:15). Repo: https://github.com/tahseen-javed/sto
 - Chatterbox (CPU, 4 vCPU): ~8-13x real time per sentence, 6.9 GB RSS, model load 36 s. Moonshine ASR 0.25 s per sentence. TTS WER in pilot: 0.0 on all checked sentences.
 - SDXL-Lightning fp32 CPU: 267-297 s per 1344x768 image, 14.4 GB peak RSS on 16 GB runner; bf16 is slower on EPYC 7763 (rejected). Text encoders are freed before the UNet loads.
 
-## Phase 3-6: in progress (pilot run is the end-to-end proof)
+## Phase 3 (end-to-end pilot): DONE 2026-11-08
+- Pilot "001 Solar Storm Blackout 04min" (4:25, 1920x1080 30 fps H.264 8 Mbps, AAC 192k) built fully on GitHub (run 42416889542), delivered with tools/fetch_videos.ps1 into Documents\Animated Long Video 1st Channel (5 files, exact names).
+- QA pass (all categories): -14.3 LUFS, TP -1.8 dBTP, LRA 1.3, motion share 0.99, flash 0.5/s, A/V sync 0 frames, TTS mean WER 0.017, thumbnails 0.96 / 0.88, scorecard ok (reference numbers provisional).
+- Remaining risk: placeholders (voice, music) and public pilot script; TTS has a few ASR-flagged sentences (truncated word endings) accepted under the 5% rule; per-sentence repair loop is the next improvement.
+
+## Phase 4 (fault injection): DONE (tests/test_faults.py: black, freeze, static motion, flash, resolution, quiet and clipped audio + loudnorm re-master fixer; CI green).
+## Phase 0a / 5 / 6: waiting for owner secrets (docs/USER_CHECKLIST.md); then analyze_reference.yml, first encrypted jobs/ video, /batch of 5.
