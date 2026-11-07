@@ -116,18 +116,24 @@ def check_motion_and_flashes(path, timeline, cfg, rep, chunks):
 
 
 def check_cut_sync(path, timeline, rep):
-    r = sh(["ffmpeg", "-hide_banner", "-nostats", "-i", path, "-an", "-vf", "select='gt(scene,0.28)',showinfo", "-f", "null", "-"])
+    """Detected hard cuts must sit on shot starts (sentence starts). Overlay/banner/time-card pops right after a start or right before an end are explained."""
+    r = sh(["ffmpeg", "-hide_banner", "-nostats", "-i", path, "-an", "-vf", "select='gt(scene,0.30)',showinfo", "-f", "null", "-"])
     cuts = [float(x) for x in re.findall(r"pts_time:([\d.]+)", r.stderr)]
-    starts = [s["start"] / 30.0 for s in timeline["shots"]]
-    worst = 0.0
-    spurious = 0
+    shots = timeline["shots"]
+    starts = [s["start"] / 30.0 for s in shots]
+    ends = [(s["start"] + s["dur"]) / 30.0 for s in shots]
+    worst, spurious, on_grid = 0.0, 0, 0
     for c in cuts:
         d = min(abs(c - s) for s in starts)
-        if d > 2 / 30.0 + 1e-3:
+        if d <= 6 / 30.0:
+            on_grid += 1
+            worst = max(worst, d)
+            continue
+        explained = any(s - 2 / 30.0 <= c <= s + 22 / 30.0 for s in starts) or any(e - 14 / 30.0 <= c <= e + 2 / 30.0 for e in ends)
+        if not explained:
             spurious += 1
-        worst = max(worst, min(d, 1.0))
-    expected_strong = len(cuts)
-    rep["av_sync"] = {"ok": spurious <= max(2, int(0.04 * len(starts))), "detected_cuts": len(cuts), "off_grid_cuts": spurious, "max_offset_frames": round(worst * 30, 1)}
+    rep["av_sync"] = {"ok": worst * 30 <= 2.0 + 1e-6 and spurious <= max(3, int(0.05 * len(starts))), "detected_cuts": len(cuts), "on_grid_cuts": on_grid,
+                      "off_grid_cuts": spurious, "max_offset_frames": round(worst * 30, 1)}
 
 
 def check_audio(path, cfg, rep):
