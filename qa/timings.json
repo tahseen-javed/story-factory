@@ -1,31 +1,31 @@
 {
  "prepare": {
   "parallel_jobs": 1,
-  "slowest_s": 7
+  "slowest_s": 9
+ },
+ "music": {
+  "parallel_jobs": 6,
+  "slowest_s": 38
  },
  "images": {
   "parallel_jobs": 7,
-  "slowest_s": 15
+  "slowest_s": 1335
  },
  "tts": {
   "parallel_jobs": 8,
-  "slowest_s": 12
- },
- "assemble": {
-  "parallel_jobs": 1,
-  "slowest_s": 60
+  "slowest_s": 955
  },
  "thumbs": {
   "parallel_jobs": 1,
-  "slowest_s": 85
+  "slowest_s": 113
+ },
+ "assemble": {
+  "parallel_jobs": 1,
+  "slowest_s": 80
  },
  "render": {
-  "parallel_jobs": 8,
-  "slowest_s": 863
+  "parallel_jobs": 6,
+  "slowest_s": 448
  },
- "finalize": {
-  "parallel_jobs": 1,
-  "slowest_s": 575
- },
- "note": "run 42464375998 (v2, TTS+images cached). Wall-clock of the run was ~25 min; render and finalize dominate."
+ "note": "v2.1 run 42469391675 (restyle + TTS repair + music library). Total wall clock ~70 min vs 48 estimated: images (street group, 3 serial SDXL images) ~26 min."
 }
