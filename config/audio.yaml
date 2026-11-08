@@ -4,7 +4,7 @@ duck_db: 12
 lra_min: 4.0
 lra_target: 5.0
 silence_beat_s: 0.9
-silence_beats_min: 3
+silence_beats_min: 1
 silence_floor_db: -50
 sfx_gap_max_s: 3.8
 music_bed_db: -26
