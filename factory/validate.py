@@ -27,7 +27,17 @@ class Issue:
 
 
 def load_cfg():
-    return miniyaml.load_file(os.path.join(ROOT, "config", "factory.yaml"))
+    """factory.yaml plus the v2 data files (style.yaml, pacing.yaml, audio.yaml); audio.yaml overrides cfg["audio"] keys."""
+    cfg = miniyaml.load_file(os.path.join(ROOT, "config", "factory.yaml"))
+    for name in ("style", "pacing", "audio"):
+        p = os.path.join(ROOT, "config", f"{name}.yaml")
+        if os.path.exists(p):
+            data = miniyaml.load_file(p) or {}
+            if name == "audio":
+                cfg["audio"] = {**cfg.get("audio", {}), **data}
+            else:
+                cfg[name] = data
+    return cfg
 
 
 def load_prefs():
@@ -201,6 +211,11 @@ def validate_script(sc, raw: str, cfg: dict, prefs: dict, mode: str = "job") -> 
             _err(I, "hook", "minute 1 needs at least 3 concrete numbers")
         if "?" not in minute1:
             _err(I, "hook", "minute 1 needs one big open question (a '?')")
+        # v2 hook: the first 2 sentences need a concrete number or a stakes word
+        h2 = " ".join(split_sentences(words_seq)[:2]).lower()
+        stakes = ("die", "dead", "lose", "lost", "last", "only", "alive", "trapped", "minutes", "seconds", "left", "dark", "never", "swore")
+        if count_numbers(h2) < 1 and not any(re.search(r"\b" + w + r"\b", h2) for w in stakes):
+            _err(I, "hook", "first 2 sentences need a concrete number or a consequence/stakes word")
     lo_w, hi_w = int(wpm / 60 * 18), int(wpm / 60 * 42)
     if not banner_words:
         _err(I, "hook", "flash-forward banner missing (banner:\"N DAYS FROM NOW\" at 20-40 s)")
@@ -214,8 +229,8 @@ def validate_script(sc, raw: str, cfg: dict, prefs: dict, mode: str = "job") -> 
         frac = cta_shots[0][1] / max(1, total_words)
         if not (sconf["cta_min"] <= frac <= sconf["cta_max"]):
             _err(I, "cta", f"cta at {frac*100:.0f}% of runtime; need {int(sconf['cta_min']*100)}-{int(sconf['cta_max']*100)}%", cta_shots[0][0].line)
-    if end_screens != 1 or not any(o.name == "end_screen" for o in (sc.shots[-1].overlays if sc.shots else [])):
-        _err(I, "end-screen", "last shot must carry exactly one ov:end_screen(\"teaser line\")")
+    if end_screens:
+        _err(I, "end-screen", "frozen end card removed in v2 (P-002): no ov:end_screen; the last scene keeps animating")
 
     # ---------- chapters ----------
     cmin = sconf["chapter_min_s"] if mode == "job" else 55
@@ -244,6 +259,16 @@ def validate_script(sc, raw: str, cfg: dict, prefs: dict, mode: str = "job") -> 
     if grade > 9.5:
         _warn(I, "reading", f"Flesch-Kincaid grade {grade:.1f} (aim for <= 9)")
     sents = [x.lower() for x in split_sentences(full)]
+    for x in sents:
+        if re.match(r"(so|well|basically|okay|anyway)\b", x):
+            _err(I, "filler", f"filler opener: '{x[:30]}'")
+    starts = [x.split()[0] for x in sents if x.split()]
+    for k in range(len(starts) - 2):
+        if starts[k] == starts[k + 1] == starts[k + 2]:
+            _err(I, "repeat-start", f"3 sentences in a row start with '{starts[k]}'")
+    wl = [count_words(x) for x in sents]
+    if wl and not (min(wl) <= 4 and max(wl) >= 14):
+        _warn(I, "variety", "mix short (<=4 words) and long (>=14 words) sentences")
     dups = {x for x in sents if sents.count(x) > 1 and count_words(x) > 3}
     for d in sorted(dups):
         _err(I, "repeat", f"repeated sentence: '{d[:60]}'")
@@ -258,10 +283,23 @@ def _markers(raw: str, sc, mode: str) -> list:
     loops_open, loops_close, plants, payoffs, cliffs = set(), set(), set(), set(), set()
     ritual_chapters, beats, twist = set(), 0, 0
     ch = 0
+    total = max(1, sc.words)
+    cum, acts, interrupts, silences = 0, {}, [], 0
     for ln in raw.split("\n"):
         m = re.match(r"^## CH(\d+)", ln)
         if m:
             ch = int(m.group(1))
+            continue
+        if ch and ln.strip() and not ln.strip().startswith(("//", "@")):
+            cum += len(re.findall(r"[A-Za-z0-9'’\-]+", ln))
+        ma = re.match(r"^//\s*(ACT|INTERRUPT|SILENCE)\b\s*(\w*)", ln.strip())
+        if ma:
+            if ma.group(1) == "ACT":
+                acts[ma.group(2)] = cum / total
+            elif ma.group(1) == "INTERRUPT":
+                interrupts.append(cum)
+            else:
+                silences += 1
             continue
         m = re.match(r"^//\s*([A-Z]+)\b\s*(.*)$", ln.strip())
         if not m:
@@ -295,6 +333,24 @@ def _markers(raw: str, sc, mode: str) -> list:
             I.append(Issue("error", "ritual", f"CH{c.n}: missing '// RITUAL' marker (recurring opener)", c.line))
         if c.n != sc.chapters[-1].n and c.n not in cliffs:
             I.append(Issue("error", "cliffhanger", f"CH{c.n}: missing '// CLIFF' marker (chapter must end on a cliffhanger)", c.line))
+    # v2 story engine: acts present, in order, at the right place; pattern interrupts; silence beats
+    want = {"hook": (0, 0.01), "act1": (0.02, 0.16), "act2a": (0.14, 0.28), "midpoint": (0.40, 0.58), "act2b": (0.48, 0.68),
+            "sacrifice": (0.55, 0.84), "climax": (0.74, 0.92), "resolution": (0.88, 0.99)}
+    for a, (lo, hi) in want.items():
+        if a not in acts:
+            I.append(Issue("error", "act", f"missing '// ACT {a}' marker"))
+        elif not (lo <= acts[a] <= hi):
+            I.append(Issue("error", "act", f"ACT {a} at {acts[a]*100:.0f}% of the story; expected {int(lo*100)}-{int(hi*100)}%"))
+    order = [acts[a] for a in want if a in acts]
+    if order != sorted(order):
+        I.append(Issue("error", "act", "ACT markers are out of order"))
+    secs = total / 2.83
+    need_int = max(1, int(secs / 40))
+    gaps = [b - a for a, b in zip([0] + interrupts, interrupts + [total])]
+    if len(interrupts) < need_int or (gaps and max(gaps) / 2.83 > 75):
+        I.append(Issue("error", "interrupt", f"need a '// INTERRUPT <kind>' pattern interrupt about every 35 s (found {len(interrupts)}, need >= {need_int}, longest gap {max(gaps)/2.83:.0f}s)"))
+    if silences < 3:
+        I.append(Issue("error", "silence", f"need >= 3 '// SILENCE' beats before reveals, found {silences}"))
     if beats < 1:
         I.append(Issue("error", "beat", "need an emotional beat before the climax (// BEAT emotional: ...)"))
     if twist < 1:

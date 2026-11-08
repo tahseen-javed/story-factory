@@ -59,7 +59,7 @@ def check_spec(info, cfg, rep):
 
 
 def check_black_freeze(path, total_s, end_s, rep, chunks):
-    r = sh(["ffmpeg", "-hide_banner", "-nostats", "-i", path, "-an", "-vf", "blackdetect=d=0.4:pix_th=0.08,freezedetect=n=-55dB:d=2.5", "-f", "null", "-"])
+    r = sh(["ffmpeg", "-hide_banner", "-nostats", "-i", path, "-an", "-vf", "blackdetect=d=0.4:pix_th=0.08,freezedetect=n=-55dB:d=2.0", "-f", "null", "-"])
     blacks = [(float(a), float(b)) for a, b in re.findall(r"black_start:([\d.]+) black_end:([\d.]+)", r.stderr)]
     freezes = []
     for m in re.finditer(r"freeze_start: ([\d.]+)", r.stderr):
@@ -68,7 +68,7 @@ def check_black_freeze(path, total_s, end_s, rep, chunks):
     fr = []
     for i, s in enumerate(freezes):
         e = ends[i] if i < len(ends) else total_s
-        if s < total_s - end_s - 0.5:  # a frozen picture is allowed on the end screen only
+        if s < total_s - 1.2:  # v2: no frozen video anywhere (the last second is the fade-out)
             fr.append((s, e))
     blacks = [b for b in blacks if b[0] > 0.2 and b[1] < total_s - 0.2]
     bad = sorted({chunk_of(int(t * 30), chunks) for b in blacks for t in b} | {chunk_of(int(t * 30), chunks) for f in fr for t in f})
@@ -163,10 +163,59 @@ def check_captions(srt_path, total_s, rep):
     rep["captions"] = {"ok": ok and len(times) > 0, "cues": len(times)}
 
 
+def check_v2(path, timeline, audio_plan, srt, cfg, rep):
+    """QA 2.0: pacing, dead windows, ending, audio dynamics, text safety + a 0-10 rating."""
+    pc, ac = cfg["pacing"], cfg["audio"]
+    shots = timeline["shots"]
+    durs = [s["dur"] / 30.0 for s in shots]
+    avg = sum(durs) / max(1, len(durs))
+    pacing_ok = max(durs) <= pc["beat"]["hard_max_s"] + 0.04 and pc["beat"]["avg_min_s"] <= avg <= pc["beat"]["avg_max_s"] + 0.2
+    g = decode_gray(path, 10, 160, 90).astype("float32")
+    d = np.abs(np.diff(g, axis=0)).mean(axis=(1, 2)) if len(g) > 1 else np.zeros(1)
+    win, dead = int(pc["dead_window_s"] * 10), []
+    for i in range(0, max(1, len(d) - win - 10), 5):
+        if d[i:i + win].mean() < pc["dead_window_diff"]:
+            dead.append(round(i / 10.0, 1))
+    holds = 0
+    last = None
+    for t in dead:
+        if last is None or t - last > 4.0:
+            holds += 1
+        last = t
+    dead_ok = holds <= pc["holds_max"]
+    tail = d[max(0, len(d) - 60):max(1, len(d) - 10)]
+    ending_ok = bool(len(tail) and tail.mean() > 0.2) and rep["freeze"]["ok"]
+    # audio dynamics
+    a = rep["audio"]
+    r = sh(["ffmpeg", "-hide_banner", "-nostats", "-i", path, "-vn", "-af", "silencedetect=n=-40dB:d=0.35", "-f", "null", "-"])
+    sil = [float(x) for x in re.findall(r"silence_duration: ([\d.]+)", r.stderr)]
+    sil_beats = len([x for x in sil if 0.35 <= x <= 1.6])
+    sil_win = audio_plan.get("silence", [])
+    ev = sorted(e["t"] for e in audio_plan.get("sfx", []) if not any(a0 <= e["t"] <= b0 for a0, b0 in sil_win))
+    marks = [audio_plan.get("lead_in_s", 0.6)] + ev + [audio_plan.get("audio_end_s", 0)]
+    gap = max((b - a0 for a0, b in zip(marks, marks[1:])), default=0)
+    dyn_ok = a["lra"] >= ac["lra_min"] and sil_beats >= ac["silence_beats_min"] and gap <= ac["sfx_gap_max_s"] + 0.5 and 10 <= ac["duck_db"] <= 14
+    caps = timeline.get("captions", [])
+    text_ok = all(len(l) <= 2 and all(len(" ".join(w[0] for w in ln)) <= 38 for ln in l) for l in (c["lines"] for c in caps)) and bool(caps)
+    chars = [c for s in shots for c in s["chars"]]
+    mouth_ok = bool(timeline.get("voiceEnv")) and max(timeline["voiceEnv"] or [0]) > 0.3
+    variety = {"framings": len({s.get("framing") for s in shots}), "expressions": len({c["expr"] for c in chars}), "poses": len({c["pose"] for c in chars})}
+    anim_ok = mouth_ok and variety["framings"] >= 6 and variety["expressions"] >= 5
+    dims = {"pacing": pacing_ok, "dead_windows": dead_ok, "ending": ending_ok, "audio_dynamics": dyn_ok, "text_safety": text_ok, "character_animation": anim_ok,
+            "motion": rep["motion"]["ok"], "visual": rep["black"]["ok"] and rep["freeze"]["ok"] and rep["flash"]["ok"], "loudness": a["ok"], "subtitle_sync": rep["captions"]["ok"]}
+    rating = round(10.0 * sum(dims.values()) / len(dims), 1)
+    rep["v2"] = {"ok": all(dims.values()), "rating": rating, "dims": dims, "shots": len(shots), "avg_shot_s": round(avg, 2), "max_shot_s": round(max(durs), 2),
+                 "shots_per_min": round(len(shots) / (timeline["durationInFrames"] / 1800.0), 1), "dead_windows": dead[:8], "holds": holds,
+                 "lra": a["lra"], "silence_beats": sil_beats, "max_sfx_gap_s": round(gap, 2), "variety": variety}
+
+
 def categories(rep, assemble_rep=None, tts_meta=None, thumbs=None, cfg=None):
     cat = {}
     cat["visual"] = rep["spec"]["ok"] and rep["black"]["ok"] and rep["freeze"]["ok"] and rep["flash"]["ok"]
     cat["motion"] = rep["motion"]["ok"]
+    cat["pacing"] = bool(rep.get("v2", {}).get("dims", {}).get("pacing", True) and rep.get("v2", {}).get("dims", {}).get("dead_windows", True))
+    cat["ending"] = bool(rep.get("v2", {}).get("dims", {}).get("ending", True))
+    cat["dynamics"] = bool(rep.get("v2", {}).get("dims", {}).get("audio_dynamics", True) and rep.get("v2", {}).get("dims", {}).get("text_safety", True))
     cat["audio"] = rep["audio"]["ok"] and rep["av_sync"]["ok"]
     cat["script"] = True   # validator gate ran in prepare (hard fail there)
     cat["thumbnail"] = bool(thumbs and thumbs.get("ok"))
@@ -191,6 +240,8 @@ def run(video, props, chunks_path, srt, out_json, assemble_report=None, thumbs_r
     check_cut_sync(video, timeline, rep)
     check_audio(video, cfg, rep)
     check_captions(srt, total_s, rep)
+    ap_path = os.path.join(os.path.dirname(chunks_path), "audio_plan.json")
+    check_v2(video, timeline, json.load(open(ap_path)) if os.path.exists(ap_path) else {}, srt, cfg, rep)
     ar = json.load(open(assemble_report)) if assemble_report and os.path.exists(assemble_report) else {}
     th = json.load(open(thumbs_report)) if thumbs_report and os.path.exists(thumbs_report) else None
     rep["categories"] = categories(rep, ar, None, th, cfg)

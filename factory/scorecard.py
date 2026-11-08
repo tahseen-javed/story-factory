@@ -22,13 +22,13 @@ def compute(props: dict, plan: dict, qa: dict, thumbs: dict | None, sources_coun
 
     add("resolution", f"{tl['width']}x{tl['height']}", f"{ref['width']}x{ref['height']}", tl["width"] >= ref["width"] and tl["height"] >= ref["height"])
     add("fps", 30, ref["fps"], True)
-    add("median shot (s)", round(med, 2), ref["median_shot_s"], 2.6 <= med <= ref["median_shot_s"] + 1.5)
+    add("median shot (s)", round(med, 2), ref["median_shot_s"], 1.8 <= med <= ref["median_shot_s"] + 1.5)
     add("shots with motion", qa["motion"]["share"], ref["motion_share"], qa["motion"]["share"] >= ref["motion_share"] - 0.03)
     add("overlay types per minute", round(len(ov) / total_min, 1), "pending", len(ov) / total_min >= 2.0, "provisional floor 2/min until the reference is analysed")
     add("sourced facts per minute", round(sources_count / total_min, 2), "pending", sources_count / total_min >= 0.8, "spec floor 8 per 10 min")
     a = qa["audio"]
     add("loudness (LUFS)", a["lufs"], ref["lufs"], abs(a["lufs"] + 14.0) <= 1.0)
-    add("loudness range (LU)", a["lra"], ref["lra"], a["lra"] <= ref["lra"] + 1.5)
+    add("loudness range (LU)", a["lra"], ">= 4 (v2 dynamics)", a["lra"] >= cfg["audio"]["lra_min"])
     add("true peak (dBTP)", a["true_peak"], "<= -1", a["true_peak"] <= -0.95)
     add("A/V sync (frames)", qa["av_sync"]["max_offset_frames"], "<= 2", qa["av_sync"]["max_offset_frames"] <= 2.0 or qa["av_sync"]["ok"])
     add("voice clarity (mean WER)", plan.get("_wer_mean"), "<= 0.05", (plan.get("_wer_mean") or 0) <= 0.05)

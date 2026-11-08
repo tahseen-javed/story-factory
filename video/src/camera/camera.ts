@@ -34,6 +34,9 @@ export function cameraAt(cam: CamSpec, frame: number, dur: number): CamState {
     case "pan_r":
       base.tx = px - 2 * px * e;
       break;
+    case "dutch":
+      base.rot = (cam.fx > 0.5 ? -1 : 1) * 2.8 * e;
+      break;
     case "tilt_up":
       base.ty = py - 2 * py * e;
       break;

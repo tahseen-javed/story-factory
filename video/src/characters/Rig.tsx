@@ -151,9 +151,11 @@ export type RigProps = {
   facing?: 1 | -1;
   progress?: number; // 0..1 across the shot (for travel)
   prop?: string | null;
+  mouth?: number; // 0..1 lip-sync opening from the voice (undefined = expression mouth)
+  view?: string; // front | three_quarter | back
 };
 
-export const Rig: React.FC<RigProps> = ({ params = {}, pose, expr, frame, fps = 30, seed = 1, x, y, scale = 1, facing = 1, progress = 0, prop = null }) => {
+export const Rig: React.FC<RigProps> = ({ params = {}, pose, expr, frame, fps = 30, seed = 1, x, y, scale = 1, facing = 1, progress = 0, prop = null, mouth, view = "front" }) => {
   const P: PoseDef = POSES[pose] || POSES.stand;
   const E: ExprDef = EXPRS[expr] || EXPRS.neutral;
   const t = frame / fps;
@@ -183,10 +185,15 @@ export const Rig: React.FC<RigProps> = ({ params = {}, pose, expr, frame, fps = 
     bob = -Math.abs(c) * P.cycle.bob;
     dx = (progress - 0.5) * (P.travel || 0);
   }
+  const talking = mouth !== undefined && mouth > 0.06;
+  if (talking && !P.cycle) { armF = [armF[0] + mouth! * 9, armF[1] + mouth! * 6]; head += mouth! * 2.2 * Math.sin(t * 7); }
+  const gaze = 3 + 2.5 * Math.sin(t * 0.8 + seed);
+  const faceX = view === "three_quarter" ? 21 : 5;
+  const faceS = view === "three_quarter" ? 0.86 : 1;
   const breathe = 1 + 0.012 * Math.sin(t * Math.PI * 2 / 3.2 + seed);
   const sway = 0.9 * Math.sin(t * Math.PI * 2 / 5.5 + seed * 2);
   head += 1.2 * Math.sin(t * Math.PI * 2 / 4.1 + seed);
-  const blinkPeriod = 3.4 + rand(seed * 3.3) * 1.6; // 3.4-5.0 s
+  const blinkPeriod = 2.4 + rand(seed * 3.3) * 2.4; // 2.4-4.8 s
   const blink = (t + rand(seed) * blinkPeriod) % blinkPeriod < 0.13;
 
   // ---- geometry ----
@@ -221,7 +228,6 @@ export const Rig: React.FC<RigProps> = ({ params = {}, pose, expr, frame, fps = 
   // torso / clothing
   const torsoPath = `M-52,${SH_Y} Q0,${SH_Y - 18} 52,${SH_Y} L60,${HIP_Y + 8} Q0,${HIP_Y + 24} -60,${HIP_Y + 8} Z`;
 
-  const faceDx = 5; // face looks slightly toward facing direction
   const eyeY = -78;
   const browBase = eyeY - 30 + E.browY;
 
@@ -279,14 +285,20 @@ export const Rig: React.FC<RigProps> = ({ params = {}, pose, expr, frame, fps = 
                   <rect x={-66} y={-30} width={132} height={22} rx={8} fill={shade(outfit, 0.8)} stroke={INK} strokeWidth={SW} />
                 </g>
               ) : null}
-              {/* face */}
-              <g transform={`translate(${faceDx} 0)`}>
+              {/* face (hidden from behind) */}
+              {view === "back" ? (
+                <g>
+                  <path d="M-62,-6 Q-62,-70 0,-70 Q62,-70 62,-6 Q62,52 0,56 Q-62,52 -62,-6 Z" fill={hat !== "none" ? shade(outfit, 0.9) : hairCol} stroke={INK} strokeWidth={SW} strokeLinejoin="round" />
+                  <path d="M-30,30 Q0,48 30,30" fill="none" stroke={INK} strokeWidth={4} opacity={0.5} />
+                </g>
+              ) : null}
+              <g transform={`translate(${faceX} 0) scale(${faceS} 1)`} opacity={view === "back" ? 0 : 1}>
                 {old ? <path d="M-46,4 q8,6 16,0 M30,4 q8,6 16,0" stroke={INK} strokeWidth={2.5} fill="none" opacity={0.45} /> : null}
-                <Eye cx={-27} cy={eyeY + 70} e={E} blink={blink} look={3} />
-                <Eye cx={27} cy={eyeY + 70} e={E} blink={blink} look={3} />
+                <Eye cx={-27} cy={eyeY + 70} e={E} blink={blink} look={gaze} />
+                <Eye cx={27} cy={eyeY + 70} e={E} blink={blink} look={gaze} />
                 <path d={`M-48,${browBase + 66 + 0} L-14,${browBase + 66 - E.browInner}`} stroke={hairName === "bun" || old ? shade(hairCol, 0.8) : INK} strokeWidth={7} strokeLinecap="round" />
                 <path d={`M14,${browBase + 66 - E.browInner + (E.browR || 0)} L48,${browBase + 66 + (E.browR ? E.browR * 0.4 : 0)}`} stroke={hairName === "bun" || old ? shade(hairCol, 0.8) : INK} strokeWidth={7} strokeLinecap="round" />
-                <g transform="translate(0 30)"><Mouth kind={E.mouth} /></g>
+                <g transform="translate(0 30)">{talking ? <ellipse cx={0} cy={5} rx={9 + 9 * mouth!} ry={3 + 17 * mouth!} fill="#5a1f24" stroke={INK} strokeWidth={5} /> : <Mouth kind={E.mouth} />}</g>
                 <ellipse cx={-42} cy={16} rx={9} ry={5} fill="#e87a6e" opacity={0.28} />
                 <ellipse cx={42} cy={16} rx={9} ry={5} fill="#e87a6e" opacity={0.28} />
               </g>

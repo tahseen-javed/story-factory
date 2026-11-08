@@ -9,4 +9,5 @@
 - During an outage the refrigerator keeps food cold for about 4 hours and a full freezer for about 48 hours; keep both closed | https://www.ready.gov/power-outages
 ~ A basic kit includes a battery-powered or hand-crank radio and a NOAA Weather Radio with tone alert, plus cash or traveler's checks | https://www.ready.gov/kit
 ~ Use a generator only outdoors and away from windows; never heat a home with a gas stove or oven | https://www.ready.gov/power-outages
+~ Keep at least a half tank of gas in your vehicle because pumps may not work in an outage | https://www.ready.gov/car
 note: all story characters, places and events are fictional; the alert text is generic and does not imitate any agency.

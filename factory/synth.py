@@ -359,6 +359,23 @@ def sfx(name: str, seed: int = 0) -> np.ndarray:
         t = np.arange(n) / SR
         x = bp(r.normal(0, 1, n), 200, 1100) * (0.55 + 0.45 * np.sin(2 * np.pi * 0.37 * t + 1))
         return norm(x, 0.3) * adsr(n, 0.8, 0.2, 0.9, 1.0)
+    if name == "riser":
+        T = 1.4
+        t = t_axis(T)
+        f = 200 + 1600 * (t / T) ** 2
+        x = 0.4 * np.sin(2 * np.pi * np.cumsum(f) / SR) + 0.6 * hp(_noise(T, seed + 5), 1500) * (t / T) ** 2
+        return x * (t / T) ** 1.5 * np.minimum(1, (T - t) / 0.015) * 0.8
+    if name == "impact":
+        t = t_axis(1.6)
+        x = np.sin(2 * np.pi * 55 * t) * np.exp(-t * 3.5) + 0.5 * lp(_noise(1.6, seed + 6), 900) * np.exp(-t * 9)
+        return reverb(x, 0.9, 0.2) * 0.9
+    if name == "glitch":
+        n = int(0.35 * SR)
+        gate = np.repeat((r.random(max(1, n // int(0.03 * SR) + 1)) > 0.4).astype(float), int(0.03 * SR))[:n]
+        return bp(_noise(0.35, seed + 7), 1500, 6000) * gate[: n] * 0.6
+    if name == "text_pop":
+        t = t_axis(0.12)
+        return np.sin(2 * np.pi * 900 * t) * np.exp(-t * 40) * 0.7
     # unknown name: tiny click so the mix never fails
     return sfx("click", seed)
 
@@ -367,4 +384,20 @@ def sfx(name: str, seed: int = 0) -> np.ndarray:
 SFX_GAIN = {"alert_siren": -9, "phone_buzz": -8, "door_knock": -6, "door_creak": -10, "footsteps": -9, "whoosh": -8, "paper_slide": -10,
             "stinger_chapter": -5, "heartbeat": -7, "power_down": -5, "radio_static": -12, "glass_crack": -8, "water_pour": -13,
             "car_engine": -15, "crowd_murmur": -17, "thunder": -9, "click": -12, "beep": -13, "typing": -15, "rustle": -17,
-            "ticking_clock": -15, "spark": -11, "wind": -19}
+            "ticking_clock": -15, "spark": -11, "wind": -19, "riser": -9, "impact": -6, "glitch": -12, "text_pop": -13}
+
+
+def ambience(kind: str, sec: float, seed: int = 0) -> np.ndarray:
+    """Mono ambience bed, rms-normalised to ~0.1 (the mixer scales it). kinds: room, city, wind, hum_dark."""
+    n = int(sec * SR)
+    t = np.arange(n) / SR
+    nz = _noise(sec, seed + 11)
+    if kind == "wind":
+        x = bp(nz, 120, 700) * (0.6 + 0.4 * np.sin(2 * np.pi * 0.13 * t + seed))
+    elif kind == "city":
+        x = bp(nz, 100, 900) * (0.7 + 0.3 * np.sin(2 * np.pi * 0.07 * t)) + 0.15 * np.sin(2 * np.pi * 60 * t)
+    elif kind == "hum_dark":
+        x = 0.5 * np.sin(2 * np.pi * 60 * t) + 0.25 * np.sin(2 * np.pi * 120 * t) + 0.4 * lp(nz, 120)
+    else:
+        x = lp(nz, 220) + 0.2 * np.sin(2 * np.pi * 50 * t)
+    return (x / (np.sqrt(np.mean(x ** 2)) + 1e-9) * 0.1).astype("float32")

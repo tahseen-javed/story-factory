@@ -1,0 +1,15 @@
+# Cut rhythm v2: constant change, no shot over 5 s.
+version: 2
+beat:
+  target_s: 3.8
+  soft_max_s: 4.8      # a beat up to this long stays whole
+  hard_max_s: 5.0
+  min_s: 1.4
+  avg_min_s: 2.4
+  avg_max_s: 4.0
+change_every_s: 2.0    # a visible change (cut, camera move, action, text pop) at least this often
+dead_window_s: 3.0     # QA: no 3 s window with almost no pixel change ...
+dead_window_diff: 0.35 # ... mean absolute grey change per frame pair below this counts as dead
+holds_max: 2           # ... except deliberate dramatic holds (max 2 per video, max 4 s each)
+hold_max_s: 4.0
+framing_max_repeat: 1  # never the same framing twice in a row

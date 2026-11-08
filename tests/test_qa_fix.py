@@ -48,7 +48,7 @@ class TestScorecard(unittest.TestCase):
         shots[0]["start"] = 20 * 30
         pr = props(shots)
         pr["timeline"]["durationInFrames"] = 60 * 120
-        qa = {"motion": {"share": 0.97}, "audio": {"lufs": -14.0, "lra": 3.8, "true_peak": -1.2}, "av_sync": {"max_offset_frames": 0.5, "ok": True}}
+        qa = {"motion": {"share": 0.97}, "audio": {"lufs": -14.0, "lra": 5.4, "true_peak": -1.2}, "av_sync": {"max_offset_frames": 0.5, "ok": True}}
         card = scorecard.compute(pr, {"_wer_mean": 0.0}, qa, {"ok": True, "chosen": {"A": {"score": 0.8}}}, 10, cfg)
         self.assertTrue(card["ok"], scorecard.table(card))
 
@@ -56,7 +56,7 @@ class TestScorecard(unittest.TestCase):
         cfg = load_cfg()
         pr = props([shot(i, i * 120, 120, "push", overlay={"name": "timer"}) for i in range(10)])
         pr["timeline"]["shots"][0]["start"] = 25 * 30
-        qa = {"motion": {"share": 0.5}, "audio": {"lufs": -14.0, "lra": 3.8, "true_peak": -1.2}, "av_sync": {"max_offset_frames": 0.5, "ok": True}}
+        qa = {"motion": {"share": 0.5}, "audio": {"lufs": -14.0, "lra": 5.4, "true_peak": -1.2}, "av_sync": {"max_offset_frames": 0.5, "ok": True}}
         card = scorecard.compute(pr, {"_wer_mean": 0.0}, qa, {"ok": True, "chosen": {"A": {"score": 0.8}}}, 10, cfg)
         self.assertFalse(card["ok"])
 

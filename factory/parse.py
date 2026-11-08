@@ -51,6 +51,8 @@ class Shot:
     text: str = ""
     line: int = 0
     raw_fields: list = field(default_factory=list)
+    act: str = ""
+    silence: bool = False
 
     @property
     def words(self) -> int:
@@ -242,6 +244,7 @@ def parse(text: str) -> Script:
     shot: Optional[Shot] = None
     gidx = 0
     buf: list = []
+    cur_act, pend_silence = "", False
 
     def flush():
         nonlocal buf, shot
@@ -268,10 +271,18 @@ def parse(text: str) -> Script:
             if ch is None:
                 raise ScriptError("shot before first chapter", lineno)
             shot = _parse_shot(s[1:], gidx, ch.n, lineno)
+            shot.act, shot.silence, pend_silence = cur_act, pend_silence, False
             gidx += 1
             ch.shots.append(shot)
             continue
-        if not s or s.startswith("//"):
+        if s.startswith("//"):
+            ma = re.match(r"^//\s*(ACT|SILENCE)\s*(\w*)", s)
+            if ma and ma.group(1) == "ACT":
+                cur_act = ma.group(2)
+            elif ma:
+                pend_silence = True
+            continue
+        if not s:
             continue
         if shot is None:
             raise ScriptError(f"narration without a shot line: '{s[:40]}'", lineno)

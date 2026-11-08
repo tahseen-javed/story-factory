@@ -6,6 +6,9 @@ export type CharSpec = {
   expr: string;
   x: number; // 0..1 of stage width (centre of feet)
   facing: 1 | -1;
+  view?: string; // front | three_quarter | back
+  silhouette?: boolean;
+  speaks?: boolean;
 };
 
 export type CamSpec = {
@@ -44,7 +47,14 @@ export type Shot = {
   track: Record<string, any>; // cumulative tracker state at this shot
   prevTrack: Record<string, any>;
   text: string;
+  framing?: string;
+  trans?: string;
+  grade?: string;
+  crowd?: boolean;
+  tension?: number;
 };
+
+export type Caption = { s: number; e: number; lines: Array<Array<[string, number, number]>> };
 
 export type Timeline = {
   fps: number;
@@ -54,4 +64,7 @@ export type Timeline = {
   style: { accent: string; lut: string; titlecard: string; transition: string };
   shots: Shot[];
   endScreenFrames: number;
+  captions?: Caption[];
+  voiceEnv?: number[];
+  fadeOut?: number;
 };

@@ -20,3 +20,6 @@ SDXL-Lightning renders 1344x768; backgrounds are upscaled 2.25x to 3024x1728 (La
 
 ## 2026-11-08 | Delivery space guard and bitrate
 min_free_gb lowered 30 -> 15: the laptop had 27 GB free, so the 30 GB guard would block every delivery; a video bundle is about 300 MB. Final video pass: H.264 High CRF 18 maxrate 9M (grain made raw chunks 16 Mbps = 515 MB for 4.4 min), preset medium (slow was too slow for a 30-minute video on 4 vCPU; no visible difference at this bitrate).
+
+## 2026-11-08 | Quality upgrade v2
+Pacing is solved in code, not by the script author: factory/beats.py splits every authored shot into beats (target 3.8 s, hard cap 5.0 s) at sentence/clause cuts and assigns framing, camera recipe, transition and acting per beat with a seeded RNG. Camera in the script is now optional. End card removed (validator forbids ov:end_screen); the last 8 s are a real scene with a 1 s fade. Look unity is a Remotion-side pass (shared posterise filter + story-arc colour grade from config/style.yaml) so cached SDXL backdrops are reused; a full restyle of the SDXL prompts and a palette-histogram QA are deferred. Delivery: exactly mp4 + 2 thumbnails in the channel folder (owner request).

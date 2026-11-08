@@ -76,6 +76,9 @@ def build_plan(job_dir: str, cfg=None) -> dict:
                     "pause_after_s": pause_after(t, audio_cfg, chapter_end=last_in_ch and ci < n_ch - 1),
                     "chapter_end": bool(last_in_ch and ci < n_ch - 1), "emotional": bool(emo),
                 })
+                if s.silence and k == 0 and sentences[:-1]:
+                    sentences[-1]["silence_before"] = True
+                    sentences[-2]["pause_after_s"] = max(sentences[-2]["pause_after_s"], float(audio_cfg.get("silence_beat_s", 0.9)))
                 ids.append(f"s{sidx:04d}")
                 sidx += 1
             shots.append({
@@ -84,7 +87,7 @@ def build_plan(job_dir: str, cfg=None) -> dict:
                 "overlay": ({"name": s.overlays[0].name, "args": s.overlays[0].args} if s.overlays else None),
                 "camera": ({"preset": s.camera.preset, "z0": s.camera.z0, "z1": s.camera.z1, "param": s.camera.param} if s.camera else {"preset": "push", "z0": 1.0, "z1": 1.1, "param": None}),
                 "fx": s.fx, "sfx": s.sfx, "banner": s.banner, "cta": bool(s.cta),
-                "track": dict(state), "prev_track": prev, "sentences": ids, "text": s.text,
+                "track": dict(state), "prev_track": prev, "sentences": ids, "text": s.text, "act": s.act, "silence": s.silence,
             })
 
     # locations needing images: one base per location (first variant used), others via img2img of the base

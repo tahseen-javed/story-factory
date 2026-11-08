@@ -45,18 +45,18 @@ OVERLAYS = {
 
 CAMERA = (
     "push", "pull", "pan_l", "pan_r", "tilt_up", "tilt_down",
-    "parallax_drift", "whip_to", "rack_focus", "shake_light", "shake_medium", "hold",
+    "parallax_drift", "whip_to", "rack_focus", "shake_light", "shake_medium", "hold", "dutch",
 )
 # presets that are allowed to have (near) zero zoom speed because they move another way / have inner motion
 CAMERA_NONZOOM = {"pan_l", "pan_r", "tilt_up", "tilt_down", "parallax_drift", "shake_light", "shake_medium", "hold", "rack_focus"}
 
-FX = ("flicker", "smoke", "embers", "rain", "alarm_pulse", "dust", "glitch", "snow")
+FX = ("flicker", "smoke", "embers", "rain", "alarm_pulse", "dust", "glitch", "snow", "crowd")
 
 SFX = (
     "alert_siren", "phone_buzz", "door_knock", "door_creak", "footsteps", "whoosh", "paper_slide",
     "stinger_chapter", "heartbeat", "power_down", "radio_static", "glass_crack", "water_pour",
     "car_engine", "crowd_murmur", "thunder", "click", "beep", "typing", "rustle", "ticking_clock",
-    "spark", "wind",
+    "spark", "wind", "riser", "impact", "glitch", "text_pop",
 )
 
 MUSIC_MOODS = ("tense", "dread", "urgent", "hopeful", "sorrow", "climax", "calm", "mystery")

@@ -120,6 +120,9 @@ def run(audio_plan_path: str, voice_dir: str, out_dir: str, cfg_audio: dict, luf
         if fr != SR:
             a = signal.resample_poly(a, SR, fr).astype("float32")
         p = int(seg["start"] * SR)
+        if seg.get("room"):
+            wet = float(cfg_audio.get("reverb_wet", {}).get(seg["room"], 0.08))
+            a = synth.reverb(a.astype("float64"), 0.35 if seg["room"] == "indoor" else 0.9, wet, seed=3)[: len(a)].astype("float32")
         voice[p:p + len(a)] += a[: total - p]
     voice = voice_chain(voice).astype("float32")
     venv = envelope(voice)
@@ -143,9 +146,34 @@ def run(audio_plan_path: str, voice_dir: str, out_dir: str, cfg_audio: dict, luf
     fade[end_p:end_p + tail] = np.linspace(1, 0.45, min(tail, total - end_p)) if end_p < total else 1
     fade[end_p + tail:] = 0.45
     fade[-int(2 * SR):] *= np.linspace(1, 0, int(2 * SR))
+    sil = np.ones(total, dtype="float32")
+    floor = 10 ** (float(cfg_audio.get("silence_floor_db", -30)) / 20.0)
+    ramp = int(0.06 * SR)
+    for a0, b0 in ap.get("silence", []):
+        i0, i1 = int(a0 * SR), min(total, int(b0 * SR))
+        sil[i0:i1] = floor
+        if i0 - ramp >= 0:
+            sil[i0 - ramp:i0] = np.linspace(1, floor, ramp)
+        if i1 + ramp <= total:
+            sil[i1:i1 + ramp] = np.linspace(floor, 1, ramp)
+    amb = np.zeros(total, dtype="float32")
+    for k, seg in enumerate(ap.get("ambience", [])):
+        i0, i1 = int(seg["start"] * SR), min(total, int(seg["end"] * SR) + int(0.5 * SR))
+        x = synth.ambience(seg["kind"], (i1 - i0) / SR, seed=k)
+        fi = min(len(x) // 2, int(0.5 * SR))
+        x[:fi] *= np.linspace(0, 1, fi)
+        x[-fi:] *= np.linspace(1, 0, fi)
+        amb[i0:i0 + len(x)] += x[: total - i0]
+    amb *= 0.25   # ambience bed about -32 dBFS rms
+    music_gain_db = np.zeros(total, dtype="float32")
+    for seg in ap["music"]:
+        music_gain_db[int(seg["start"] * SR):int(seg["end"] * SR)] = float(seg.get("db", 0.0))
+    k_sm = int(3.0 * SR)
+    cs = np.cumsum(np.pad(music_gain_db, (k_sm // 2, k_sm // 2), mode="edge"))
+    intensity_db = ((cs[k_sm:] - cs[:-k_sm]) / k_sm)[:total].astype("float32")
     duck_db = float(cfg_audio.get("duck_db", 18))
     gain = 10 ** (-(duck_db) * venv / 20.0)   # unducked bed sits at -20 dBFS RMS, ducked bed 18 dB lower
-    music = music * gain[None, :] * fade[None, :]
+    music = music * gain[None, :] * fade[None, :] * sil[None, :]
 
     # ---- sfx ----
     sfx_bus = np.zeros((2, total), dtype="float32")
@@ -167,13 +195,15 @@ def run(audio_plan_path: str, voice_dir: str, out_dir: str, cfg_audio: dict, luf
         sfx_bus[1, p:p + len(seg)] += seg * pan * 1.4
 
     vstereo = np.vstack([voice, voice]) * 1.0
-    mix = vstereo + music + sfx_bus
+    sfx_bus = sfx_bus * np.maximum(sil, 0.5)[None, :]
+    mix = vstereo + music + sfx_bus + (amb * sil)[None, :]
     # glue compression on the bus (tight dynamics: reference LRA ~3.5 LU)
     mono = mix.mean(axis=0)
     bus_in = np.abs(mono)
     comp = compressor(mono, thr_db=-24, ratio=2.2, attack=0.015, release=0.25, makeup_db=0.0)
     g = np.divide(comp, mono, out=np.ones_like(comp), where=np.abs(mono) > 1e-6)
     mix = mix * np.clip(g, 0.05, 1.5)[None, :]
+    mix = mix * (10 ** (intensity_db / 20.0))[None, :]
     mix = mix[:, : int(ap["total_s"] * SR)]
     pk = float(np.max(np.abs(mix)) + 1e-9)
     if pk > 0.98:
@@ -187,7 +217,7 @@ def run(audio_plan_path: str, voice_dir: str, out_dir: str, cfg_audio: dict, luf
     m = loudnorm_two_pass(pre, master, I=lufs)
     final = ffmpeg_measure(master)
     rep = {"premaster": {k: m[k] for k in ("input_i", "input_tp", "input_lra")}, "master": {k: final[k] for k in ("input_i", "input_tp", "input_lra")},
-           "duration_s": ap["total_s"], "sfx_used": sorted(cache.keys()), "duck_db": duck_db}
+           "duration_s": ap["total_s"], "sfx_used": sorted(cache.keys()), "duck_db": duck_db, "silence_beats": len(ap.get("silence", []))}
     json.dump(rep, open(os.path.join(out_dir, "mix_report.json"), "w"), indent=1)
     os.remove(pre)
     print(json.dumps(rep))

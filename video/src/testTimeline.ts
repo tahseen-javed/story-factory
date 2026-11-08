@@ -48,7 +48,12 @@ export function testTimeline(): Timeline {
     track: (d.track as any) || { hours: 15, water: "6 L" },
     prevTrack: (d.prevTrack as any) || {},
     text: "",
+    framing: ["medium", "closeup", "wide", "ots", "low", "insert", "back", "silhouette", "profile", "xwide"][i % 10],
+    trans: ["cut", "whip", "flash", "glitch", "punch", "smash"][i % 6],
+    grade: ["warm", "cold", "alarm", "grey", "gold"][i % 5],
+    crowd: i % 5 === 0,
   }));
+  shots.forEach((sh) => sh.chars.forEach((c: any, k: number) => { c.speaks = k === 0; c.view = sh.framing === "back" || (sh.framing === "ots" && k === 0) ? "back" : k % 2 ? "front" : "three_quarter"; c.silhouette = sh.framing === "silhouette"; }));
   return {
     fps: 30,
     width: 1920,
@@ -57,5 +62,11 @@ export function testTimeline(): Timeline {
     style: { accent: "amber", lut: "cold_night", titlecard: "clock_strip", transition: "hard_cuts" },
     shots,
     endScreenFrames: 60,
+    fadeOut: 20,
+    voiceEnv: Array.from({ length: dur * DEFS.length }, (_, f) => Math.max(0, Math.sin(f * 0.55) * 0.5 + 0.55) * (Math.floor(f / 40) % 3 === 2 ? 0 : 1)),
+    captions: [
+      { s: 10, e: 100, lines: [[["Friday,", 10, 30], ["six", 30, 45], ["thirty-three", 45, 70]], [["p.m.", 70, 85], ["Your", 85, 100]]] },
+      { s: 100, e: 200, lines: [[["Not", 100, 120], ["one", 120, 140], ["window", 140, 170], ["is", 170, 180], ["lit.", 180, 200]]] },
+    ],
   };
 }

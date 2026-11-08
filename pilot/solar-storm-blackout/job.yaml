@@ -4,7 +4,7 @@ mode: pilot
 short_title: Solar Storm Blackout
 length_min: 4
 base_name: "001 Solar Storm Blackout 04min"
-style_version: 1
+style_version: 2
 style_seed:
   opening: flash_forward
   ritual: tracker_update

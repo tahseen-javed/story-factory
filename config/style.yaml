@@ -1,0 +1,27 @@
+# Style bible v2 (one look for every scene of a series). Backdrops, props and characters all pass through this palette + outline + grade.
+version: 2
+palette:
+  hues: ["#1c1a1f", "#f2e8d2", "#2a9d9a", "#7d416f", "#2d4a7a", "#c8453b"]   # ink, paper, teal, plum, denim, brick (max 6 hues)
+  accents: ["#f2a33a", "#e6b422"]                                            # amber, gold
+look:
+  line_weight_px: 6
+  grain: 0.16
+  light_direction: top_left
+  lens_blur_px: 8
+  texture: paper_grain
+  posterize_colors: 14
+  palette_pull: 0.5        # how far each posterised colour is pulled toward the nearest bible hue (lightness kept)
+  outline_strength: 0.5
+qa:
+  palette_distance_max: 34   # mean LAB distance of a scene to the bible; outliers above this are flagged
+  outlier_share_max: 0.15
+# Story act -> colour grade: warm normal life, cold panic, red alarm, exhausted grey, hopeful gold
+acts:
+  hook: cold
+  act1: warm
+  act2a: cold
+  midpoint: alarm
+  act2b: alarm
+  sacrifice: grey
+  climax: alarm
+  resolution: gold

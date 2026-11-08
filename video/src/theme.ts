@@ -68,6 +68,15 @@ export const MOODS: Record<string, { filter: string; charFilter: string; tint: s
   blackout: { filter: "saturate(0.7) contrast(1.1) brightness(0.4)", charFilter: "brightness(0.74)", tint: "#0b2a3a", tintOpacity: 0.28, blend: "multiply", vignette: 0.72 },
 };
 
+// Story-arc colour grades (config/style.yaml acts): warm life -> cold panic -> red alarm -> exhausted grey -> hopeful gold
+export const GRADES: Record<string, { filter: string; tint: string; opacity: number; blend: string }> = {
+  warm: { filter: "saturate(1.08) sepia(0.08)", tint: "#ffb04a", opacity: 0.14, blend: "soft-light" },
+  cold: { filter: "saturate(0.9) hue-rotate(-8deg)", tint: "#2f5fd0", opacity: 0.2, blend: "multiply" },
+  alarm: { filter: "saturate(1.12) contrast(1.06)", tint: "#e0212d", opacity: 0.2, blend: "multiply" },
+  grey: { filter: "saturate(0.45) contrast(1.04)", tint: "#8a8f99", opacity: 0.16, blend: "soft-light" },
+  gold: { filter: "saturate(1.15) brightness(1.05)", tint: "#ffc94d", opacity: 0.24, blend: "soft-light" },
+};
+
 export const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 export const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 export const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
