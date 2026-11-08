@@ -48,6 +48,6 @@ Every audio asset of every video must appear here or delivery fails (factory/lic
 
 Notes:
 - Music, ambience and SFX are synthesised by our own code from noise and oscillators; no third-party recording, sample or loop is used, so no Content ID match is possible.
-- Voice: Chatterbox (MIT). The Perth watermark is applied at generation and never disabled; it was NOT re-detected after our voice chain, reverb, loudnorm and AAC encode.
+- Voice: Chatterbox (MIT). The Perth watermark is applied at generation and never disabled; re-detected 2026-11-08 (score 1.0) on 8 raw TTS sentences, the voice-only master and the final AAC track after voice chain, reverb, mix, loudnorm and AAC (qa/licence_report.json).
 - The ASR model (Moonshine via sherpa-onnx) only checks the voice and is not part of the video audio.
 - If a future asset needs attribution, `attribution_text` in qa/licence_report.json is appended to the YouTube description file in the repo.
