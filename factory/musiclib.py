@@ -13,7 +13,7 @@ import numpy as np
 from . import synth
 from .synth import SR
 
-MOODS = ("calm", "tense", "urgent", "sorrow", "climax", "hopeful", "musicbox", "piano_wind", "heartbeat", "ice_drone", "strings_bells")
+MOODS = ("calm", "tense", "urgent", "sorrow", "climax", "hopeful")
 STEM_S = 60
 _cache: dict = {}
 

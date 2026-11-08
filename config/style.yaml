@@ -17,9 +17,6 @@ qa:
   outlier_share_max: 0.15
 # Story act -> colour grade: warm normal life, cold panic, red alarm, exhausted grey, hopeful gold
 acts:
-  act1: warm
-  act2: cold
-  act3: gold
   hook: cold
   act1: warm
   act2a: cold

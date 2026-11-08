@@ -1,16 +1,16 @@
 {
- "job": "jobs/002_GIFT",
- "ok": true,
+ "job": "pilot/solar-storm-blackout",
+ "ok": false,
  "checks": {
   "1_time_estimate": {
    "ok": true,
-   "eta_min": 255.0,
-   "budget_min": 300.0
+   "eta_min": 55,
+   "budget_min": 60
   },
   "2_licence_gate": {
    "ok": true,
    "missing": [],
-   "assets": 59
+   "assets": 32
   },
   "3_monetization": {
    "ok": true,
@@ -22,35 +22,28 @@
     "no_real_person_or_brand": true,
     "facts_sourced": true
    },
-   "closest": "solar-storm-blackout"
+   "closest": null
   },
   "4_cast_voices": {
    "ok": true,
-   "cute": true,
-   "cute_enforced": true,
+   "cute": false,
+   "cute_enforced": false,
    "unique": true,
    "voices_locked_distinct": true,
    "problems": []
   },
   "5_captions_and_blotch": {
    "ok": true,
-   "captions": "P-006 (updated): 2-4 words, lower third, never over faces",
+   "captions": "P-006: none burned in",
    "blotch": "not measured (no images manifest yet; measured in the images job)"
   },
   "6_previous_rating": {
-   "ok": true,
+   "ok": false,
    "previous": "001 Solar Storm Blackout v2.1",
    "previous_owner_rating": 7.9,
    "target": 8.5,
-   "improvements": [
-    "cute animal cast with locked distinct voices (Narrator, Otto, June, Mrs. Bramble)",
-    "captions 2-4 words in the lower third, never over faces",
-    {
-     "film mode": "every beat anchored to the script timings, silence beat at 7:48"
-    },
-    "QA calibrated to the owner rating 7.9, licence and monetization gates in CI"
-   ],
-   "note": ""
+   "improvements": [],
+   "note": "add 'improvements:' list to job.yaml"
   }
  }
 }

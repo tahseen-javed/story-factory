@@ -74,7 +74,6 @@ export const GRADES: Record<string, { filter: string; tint: string; opacity: num
   cold: { filter: "saturate(0.9) hue-rotate(-8deg)", tint: "#2f5fd0", opacity: 0.2, blend: "multiply" },
   alarm: { filter: "saturate(1.12) contrast(1.06)", tint: "#e0212d", opacity: 0.2, blend: "multiply" },
   grey: { filter: "saturate(0.45) contrast(1.04)", tint: "#8a8f99", opacity: 0.16, blend: "soft-light" },
-  lilac: { filter: "saturate(1.0) hue-rotate(12deg)", tint: "#b79be0", opacity: 0.2, blend: "soft-light" },
   gold: { filter: "saturate(1.15) brightness(1.05)", tint: "#ffc94d", opacity: 0.24, blend: "soft-light" },
 };
 

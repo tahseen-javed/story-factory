@@ -138,30 +138,6 @@ const Mouth: React.FC<{ kind: string }> = ({ kind }) => {
   }
 };
 
-
-const SpeciesEars: React.FC<{ species: string; skin: string; belly: string }> = ({ species, skin, belly }) => {
-  const ink = { stroke: INK, strokeWidth: SW, strokeLinejoin: "round" as const };
-  if (species === "otter") return <g><circle cx={-48} cy={-62} r={15} fill={skin} {...ink} /><circle cx={48} cy={-62} r={15} fill={skin} {...ink} /><circle cx={-48} cy={-62} r={7} fill={belly} /><circle cx={48} cy={-62} r={7} fill={belly} /></g>;
-  if (species === "owl") return <g><path d="M-52,-56 L-64,-100 L-22,-70 Z" fill={skin} {...ink} /><path d="M52,-56 L64,-100 L22,-70 Z" fill={skin} {...ink} /></g>;
-  if (species === "badger") return <g><circle cx={-50} cy={-60} r={16} fill="#2b2b30" {...ink} /><circle cx={50} cy={-60} r={16} fill="#2b2b30" {...ink} /></g>;
-  if (species === "mouse") return <g><circle cx={-54} cy={-56} r={26} fill={skin} {...ink} /><circle cx={54} cy={-56} r={26} fill={skin} {...ink} /><circle cx={-54} cy={-56} r={14} fill="#e8a0a0" /><circle cx={54} cy={-56} r={14} fill="#e8a0a0" /></g>;
-  if (species === "squirrel") return <g><path d="M-50,-58 L-58,-96 L-24,-68 Z" fill={skin} {...ink} /><path d="M50,-58 L58,-96 L24,-68 Z" fill={skin} {...ink} /></g>;
-  if (species === "heron") return <path d="M-6,-70 Q-4,-108 18,-122 Q8,-96 10,-70 Z" fill={skin} {...ink} />;
-  return null;
-};
-
-const SpeciesFace: React.FC<{ species: string; skin: string; belly: string }> = ({ species, belly }) => {
-  const ink = { stroke: INK, strokeWidth: 4, strokeLinejoin: "round" as const };
-  const whisk = [-8, 0, 8].map((dy) => [<path key={"l" + dy} d={`M-30,${24 + dy} L-66,${20 + dy * 1.6}`} stroke={INK} strokeWidth={3} strokeLinecap="round" />, <path key={"r" + dy} d={`M30,${24 + dy} L66,${20 + dy * 1.6}`} stroke={INK} strokeWidth={3} strokeLinecap="round" />]);
-  if (species === "otter") return <g><ellipse cx={0} cy={24} rx={38} ry={27} fill={belly} {...ink} /><ellipse cx={0} cy={10} rx={12} ry={8} fill="#3b2a24" />{whisk}</g>;
-  if (species === "owl") return <g><circle cx={-27} cy={-8} r={36} fill="#fffdf6" opacity={0.95} {...ink} /><circle cx={27} cy={-8} r={36} fill="#fffdf6" opacity={0.95} {...ink} /><path d="M-11,6 L11,6 L0,26 Z" fill="#f2b632" {...ink} /></g>;
-  if (species === "badger") return <g><path d="M-50,-60 Q-30,-72 -16,-62 L-24,40 Q-40,46 -52,30 Z" fill="#2b2b30" /><path d="M50,-60 Q30,-72 16,-62 L24,40 Q40,46 52,30 Z" fill="#2b2b30" /><ellipse cx={0} cy={22} rx={26} ry={20} fill="#f4f1ea" {...ink} /><ellipse cx={0} cy={12} rx={12} ry={8} fill="#2b2b30" /></g>;
-  if (species === "mouse") return <g><ellipse cx={0} cy={12} rx={9} ry={7} fill="#e8a0a0" {...ink} />{whisk}</g>;
-  if (species === "squirrel") return <g><ellipse cx={0} cy={12} rx={9} ry={7} fill="#3b2a24" /><rect x={-7} y={28} width={14} height={14} rx={3} fill="#fffdf6" {...ink} /></g>;
-  if (species === "heron") return <g><path d="M10,6 L84,24 L10,28 Z" fill="#f2b632" {...ink} /></g>;
-  return null;
-};
-
 export type RigProps = {
   params?: Record<string, any>;
   pose: string;
@@ -186,17 +162,11 @@ export const Rig: React.FC<RigProps> = ({ params = {}, pose, expr, frame, fps = 
 
   const outfitName = String(params.outfit || "teal");
   const outfit = OUTFIT[outfitName] || outfitName;
-  const skinParam = String(params.skin || "tan");
-  const skin = SKIN[skinParam] || (skinParam.startsWith("#") ? skinParam : SKIN.tan);
-  const species = String(params.species || "");
-  const belly = String(params.belly || "#f3e3c3");
-  const paw = species ? skin : GLOVE;
-  const tallY = Number(params.tall || 1);
+  const skin = SKIN[String(params.skin || "tan")] || SKIN.tan;
   const old = params.age === "old";
   const hairName = String(params.hair || "short");
   const hairCol = old ? HAIR.grey : HAIR[String(params.hairColor || "brown")] || HAIR.brown;
   const hat = String(params.hat || "none");
-  const hatCol = String(params.hatColor || "");
   const pants = params.pants || (old ? "#5a5160" : "#34384f");
 
   // ---- animation: cycle (walk/run) or idle ----
@@ -264,23 +234,19 @@ export const Rig: React.FC<RigProps> = ({ params = {}, pose, expr, frame, fps = 
   const browBase = eyeY - 30 + E.browY;
 
   return (
-    <g transform={`translate(${x + dx},${y}) scale(${scale * facing},${scale * tallY})`}>
+    <g transform={`translate(${x + dx},${y}) scale(${scale * facing},${scale})`}>
       {/* contact shadow */}
       <ellipse cx={0} cy={6} rx={92} ry={14} fill="#000" opacity={0.28} />
       <g transform={`rotate(${sway} 0 0)`}>
         {/* back limbs */}
         {lB.node}
         {shoe(lB.end, "#2c2a33", "shB")}
-        {species === "otter" ? <path d={`M-30,${HIP_Y + 10} Q-130,${HIP_Y + 10} -150,${HIP_Y + 90} Q-90,${HIP_Y + 84} -34,${HIP_Y + 56} Z`} fill={skin} stroke={INK} strokeWidth={SW} strokeLinejoin="round" /> : null}
-        {species === "squirrel" ? <path d={`M-30,${HIP_Y + 20} Q-170,${HIP_Y - 40} -120,${HIP_Y - 220} Q-60,${HIP_Y - 120} -20,${HIP_Y - 20} Z`} fill={skin} stroke={INK} strokeWidth={SW} strokeLinejoin="round" /> : null}
         <g transform={`rotate(${torso} 0 ${HIP_Y}) translate(0 ${HIP_Y * (1 - breathe)}) scale(1 ${breathe})`}>
           {aB.node}
-          {glove(aB.end, shade(paw, 0.85), "gB")}
+          {glove(aB.end, shade(GLOVE, 0.85), "gB")}
           {heldBack ? <Prop kind={heldBack} x={aB.end[0]} y={aB.end[1]} angle={armB[1]} /> : null}
           {/* torso */}
           <path d={torsoPath} fill={frontTone} stroke={INK} strokeWidth={SW} strokeLinejoin="round" />
-          {species === "otter" ? <ellipse cx={0} cy={(SH_Y + HIP_Y) / 2 + 12} rx={38} ry={64} fill={belly} /> : null}
-          {species === "badger" ? <g><rect x={-36} y={SH_Y + 34} width={72} height={HIP_Y - SH_Y - 10} rx={14} fill="#f2e8d2" stroke={INK} strokeWidth={4} />{[-24, -8, 8, 24].map((xx) => <rect key={xx} x={xx - 3} y={SH_Y + 38} width={6} height={HIP_Y - SH_Y - 18} fill="#c8453b" />)}</g> : null}
           {old ? (
             <g>
               <path d={`M0,${SH_Y + 6} L0,${HIP_Y + 18}`} stroke={INK} strokeWidth={4} />
@@ -299,9 +265,8 @@ export const Rig: React.FC<RigProps> = ({ params = {}, pose, expr, frame, fps = 
             <g transform={`translate(0 ${SH_Y - 82 - (hs - 1) * 22}) scale(${hs})`}>
               {/* hair behind head */}
               {hairName === "bun" ? <circle cx={-6} cy={-72} r={26} fill={hairCol} stroke={INK} strokeWidth={SW} /> : null}
-              {species ? null : <ellipse cx={-64} cy={-4} rx={12} ry={17} fill={skin} stroke={INK} strokeWidth={SW} />}
-              {species ? null : <ellipse cx={64} cy={-4} rx={12} ry={17} fill={skin} stroke={INK} strokeWidth={SW} />}
-              <SpeciesEars species={species} skin={skin} belly={belly} />
+              <ellipse cx={-64} cy={-4} rx={12} ry={17} fill={skin} stroke={INK} strokeWidth={SW} />
+              <ellipse cx={64} cy={-4} rx={12} ry={17} fill={skin} stroke={INK} strokeWidth={SW} />
               <path d="M-62,-6 Q-62,-70 0,-70 Q62,-70 62,-6 Q62,52 0,56 Q-62,52 -62,-6 Z" fill={skin} stroke={INK} strokeWidth={SW} strokeLinejoin="round" />
               {/* hair */}
               {hairName === "short" && hat === "none" ? <path d="M-62,-14 Q-66,-72 0,-74 Q66,-72 62,-14 Q40,-40 0,-38 Q-40,-40 -62,-14 Z" fill={hairCol} stroke={INK} strokeWidth={SW} strokeLinejoin="round" /> : null}
@@ -318,12 +283,10 @@ export const Rig: React.FC<RigProps> = ({ params = {}, pose, expr, frame, fps = 
               ) : null}
               {hat === "beanie" ? (
                 <g>
-                  <path d="M-64,-18 Q-66,-92 0,-94 Q66,-92 64,-18 Z" fill={hatCol || frontTone} stroke={INK} strokeWidth={SW} strokeLinejoin="round" />
-                  <rect x={-66} y={-30} width={132} height={22} rx={8} fill={shade(hatCol || outfit, 0.85)} stroke={INK} strokeWidth={SW} />
+                  <path d="M-64,-18 Q-66,-92 0,-94 Q66,-92 64,-18 Z" fill={frontTone} stroke={INK} strokeWidth={SW} strokeLinejoin="round" />
+                  <rect x={-66} y={-30} width={132} height={22} rx={8} fill={shade(outfit, 0.8)} stroke={INK} strokeWidth={SW} />
                 </g>
               ) : null}
-              {hat === "beanie" && species === "otter" ? <path d="M-62,-34 Q-84,0 -62,26 Q-50,2 -48,-30 Z" fill={shade(hatCol || outfit, 0.92)} stroke={INK} strokeWidth={SW} strokeLinejoin="round" /> : null}
-              {params.earmuffs ? <g><path d="M-68,-14 Q0,-130 68,-14" fill="none" stroke={String(params.earmuffs)} strokeWidth={9} /><circle cx={-68} cy={-6} r={22} fill={String(params.earmuffs)} stroke={INK} strokeWidth={5} /><circle cx={68} cy={-6} r={22} fill={String(params.earmuffs)} stroke={INK} strokeWidth={5} /></g> : null}
               {/* face (hidden from behind) */}
               {view === "back" ? (
                 <g>
@@ -333,7 +296,6 @@ export const Rig: React.FC<RigProps> = ({ params = {}, pose, expr, frame, fps = 
               ) : null}
               <g transform={`translate(${faceX} 0) scale(${faceS} 1)`} opacity={view === "back" ? 0 : 1}>
                 {old ? <path d="M-46,4 q8,6 16,0 M30,4 q8,6 16,0" stroke={INK} strokeWidth={2.5} fill="none" opacity={0.45} /> : null}
-                <SpeciesFace species={species} skin={skin} belly={belly} />
                 <g transform={`translate(-27 ${eyeY + 70}) scale(${es}) translate(27 ${-(eyeY + 70)})`}><Eye cx={-27} cy={eyeY + 70} e={E} blink={blink} look={gaze} /></g>
                 <g transform={`translate(27 ${eyeY + 70}) scale(${es}) translate(-27 ${-(eyeY + 70)})`}><Eye cx={27} cy={eyeY + 70} e={E} blink={blink} look={gaze} /></g>
                 <path d={`M-48,${browBase + 66 + 0} L-14,${browBase + 66 - E.browInner}`} stroke={hairName === "bun" || old ? shade(hairCol, 0.8) : INK} strokeWidth={7} strokeLinecap="round" />
@@ -345,7 +307,7 @@ export const Rig: React.FC<RigProps> = ({ params = {}, pose, expr, frame, fps = 
             </g>
           </g>
           {aF.node}
-          {glove(aF.end, paw, "gF")}
+          {glove(aF.end, GLOVE, "gF")}
           {heldFront ? <Prop kind={heldFront} x={aF.end[0]} y={aF.end[1]} angle={armF[1]} /> : null}
         </g>
         {lF.node}

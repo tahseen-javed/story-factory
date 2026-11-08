@@ -46,11 +46,6 @@ def sha(*parts) -> str:
 
 def build_plan(job_dir: str, cfg=None) -> dict:
     cfg = cfg or load_cfg()
-    _jy = os.path.join(job_dir, "job.yaml")
-    if os.path.exists(os.path.join(job_dir, "script.txt")) and os.path.exists(_jy) and (miniyaml.load_file(_jy) or {}).get("kind") == "film":
-        from . import film
-
-        return film.build_plan(job_dir, cfg)
     slug = os.path.basename(os.path.normpath(job_dir))
     mode = job_mode(job_dir)
     with open(os.path.join(job_dir, "script.md"), encoding="utf-8") as fh:
@@ -137,7 +132,7 @@ def emit_outputs(plan: dict) -> None:
     path = os.environ.get("GITHUB_OUTPUT")
     if not path:
         return
-    tts_hash = sha(*[s["tts_text"] + "|" + s.get("speaker", "") + "|" + str(s.get("wpm", "")) + "|" + str(s.get("emo", "")) for s in plan["sentences"]], plan["voice"], plan["wpm"], "v3")
+    tts_hash = sha(*[s["tts_text"] for s in plan["sentences"]], plan["voice"], plan["wpm"])
     img_hash = sha(*[g["base"]["hash"] for g in plan["image_groups"]], *[v["hash"] for g in plan["image_groups"] for v in g["variants"]])
     n_tts = min(plan["tts_shards"], max(1, len(plan["sentences"])))
     n_img = min(plan["image_shards"], max(1, len(plan["image_groups"])))
@@ -171,8 +166,7 @@ def main(argv=None):
     emit_outputs(plan)
     from . import hookscore
 
-    sm = os.path.join(a.job_dir, "script.md")
-    opts, pick = hookscore.parse_options(open(sm, encoding="utf-8").read()) if os.path.exists(sm) else ({}, None)
+    opts, pick = hookscore.parse_options(open(os.path.join(a.job_dir, "script.md"), encoding="utf-8").read())
     json.dump({"options": {n: {"text": t, **hookscore.score(t)} for n, t in opts.items()}, "picked": pick}, open(os.path.join(out, "hook_log.json"), "w"), indent=1)
     print(f"plan ok: {len(plan['shots'])} shots, {len(plan['sentences'])} sentences, {plan['total_words']} words, "
           f"~{plan['est_narration_s']}s narration, {len(plan['image_groups'])} locations -> {out}/plan.json")

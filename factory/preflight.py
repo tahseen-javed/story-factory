@@ -31,31 +31,26 @@ def last_owner_rating() -> tuple:
 def run(job_dir: str, eta_min: float, budget_min: float | None, out_path: str | None = None) -> dict:
     cfg = load_cfg()
     plan = build_plan(job_dir, cfg)
-    film = plan.get("kind") == "film"
-    if film:
-        sc = type("S", (), {"characters": {k: {"params": v["params"]} for k, v in plan["characters"].items()}, "shots": [type("T", (), {"text": s["text"]}) for s in plan["shots"]]})()
-    else:
-        sc = parse(open(os.path.join(job_dir, "script.md"), encoding="utf-8").read())
+    sc = parse(open(os.path.join(job_dir, "script.md"), encoding="utf-8").read())
     job = miniyaml.load_file(os.path.join(job_dir, "job.yaml"))
     enforce = int(job.get("style_version", 1)) >= 3
     budget = budget_min or (35 if plan["length_min"] <= 4 else 60)
     checks = {}
     checks["1_time_estimate"] = {"ok": 0 < eta_min <= budget, "eta_min": eta_min, "budget_min": budget}
     acts = [s.get("act") or "hook" for s in plan["shots"]]
-    moods = {s["mood"] for s in plan["shots"] if s.get("mood")} if film else {cfg["audio"]["music_mood"].get(a, "tense") for a in set(acts)}
     ap = {"sfx": [{"name": n} for s in plan["shots"] for n in s["sfx"]] + [{"name": "whoosh"}, {"name": "impact"}, {"name": "riser"}],
-          "music": [{"mood": m} for m in moods], "ambience": [{"kind": k} for k in ("room", "city", "wind", "hum_dark")]}
+          "music": [{"mood": cfg["audio"]["music_mood"].get(a, "tense")} for a in set(acts)], "ambience": [{"kind": k} for k in ("room", "city", "wind", "hum_dark")]}
     checks["2_licence_gate"] = (lambda r: {"ok": r["ok"], "missing": r["missing"], "assets": len(r["assets"])})(licence.check(ap, {"tts_engines": ["chatterbox"]}))
     tl = {"shots": [{"dur": 100, "bg": None, "layers": None} for _ in plan["shots"]]}
     checks["3_monetization"] = (lambda r: {"ok": r["ok"], "checks": r["checks"], "closest": r["closest_video"]})(monetization.run(plan, tl, job_dir, cfg))
-    sig = [f"{s['location']}.{s['variant']}|{len(s['chars'])}" for s in plan["shots"]] if film else shot_signature(sc)
+    sig = shot_signature(sc)
     cute = cast.cute_check(sc.characters, cfg["style"], " ".join(s.text for s in sc.shots), enforce)
     uniq = cast.unique_check(sc.characters, sig, cast.load_history(), cfg["style"], plan.get("nnn"))
     vo = voicecheck.profiles_ok(cfg["characters"], sc.characters)
     checks["4_cast_voices"] = {"ok": (cute["ok"] or not enforce) and uniq["ok"] and vo["ok"], "cute": cute["ok"], "cute_enforced": enforce, "unique": uniq["ok"], "voices_locked_distinct": vo["ok"], "problems": vo["problems"]}
     manifests = [os.path.join(dp, f) for dp, _, fs in os.walk(os.path.join(ROOT, "build")) for f in fs if re.fullmatch(r"images_\d+\.json", f)] if os.path.isdir(os.path.join(ROOT, "build")) else []
     blotch = "not measured (no images manifest yet; measured in the images job)" if not manifests else "manifest present"
-    checks["5_captions_and_blotch"] = {"ok": cfg.get("captions", {}).get("burned_in") is True and 2 <= int(cfg.get("captions", {}).get("max_words", 0) or 0) <= 4, "captions": "P-006 (updated): 2-4 words, lower third, never over faces", "blotch": blotch}
+    checks["5_captions_and_blotch"] = {"ok": cfg.get("captions", {}).get("burned_in") is True and 2 <= int(cfg.get("captions", {}).get("max_words", 0) or 0) <= 4, "captions": "P-006: 2-4 words, lower third, never over faces", "blotch": blotch}
     prev, rating = last_owner_rating()
     improvements = job.get("improvements") or []
     checks["6_previous_rating"] = {"ok": rating > 0 and bool(improvements), "previous": prev, "previous_owner_rating": rating, "target": cfg["qa_calibration"]["target_rating"], "improvements": improvements,

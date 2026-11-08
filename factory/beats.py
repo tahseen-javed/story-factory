@@ -90,8 +90,8 @@ def view_for(framing: str, k: int, prev_views: list) -> str:
     return v
 
 
-def choose_camera(tension: int, framing: str, dur_s: float, prev: str | None, rng, calm: bool = False) -> dict:
-    pool = {0: LOW_CAM, 1: MID_CAM, 2: HIGH_CAM}[min(tension, 1) if calm else tension]
+def choose_camera(tension: int, framing: str, dur_s: float, prev: str | None, rng) -> dict:
+    pool = {0: LOW_CAM, 1: MID_CAM, 2: HIGH_CAM}[tension]
     preset = rng.choice([p for p in pool if p != prev] or pool)
     base = 1.0 if framing in ("closeup", "insert") else 1.05
     if preset in ("push", "pull", "dutch"):

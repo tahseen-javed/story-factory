@@ -63,7 +63,6 @@ def profiles_ok(cfg_chars: dict, script_characters: dict) -> dict:
     prof = cfg_chars.get("characters", {})
     narrator = cfg_chars.get("narrator", {})
     problems = []
-    script_characters = {c: v for c, v in script_characters.items() if not (prof.get(c) or {}).get("silent")}
     for cid in script_characters:
         if cid not in prof:
             problems.append(f"no locked voice profile for '{cid}' in config/characters.yaml")

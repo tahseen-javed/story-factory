@@ -82,11 +82,6 @@ MOOD = {
     "hopeful": dict(root=87.31, scale="major", tempo=80, prog=[0, 4, 5, 3], cut=1800, lead="pluck", pulse="none", level=0.95),
     "sorrow": dict(root=65.41, scale="minor", tempo=60, prog=[0, 5, 2, 4], cut=800, lead="sparse", pulse="none", level=0.9),
     "calm": dict(root=98.0, scale="dorian", tempo=66, prog=[0, 3, 4, 0], cut=1200, lead="pluck", pulse="none", level=0.85),
-    "musicbox": dict(root=98.0, scale="major", tempo=76, prog=[0, 4, 5, 3], cut=2600, lead="pluck", pulse="none", level=0.9),
-    "piano_wind": dict(root=87.31, scale="dorian", tempo=56, prog=[0, 5, 3, 4], cut=900, lead="sparse", pulse="none", level=0.85),
-    "heartbeat": dict(root=65.41, scale="phrygian", tempo=54, prog=[0, 0, 0, 0], cut=500, lead="sparse", pulse="heart", level=0.8),
-    "ice_drone": dict(root=55.0, scale="minor", tempo=48, prog=[0, 0, 5, 0], cut=600, lead="sparse", pulse="none", level=0.75),
-    "strings_bells": dict(root=130.81, scale="major", tempo=84, prog=[0, 4, 5, 3], cut=2200, lead="arp", pulse="none", level=1.0),
     "mystery": dict(root=82.41, scale="phrygian", tempo=64, prog=[0, 1, 5, 0], cut=1100, lead="sparse", pulse="tick", level=0.95),
 }
 
@@ -202,160 +197,8 @@ def _noise(sec, seed):
     return _rng("noise", seed).normal(0, 1, int(sec * SR))
 
 
-def _bell(f, sec, decay, partials):
-    t = t_axis(sec)
-    return sum(a * np.sin(2 * np.pi * f * k * t) * np.exp(-t * decay / (k ** 0.4)) for k, a in partials)
-
-
-def _sweep(f0, f1, sec, decay=8.0):
-    t = t_axis(sec)
-    f = f0 + (f1 - f0) * np.minimum(1, t / sec)
-    return np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t * decay)
-
-
-def _pops(sec, n, lo, seed, decay=60.0):
-    r = _rng("pops", seed)
-    x = np.zeros(int(sec * SR))
-    for t0 in r.random(n) * (sec - 0.1):
-        i = int(t0 * SR)
-        m = min(len(x) - i, int(0.05 * SR))
-        x[i:i + m] += hp(r.normal(0, 1, m), lo) * np.exp(-np.arange(m) / SR * decay) * (0.3 + 0.7 * r.random())
-    return x
-
-
-def _new_sfx(name, r):
-    if name == "ice_creak":
-        t = t_axis(1.6)
-        f = 150 - 45 * t + 35 * np.sin(2 * np.pi * 2.5 * t)
-        x = np.sin(2 * np.pi * np.cumsum(f) / SR) * (0.6 + 0.4 * np.sin(2 * np.pi * 17 * t)) + 0.25 * bp(_noise(1.6, 3), 300, 1400)
-        return reverb(x * adsr(len(t), 0.1, 0.1, 0.8, 0.5), 1.2, 0.3)
-    if name == "ice_crack":
-        t = t_axis(1.0)
-        x = 0.9 * hp(_noise(1.0, 4), 1800) * np.exp(-t * 22) + 0.6 * np.sin(2 * np.pi * 80 * t) * np.exp(-t * 10) + 0.3 * _pops(1.0, 14, 2500, 5)
-        return reverb(x, 1.0, 0.25)
-    if name == "ice_groan":
-        t = t_axis(2.0)
-        x = np.sin(2 * np.pi * np.cumsum(72 - 20 * t / 2.0 + 5 * np.sin(2 * np.pi * 4 * t)) / SR) + 0.3 * bp(_noise(2.0, 6), 120, 320)
-        return x * adsr(len(t), 0.3, 0.2, 0.7, 0.8)
-    if name == "cello_note":
-        t = t_axis(2.6)
-        f = 130.8 * (1 + 0.004 * np.sin(2 * np.pi * 5 * t))
-        x = sum(np.sin(2 * np.pi * np.cumsum(f * k) / SR) / k for k in range(1, 7))
-        return lp(x, 1400) * adsr(len(t), 0.18, 0.2, 0.8, 1.2)
-    if name == "music_bell":
-        return _bell(880, 1.8, 3.0, [(1, 1), (2.76, .5), (5.4, .3), (8.9, .15)])
-    if name == "snowflake_chime":
-        return reverb(_bell(1318.5, 2.4, 2.2, [(1, 1), (1.5, .6), (2.0, .4), (2.76, .3), (4.1, .2)]), 1.4, 0.3)
-    if name == "harp_note":
-        return _bell(523.3, 1.8, 3.0, [(1, 1), (2, .5), (3, .25), (4, .12)])
-    if name == "piano_note":
-        return reverb(_bell(261.6, 2.4, 2.0, [(1, 1), (2, .6), (3, .35), (4, .2)]), 1.0, 0.2)
-    if name == "pluck_note":
-        return _bell(440, 0.5, 9.0, [(1, 1), (2, .4), (3, .2)])
-    if name == "string_pluck":
-        return _bell(196, 0.9, 5.0, [(k, 1.0 / k) for k in range(1, 6)])
-    if name == "deep_bell":
-        return reverb(_bell(110, 3.0, 1.1, [(1, 1), (2.0, .6), (2.4, .5), (3.0, .4)]), 1.8, 0.35)
-    if name == "success_ting":
-        return _bell(1568, 0.7, 8.0, [(1, 1), (1.34, .5)])
-    if name == "coin_ping":
-        return _bell(2637, 0.7, 7.0, [(1, 1), (1.5, .5)])
-    if name == "plip":
-        return _sweep(700, 300, 0.25, 14)
-    if name == "water_drip":
-        return reverb(_sweep(1200, 600, 0.5, 10), 1.2, 0.4)
-    if name == "bath_bubbles":
-        x = np.zeros(int(2.0 * SR))
-        for t0 in r.random(14) * 1.7:
-            b = _sweep(300 + 600 * r.random(), 150 + 200 * r.random(), 0.18, 16)
-            i = int(t0 * SR)
-            x[i:i + len(b)] += b[: len(x) - i] * (0.3 + 0.7 * r.random())
-        return lp(x, 1800)
-    if name == "walnut_crack":
-        t = t_axis(0.5)
-        return bp(_noise(0.5, 7), 800, 3200) * np.exp(-t * 30) + 0.4 * _sweep(500, 200, 0.5, 20)
-    if name == "owl_hoo":
-        t = t_axis(1.0)
-        f = np.where(t < 0.35, 380.0, 330.0) * (1 + 0.01 * np.sin(2 * np.pi * 6 * t))
-        x = np.sin(2 * np.pi * np.cumsum(f) / SR) + 0.3 * np.sin(2 * np.pi * np.cumsum(f * 2) / SR)
-        return lp(x, 900) * adsr(len(t), 0.08, 0.1, 0.7, 0.35)
-    if name == "sandpaper":
-        t = t_axis(1.5)
-        return bp(_noise(1.5, 8), 2000, 6500) * (0.5 + 0.5 * np.sin(2 * np.pi * 5 * t)) ** 2
-    if name == "sneeze":
-        t = t_axis(0.7)
-        a = bp(_noise(0.7, 9), 900, 4000) * np.where(t < 0.3, t / 0.3, 0) ** 2
-        b = bp(_noise(0.7, 10), 400, 2500) * np.exp(-(t - 0.32).clip(0) * 14) * (t > 0.3)
-        return a + 1.4 * b
-    if name in ("fire_crackle", "lantern_crackle"):
-        return _pops(2.0, 30 if name == "fire_crackle" else 14, 1500, 11) + 0.15 * lp(_noise(2.0, 12), 300)
-    if name == "market_jingle":
-        x = np.zeros(int(1.8 * SR))
-        for t0 in r.random(9) * 1.3:
-            b = _bell(1800 + 1400 * r.random(), 0.4, 8.0, [(1, 1), (2.3, .5)])
-            i = int(t0 * SR)
-            x[i:i + len(b)] += b[: len(x) - i]
-        return x
-    if name in ("clunk_s", "clunk_m", "clunk_l"):
-        f, d = {"clunk_s": (140, 0.5), "clunk_m": (95, 0.7), "clunk_l": (62, 1.0)}[name]
-        t = t_axis(d)
-        x = np.sin(2 * np.pi * f * t) * np.exp(-t * 7) + 0.5 * lp(_noise(d, 13), 500) * np.exp(-t * 18)
-        return reverb(x, 0.6, 0.2) * (1.5 if name == "clunk_l" else 1.0)
-    if name == "thoom":
-        t = t_axis(1.6)
-        x = np.sin(2 * np.pi * 45 * t) * np.exp(-t * 3) + 0.5 * lp(_noise(1.6, 14), 300) * np.exp(-t * 6) + 0.5 * hp(_noise(1.6, 15), 1500) * np.exp(-t * 30)
-        return reverb(x, 1.0, 0.25)
-    if name == "grunt":
-        t = t_axis(0.5)
-        return bp(np.sign(np.sin(2 * np.pi * 110 * t)), 400, 900) * adsr(len(t), 0.05, 0.1, 0.6, 0.2)
-    if name == "flump":
-        t = t_axis(0.5)
-        return lp(_noise(0.5, 16), 250) * np.exp(-t * 12) + 0.6 * np.sin(2 * np.pi * 60 * t) * np.exp(-t * 10)
-    if name == "house_creak":
-        t = t_axis(2.0)
-        f = 90 - 12 * t + 6 * np.sin(2 * np.pi * 3 * t)
-        return (np.sin(2 * np.pi * np.cumsum(f) / SR) * (0.5 + 0.5 * np.sin(2 * np.pi * 12 * t)) + 0.2 * bp(_noise(2.0, 17), 200, 900)) * adsr(len(t), 0.2, 0.2, 0.7, 0.6)
-    if name == "hum_soft":
-        t = t_axis(3.0)
-        f = 392 * (1 + 0.006 * np.sin(2 * np.pi * 5 * t))
-        x = sum(np.sin(2 * np.pi * np.cumsum(f * k) / SR) / k for k in range(1, 5))
-        return lp(x, 1100) * adsr(len(t), 0.4, 0.3, 0.7, 0.8)
-    if name == "sled_scrape":
-        t = t_axis(1.5)
-        return bp(_noise(1.5, 18), 400, 1300) * (0.6 + 0.4 * np.sin(2 * np.pi * 2.2 * t)) * adsr(len(t), 0.1, 0.1, 0.9, 0.3)
-    if name == "whistle_tune":
-        t = t_axis(1.8)
-        f = np.where(t < 0.6, 880.0, np.where(t < 1.2, 1100.0, 990.0)) * (1 + 0.008 * np.sin(2 * np.pi * 6 * t))
-        return np.sin(2 * np.pi * np.cumsum(f) / SR) * adsr(len(t), 0.05, 0.1, 0.8, 0.3) * (0.7 + 0.3 * np.sin(2 * np.pi * 3.3 * t))
-    if name == "boing":
-        return _sweep(200, 500, 0.7, 5) * (1 + 0.5 * np.sin(2 * np.pi * 14 * t_axis(0.7)))
-    if name == "boop":
-        return _sweep(600, 420, 0.2, 14)
-    if name == "mouse_squeak":
-        return _sweep(3200, 2600, 0.25, 12)
-    if name == "fwump":
-        t = t_axis(0.4)
-        return lp(_noise(0.4, 19), 300) * np.exp(-t * 14) + 0.5 * np.sin(2 * np.pi * 70 * t) * np.exp(-t * 12)
-    if name == "yarn":
-        t = t_axis(1.2)
-        return 0.5 * bp(_noise(1.2, 20), 3000, 7000) * (0.5 + 0.5 * np.sin(2 * np.pi * 9 * t)) ** 2
-    if name == "box_pop":
-        t = t_axis(0.4)
-        return _sweep(300, 900, 0.4, 12) + 0.5 * bp(_noise(0.4, 21), 600, 3000) * np.exp(-t * 40)
-    if name == "cork_pop":
-        t = t_axis(0.35)
-        return _sweep(650, 250, 0.35, 14) + 0.6 * bp(_noise(0.35, 22), 500, 2500) * np.exp(-t * 45)
-    if name == "slide_whoosh":
-        t = t_axis(2.5)
-        return lp(_noise(2.5, 23), 1800) * np.sin(np.pi * t / 2.5) ** 2 * 0.8
-    return None
-
-
 def sfx(name: str, seed: int = 0) -> np.ndarray:
     r = _rng("sfx", name, seed)
-    _x = _new_sfx(name, r)
-    if _x is not None:
-        return _x
     if name == "alert_siren":
         t = t_axis(2.0)
         f = np.where((t * 2.2).astype(int) % 2 == 0, 960, 770)
@@ -538,7 +381,7 @@ def sfx(name: str, seed: int = 0) -> np.ndarray:
 
 
 # default relative loudness of each sfx in the final mix (dB re -14 dBFS peak)
-SFX_GAIN = {"ice_creak": -9, "ice_crack": -6, "ice_groan": -10, "cello_note": -9, "music_bell": -13, "snowflake_chime": -9, "harp_note": -12, "piano_note": -10, "pluck_note": -13, "string_pluck": -9, "deep_bell": -8, "success_ting": -12, "coin_ping": -13, "plip": -14, "water_drip": -12, "bath_bubbles": -15, "walnut_crack": -10, "owl_hoo": -11, "sandpaper": -16, "sneeze": -12, "fire_crackle": -17, "lantern_crackle": -18, "market_jingle": -15, "clunk_s": -9, "clunk_m": -7, "clunk_l": -5, "thoom": -5, "grunt": -13, "flump": -11, "house_creak": -11, "hum_soft": -17, "sled_scrape": -14, "whistle_tune": -14, "boing": -12, "boop": -13, "mouse_squeak": -16, "fwump": -12, "yarn": -18, "box_pop": -10, "cork_pop": -10, "slide_whoosh": -12, "alert_siren": -9, "phone_buzz": -8, "door_knock": -6, "door_creak": -10, "footsteps": -9, "whoosh": -8, "paper_slide": -10,
+SFX_GAIN = {"alert_siren": -9, "phone_buzz": -8, "door_knock": -6, "door_creak": -10, "footsteps": -9, "whoosh": -8, "paper_slide": -10,
             "stinger_chapter": -5, "heartbeat": -7, "power_down": -5, "radio_static": -12, "glass_crack": -8, "water_pour": -13,
             "car_engine": -15, "crowd_murmur": -17, "thunder": -9, "click": -12, "beep": -13, "typing": -15, "rustle": -17,
             "ticking_clock": -15, "spark": -11, "wind": -19, "riser": -9, "impact": -6, "glitch": -12, "text_pop": -13}

@@ -50,26 +50,12 @@ def other_scripts(job_dir: str) -> list:
     return out
 
 
-def _no_claims(job_dir: str) -> bool:
-    import json
-
-    try:
-        return bool(json.load(open(os.path.join(job_dir, "facts.json"), encoding="utf-8")).get("no_factual_claims"))
-    except Exception:  # noqa: BLE001
-        return False
-
-
 def run(plan: dict, timeline: dict, job_dir: str, cfg: dict) -> dict:
     mcfg = cfg.get("monetization", {})
     thr_text, thr_shots, max_run_s = float(mcfg.get("script_similarity_max", 0.35)), float(mcfg.get("shot_similarity_max", 0.5)), float(mcfg.get("reused_segment_max_s", 20))
-    if plan.get("kind") == "film":
-        words = re.findall(r"[a-z']+", " ".join(s["text"] for s in plan["sentences"]).lower())
-        sig = [f"{s['location']}.{s['variant']}|{len(s['chars'])}" for s in plan["shots"]]
-        sc = type("S", (), {"locations": plan["locations"], "shots": []})()
-    else:
-        sc = parse(open(os.path.join(job_dir, "script.md"), encoding="utf-8").read())
-        words = re.findall(r"[a-z']+", " ".join(s.text for s in sc.shots).lower())
-        sig = shot_signature(sc)
+    sc = parse(open(os.path.join(job_dir, "script.md"), encoding="utf-8").read())
+    words = re.findall(r"[a-z']+", " ".join(s.text for s in sc.shots).lower())
+    sig = shot_signature(sc)
     avg_shot_s = (sum(s["dur"] for s in timeline["shots"]) / max(1, len(timeline["shots"]))) / 30.0
     worst_text, worst_shots, worst_run, vs = 0.0, 0.0, 0, None
     others = other_scripts(job_dir)
@@ -91,7 +77,7 @@ def run(plan: dict, timeline: dict, job_dir: str, cfg: dict) -> dict:
         "no_reused_long_segment": worst_run * avg_shot_s < max_run_s,
         "no_third_party_clips": not clips,
         "no_real_person_or_brand": not people,
-        "facts_sourced": len(plan.get("sources", [])) >= 1 or _no_claims(job_dir),
+        "facts_sourced": len(plan.get("sources", [])) >= 1,
     }
     return {"ok": all(checks.values()), "checks": checks, "compared_with": [n for n, _ in others], "closest_video": vs,
             "script_overlap": round(worst_text, 3), "shot_list_overlap": round(worst_shots, 3), "longest_reuse_s": round(worst_run * avg_shot_s, 1),

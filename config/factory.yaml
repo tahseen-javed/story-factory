@@ -98,7 +98,7 @@ depth:
   layers: 3
 
 captions:
-  burned_in: true           # P-006 (updated): captions 2-4 words, lower third, never over faces; the .srt stays in the bundle
+  burned_in: true           # P-006: premium captions, 2-4 words, lower third, never over faces; the .srt stays in the bundle
   max_words: 4
 
 render:
