@@ -46,3 +46,5 @@ emotion:
 reverb_wet:
   indoor: 0.07
   outdoor: 0.13
+# per-mood loudness offset (dB) added to the act intensity: quiet blue night and heartbeat, swell on strings and bells
+mood_db: {musicbox: 0.0, piano_wind: -1.5, heartbeat: -3.0, ice_drone: -2.0, strings_bells: 3.0}

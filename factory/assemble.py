@@ -301,9 +301,9 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
         if bg is None:
             notes.append({"shot": k, "fix": "backdrop_fallback", "key": key})
         desc = plan["locations"].get(sh["location"], "").lower()
-        indoor = any(w in desc for w in ("apartment", "kitchen", "corridor", "stairwell", "shop", "room"))
+        indoor = any(w in desc for w in ("apartment", "kitchen", "corridor", "stairwell", "shop", "room", "interior", "bathroom", "hollow", "workbench", "bathtub")) and "top-down aerial" not in desc
         amb = "room" if indoor else "city"
-        if sh["variant"] == "blackout":
+        if sh["variant"] == "blackout" or (film and not indoor and sh["variant"] == "night"):
             amb = "hum_dark" if indoor else "wind"
         act = sh.get("act") or (timeline_shots[-1]["act"] if timeline_shots else "hook")
         tension = B.tension_of([c["expr"] for c in sh["chars"]], act)
@@ -470,7 +470,7 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
         "total_s": round(total_s, 3), "audio_end_s": round(audio_end, 3), "lead_in_s": lead_in, "end_screen_s": end_s,
         "voice": [{"id": s["id"], "start": s["start"], "end": s["end"], "file": os.path.basename(s["file"]), "room": s.get("room", "indoor")} for s in plan["sentences"]],
         "music": [{"act": r["act"], "start": r["start"], "end": r["end"] if i + 1 < len(music_runs) else round(total_s, 3),
-                   "mood": r.get("mood") or acfg["music_mood"].get(r["act"], "tense"), "db": float(acfg["intensity_db"].get(r["act"], 0.0))}
+                   "mood": r.get("mood") or acfg["music_mood"].get(r["act"], "tense"), "db": float(acfg["intensity_db"].get(r["act"], 0.0)) + float((acfg.get("mood_db") or {}).get(r.get("mood") or "", 0.0))}
                   for i, r in enumerate(music_runs)],
         "ambience": ambience, "silence": silences, "chapters": chapters_out,
         "sfx": sorted(sfx_events, key=lambda e: e["t"]), "style": plan["style"],
