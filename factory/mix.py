@@ -199,7 +199,7 @@ def run(audio_plan_path: str, voice_dir: str, out_dir: str, cfg_audio: dict, luf
         sfx_bus[1, p:p + len(seg)] += seg * pan * 1.4
 
     vstereo = np.vstack([voice, voice]) * 1.0
-    sfx_bus = sfx_bus * np.maximum(sil, 0.5)[None, :]
+    sfx_bus = sfx_bus * sil[None, :]   # silence beats are real: no sfx tail may leak into them
     mix = vstereo + music + sfx_bus + (amb * sil)[None, :]
     # glue compression on the bus (tight dynamics: reference LRA ~3.5 LU)
     mono = mix.mean(axis=0)

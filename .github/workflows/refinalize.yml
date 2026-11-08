@@ -1,0 +1,145 @@
+name: refinalize
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: produce run id whose artifacts are re-finalized (audio re-mixed)
+        required: true
+permissions:
+  contents: read
+env:
+  AGE_RECIPIENT: age1a29zkhm3egxk30kdylsygf6pdkvkk2j6dz4h5qqacvga8ezf550qwl54rq
+jobs:
+  refinalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write
+      issues: write
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+      with:
+        node-version: '20'
+    - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+      with:
+        python-version: '3.11'
+    - name: System libraries
+      run: 'sudo apt-get update -qq
+
+        sudo apt-get install -y -qq ffmpeg age libnss3 libdbus-1-3 libatk1.0-0t64 libasound2t64 libxrandr2 libxkbcommon-x11-0 libxfixes3 libxcomposite1 libxdamage1 libgbm-dev libcups2t64 libatk-bridge2.0-0t64 libpango-1.0-0 libcairo2
+
+        python -m pip install numpy==1.26.4 scipy==1.13.1 soundfile==0.12.1 pillow==10.4.0 opencv-python-headless==4.10.0.84
+
+        '
+    - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+      with:
+        path: video/node_modules
+        key: node-${{ runner.os }}-${{ hashFiles('video/package.json', 'video/package-lock.json') }}
+    - name: Install video dependencies (for chunk re-renders)
+      working-directory: video
+      run: npm install --no-audit --no-fund --loglevel=error
+    - name: Download the earlier run artifacts (plan, assembled voice/plan, chunks, thumbs, music library)
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: 'R=${{ inputs.run_id }}
+
+        mkdir -p build/assembled build/chunks build/thumbs build/musiclib
+
+        gh run download $R -n assembled -D build/assembled
+
+        gh run download $R -n thumbs -D build/thumbs
+
+        gh run download $R -p ''chunk-*'' -D build/chunks
+
+        gh run download $R -p ''music-*'' -D build/musiclib
+
+        pip install -q numpy==1.26.4 scipy==1.13.1 soundfile==0.12.1
+
+        MUSIC_LIB_DIR=build/musiclib python -m factory.mix --plan build/assembled/audio_plan.json --voice build/assembled/voice --out build/assembled
+
+        '
+    - name: Concat, mux, QA, auto-fix loop (max 2 rounds), scorecard
+      id: fin
+      run: 'mkdir -p video/public/bg build/final
+
+        cp -r build/assembled/bg/. video/public/bg/
+
+        N=$(python -c "import json;print(len(json.load(open(''build/assembled/plan.json''))[''sources'']))")
+
+        python -m factory.finalize --chunks-dir build/chunks --assembled build/assembled --video-dir video --thumbs build/thumbs --out build/final --plan build/assembled/plan.json --sources $N
+
+        '
+    - name: PerTh watermark check on the final mp4 audio (records the result, never blocks)
+      continue-on-error: true
+      run: 'python -m pip install -q torch==2.6.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+
+        python -m pip install -q "setuptools<81" resemble-perth==1.0.1 librosa pyyaml tqdm
+
+        python -m factory.wmcheck build/final/final.mp4 build/assembled build/final/watermark_report.json
+
+        '
+    - name: Contact sheet (20 frames)
+      run: 'D=$(python -c "import json;print(json.load(open(''build/final/qa_report.json''))[''duration''][''actual''])")
+
+        ffmpeg -v error -y -i build/final/final.mp4 -vf "fps=20/$D,scale=480:-1,tile=5x4" -frames:v 1 build/final/contact.jpg
+
+        '
+    - name: Metadata and YouTube Info
+      if: steps.fin.outputs.status == 'ok'
+      run: 'NNN=$(python -c "import json;print(json.load(open(''build/assembled/plan.json''))[''nnn''])")
+
+        ST=$(python -c "import json;print(json.load(open(''build/assembled/plan.json''))[''short_title''])")
+
+        python -m factory.metadata --plan build/assembled/plan.json --chapters build/assembled/chapters.json --base "$(printf ''%03d'' $NNN) $ST $(printf ''%02d'' ${{ steps.fin.outputs.minutes }})min" --out build/final/info.txt
+
+        '
+    - name: Bundle (age-encrypted), release, notify
+      id: bundle
+      if: steps.fin.outputs.status == 'ok'
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: 'NNN=$(python -c "import json;print(json.load(open(''build/assembled/plan.json''))[''nnn''])")
+
+        ST=$(python -c "import json;print(json.load(open(''build/assembled/plan.json''))[''short_title''])")
+
+        python -m factory.bundle --nnn "$NNN" --short-title "$ST" --minutes ${{ steps.fin.outputs.minutes }} --video build/final/final.mp4 --thumb1 build/thumbs/thumb1.jpg --thumb2 build/thumbs/thumb2.jpg --info build/final/info.txt --srt build/assembled/captions.srt --recipient "$AGE_RECIPIENT" --out build/bundle
+
+        TAG="video-$(printf ''%03d'' $NNN)"
+
+        if gh release view "$TAG" >/dev/null 2>&1; then gh release upload "$TAG" build/bundle/* --clobber; else gh release create "$TAG" build/bundle/* --title "$TAG" --notes "video $(printf ''%03d'' $NNN): ready"; fi
+
+        gh issue create --title "video $(printf ''%03d'' $NNN): ready" --body "status: ok" || true
+
+        '
+    - name: YouTube private upload (skipped without secrets, never fails the video)
+      if: steps.fin.outputs.status == 'ok'
+      env:
+        GH_TOKEN: ${{ github.token }}
+        YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+        YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+        YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+      run: "NNN=$(python -c \"import json;print(json.load(open('build/assembled/plan.json'))['nnn'])\")\ngh release download ledger -p youtube-ledger.json -D build --clobber 2>/dev/null || echo '{}' > build/youtube-ledger.json\npython -m factory.publish --nnn \"$NNN\" --base \"${{ steps.bundle.outputs.base_name }}\" --video build/final/final.mp4 --thumb build/thumbs/thumb1.jpg --srt build/assembled/captions.srt --info build/final/info.txt --ledger build/youtube-ledger.json || true\nif [ -n \"$YT_REFRESH_TOKEN\" ]; then\n  gh release view ledger >/dev/null 2>&1 || gh release create ledger --title ledger --notes \"upload ledger (video numbers and ids only)\"\n  gh release upload ledger build/youtube-ledger.json --clobber || true\nfi\n"
+    - name: Report held video
+      if: steps.fin.outputs.status != 'ok'
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: 'NNN=$(python -c "import json;print(json.load(open(''build/assembled/plan.json''))[''nnn''])")
+
+        gh issue create --title "video $(printf ''%03d'' $NNN): needs_review" --body "status: needs_review (see qa-report artifact)" || true
+
+        '
+    - name: Small QA bundle (no video)
+      if: always()
+      run: 'mkdir -p build/qa
+
+        cp build/final/qa_report.json build/final/scorecard.txt build/final/status.json build/final/contact.jpg build/final/info.txt build/final/licence_report.json build/final/watermark_report.json build/qa/ 2>/dev/null || true
+
+        '
+    - uses: ./.github/actions/pack
+      if: always()
+      with:
+        name: qa-report
+        path: build/qa
+        mode: pilot
+        recipient: ${{ env.AGE_RECIPIENT }}
