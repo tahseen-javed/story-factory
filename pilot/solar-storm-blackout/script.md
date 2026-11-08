@@ -31,10 +31,10 @@ And two floors down, Mara's oxygen machine has nine minutes of battery left.
 // INTERRUPT silence
 @ rooftop.blackout | hero:stand/determined | sfx:wind
 To save her, you must do the one thing you swore you would never, ever do again.
-@ rooftop.blackout | hero:stand/sad | banner:"15 HOURS EARLIER" | sfx:whoosh
+@ rooftop.blackout | hero:stand/sad | sfx:whoosh
 Fifteen hours earlier, it was just a quiet Friday. Why did only your phone see this coming?
 // ACT act1
-@ hallway.night | hero:stand/shocked | fx:alarm_pulse | sfx:door_knock,alert_siren
+@ hallway.night | hero:stand/shocked | banner:"15 HOURS EARLIER" | fx:alarm_pulse | sfx:door_knock,alert_siren
 Three twelve a.m. Your phone screams, and you pound on Mara's door.
 @ hallway.night | hero:stand/worried | mara:stand/neutral | sfx:door_creak
 She opens it, an oxygen line under her nose, calm as a clock.

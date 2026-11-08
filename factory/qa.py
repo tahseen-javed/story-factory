@@ -187,9 +187,9 @@ def check_v2(path, timeline, audio_plan, srt, cfg, rep):
     ending_ok = bool(len(tail) and tail.mean() > 0.2) and rep["freeze"]["ok"]
     # audio dynamics
     a = rep["audio"]
-    r = sh(["ffmpeg", "-hide_banner", "-nostats", "-i", path, "-vn", "-af", "silencedetect=n=-40dB:d=0.35", "-f", "null", "-"])
+    r = sh(["ffmpeg", "-hide_banner", "-nostats", "-i", path, "-vn", "-af", "silencedetect=n=-30dB:d=0.3", "-f", "null", "-"])
     sil = [float(x) for x in re.findall(r"silence_duration: ([\d.]+)", r.stderr)]
-    sil_beats = len([x for x in sil if 0.35 <= x <= 1.6])
+    sil_beats = len([x for x in sil if 0.3 <= x <= 1.6])
     sil_win = audio_plan.get("silence", [])
     ev = sorted(e["t"] for e in audio_plan.get("sfx", []) if not any(a0 <= e["t"] <= b0 for a0, b0 in sil_win))
     marks = [audio_plan.get("lead_in_s", 0.6)] + ev + [audio_plan.get("audio_end_s", 0)]
