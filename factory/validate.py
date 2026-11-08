@@ -222,6 +222,17 @@ def validate_script(sc, raw: str, cfg: dict, prefs: dict, mode: str = "job") -> 
     elif not any(lo_w <= w <= hi_w for _, w in banner_words):
         _warn(I, "hook", f"banner not at 20-40 s (shot starts at word {banner_words[0][1]}, want {lo_w}-{hi_w})", banner_words[0][0].line)
 
+    # v2.1 hook rubric: 3 scored options, the picked one is the best and clears the floor
+    from . import hookscore
+
+    opts, pick = hookscore.parse_options(raw)
+    if len(opts) < 3 or pick not in opts:
+        _err(I, "hook-options", "need '// HOOKOPT 1|2|3 | text' (3 options) and '// HOOKPICK n'")
+    else:
+        sc_ = {n: hookscore.score(t)["total"] for n, t in opts.items()}
+        if sc_[pick] < max(sc_.values()) - 1e-9 or sc_[pick] < float(((prefs.get("hooks") or {}).get("min_score", 6.0))):
+            _err(I, "hook-options", f"picked option {pick} scores {sc_[pick]} (scores {sc_}); pick the best and reach the floor")
+
     # ---------- CTA / end screen ----------
     if len(cta_shots) != 1:
         _err(I, "cta", f"need exactly one cta:subscribe shot, found {len(cta_shots)}")

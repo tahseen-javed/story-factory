@@ -9,3 +9,9 @@ thumbnail:
 script:
   banned_words: []
   required_tags: []
+delivery:               # P-004
+  time_budget_min: {video_4min: 35, video_10_12min: 60}
+  deliver_files: 3
+hooks:                  # P-003
+  options_per_script: 3
+  min_score: 6.0

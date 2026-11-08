@@ -1,0 +1,31 @@
+{
+ "prepare": {
+  "parallel_jobs": 1,
+  "slowest_s": 7
+ },
+ "images": {
+  "parallel_jobs": 7,
+  "slowest_s": 15
+ },
+ "tts": {
+  "parallel_jobs": 8,
+  "slowest_s": 12
+ },
+ "assemble": {
+  "parallel_jobs": 1,
+  "slowest_s": 60
+ },
+ "thumbs": {
+  "parallel_jobs": 1,
+  "slowest_s": 85
+ },
+ "render": {
+  "parallel_jobs": 8,
+  "slowest_s": 863
+ },
+ "finalize": {
+  "parallel_jobs": 1,
+  "slowest_s": 575
+ },
+ "note": "run 42464375998 (v2, TTS+images cached). Wall-clock of the run was ~25 min; render and finalize dominate."
+}

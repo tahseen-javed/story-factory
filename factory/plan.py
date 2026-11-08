@@ -164,6 +164,10 @@ def main(argv=None):
     with open(os.path.join(out, "plan.json"), "w", encoding="utf-8") as fh:
         json.dump(plan, fh, indent=1, ensure_ascii=False)
     emit_outputs(plan)
+    from . import hookscore
+
+    opts, pick = hookscore.parse_options(open(os.path.join(a.job_dir, "script.md"), encoding="utf-8").read())
+    json.dump({"options": {n: {"text": t, **hookscore.score(t)} for n, t in opts.items()}, "picked": pick}, open(os.path.join(out, "hook_log.json"), "w"), indent=1)
     print(f"plan ok: {len(plan['shots'])} shots, {len(plan['sentences'])} sentences, {plan['total_words']} words, "
           f"~{plan['est_narration_s']}s narration, {len(plan['image_groups'])} locations -> {out}/plan.json")
     return 0

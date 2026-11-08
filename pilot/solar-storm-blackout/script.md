@@ -20,6 +20,10 @@ MUSIC_MOODS:
 ## CH1 | FRIDAY 6:33 PM
 // RITUAL tracker: the survival log opens every chapter
 // ACT hook
+// HOOKOPT 1 | Friday, six thirty-three p.m. Your phone says one percent, and the whole city is dark. Not one window is lit. And two floors down, Mara's oxygen machine has nine minutes of battery left. To save her, you must do the one thing you swore you would never, ever do again.
+// HOOKOPT 2 | Mara's oxygen machine has nine minutes of battery left, and the whole city is dark. To save her, you must do the one thing you swore you would never do again.
+// HOOKOPT 3 | Fifteen hours before the storm, your phone screams. Why did only your phone get the warning?
+// HOOKPICK 1
 // LOOP open never_drive: you swore you would never drive again
 @ apartment.night | hero:phone_hold/scared | ov:label_tag("BATTERY 1%") | fx:flicker | sfx:beep,heartbeat | track:{hours:0,phone:"1%",water:"6 L",cash:"$40"}
 Friday, six thirty-three p.m. Your phone says one percent, and the whole city is dark.
