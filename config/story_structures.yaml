@@ -1,0 +1,17 @@
+# P-009: story structure variants. Rotate so no two consecutive videos share a structure, an opening image type or an ending device.
+# Every variant still follows the 7-beat engine (hook + wound, small win, rule of the world, escalation, midpoint reversal, climax decision, twist + echo last line).
+version: 1
+rotation: {no_repeat_consecutive: [structure, opening_image, ending_device]}
+variants:
+  - {id: single_day_countdown, how: "one day, hours ticking on a world clock", opening_image: clock_close_up, ending_device: last_tick_silence, formats: [A, B]}
+  - {id: seasonal_cycle, how: "four seasons, the same pocket full or empty", opening_image: season_window, ending_device: first_snowfall_echo, formats: [A, B, C]}
+  - {id: two_worlds_contrast, how: "two worlds cut against each other, one with too much, one with too little", opening_image: split_screen, ending_device: worlds_merge_frame, formats: [A, B]}
+  - {id: diary_entries, how: "short dated entries in the hero's handwriting", opening_image: open_diary, ending_device: blank_page_line, formats: [A, B]}
+  - {id: reversed_timeline, how: "the story is told backwards, the first scene is the ending", opening_image: aftermath_still, ending_device: first_scene_reveal, formats: [A]}
+  - {id: one_location_bottle, how: "one room, one shot size per beat, the world comes to the room", opening_image: room_wide, ending_device: door_opens_light, formats: [A]}
+  - {id: relay_three_characters, how: "three heroes pass one object, each owns one act", opening_image: object_hand_off, ending_device: object_returns, formats: [B, C]}
+  - {id: object_tells_story, how: "the story is narrated by a coin, a jar or a wallet", opening_image: object_pov, ending_device: object_goes_quiet, formats: [A, B]}
+  - {id: mirror_twist, how: "the second half mirrors the first with one changed choice", opening_image: mirrored_frame, ending_device: mirror_crack_clear, formats: [A, B]}
+  - {id: tiny_vs_giant, how: "a tiny hero against a giant symbolic thing, scale shifts at the midpoint", opening_image: tiny_in_vast, ending_device: scale_flip, formats: [A, B, C]}
+  - {id: letters_never_sent, how: "letters written and kept, one is finally sent", opening_image: letter_stack, ending_device: stamp_sound, formats: [A, B]}
+  - {id: market_day_ledger, how: "one market day told as ledger lines that turn into faces", opening_image: ledger_page, ending_device: ledger_closes_open_hand, formats: [A, B, C]}

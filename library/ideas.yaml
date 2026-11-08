@@ -1,0 +1,36 @@
+# Pocket Change Films idea library (P-009). Unused-first queue; never repeat an idea unless the angle is truly different (Part 2/3 of a series is fine).
+# NOTE 2026-11-08: the 30-idea brief text was not included in the owner's message. Entries i01-i10 use the owner's title words and queue order;
+# every other field is a Claude draft (source: draft_without_brief) to be replaced when the brief is pasted. i11-i30 are placeholders.
+version: 1
+queue_order: [i01, i02, i03, i04, i05, i06, i07, i08, i09, i10]
+ideas:
+  - {id: i01, title_word: BROKE, series: "The Leaky Pocket", world: "a town where everyone's pockets slowly leak coins", hero: "Pip, a round-headed kid in a patched coat", escalation: "the leak grows daily and neighbours hide their pockets", twist: "the coins never vanished, they rolled downhill into the one pocket that had none", ending: "Pip's patched pocket hums with other people's change", hook: "My pockets have been leaking since Monday, and the whole street can hear it.", thumbnail: "cute kid holding an empty turned-out pocket, one coin rolling away", status: unused, sensitivity: low, source: draft_without_brief}
+  - {id: i02, title_word: DEBT, series: "The Heavy Shell", world: "a village of snail-kids whose shells grow heavier with every 'later'", hero: "Moss, a snail-kid with a lopsided shell", escalation: "the shell becomes too heavy to climb the village hill", twist: "the weight was never the shell, it was the secret of hiding it", ending: "Moss sets the shell on the village table and it is the smallest one there", hook: "I have carried this house for three winters, and it was never mine.", thumbnail: "tiny snail-kid under a giant tower-shaped shell stacked with bills", status: unused, sensitivity: medium, source: draft_without_brief}
+  - {id: i03, title_word: ENOUGH, series: "The One-Loaf Bakery", world: "a bakery whose oven bakes exactly one loaf a day", hero: "Bun, a baker-kid with flour-dusted cheeks", escalation: "a bigger bakery opens across the street with endless shelves", twist: "the one loaf grows warmer and larger each time it is passed along", ending: "Bun closes the shop with a single empty plate and a full room", hook: "The oven only makes one loaf, and the whole town is watching me count.", thumbnail: "cute baker holding one glowing loaf against rows of identical grey loaves", status: unused, sensitivity: low, source: draft_without_brief}
+  - {id: i04, title_word: SALE, series: "The Mall of Price Tags", world: "a sleepy mall of talking price tags and countdown clocks", hero: "Tag, a tiny shopper in oversized sneakers", escalation: "every clock shrinks the aisles and everything turns red", twist: "the countdown was only a nightlight keeping the shop awake", ending: "Tag leaves with an empty bag and a quiet pocket", hook: "The clock said twelve minutes, and everything I wanted was glowing.", thumbnail: "cute shopper tugged by hundreds of red tags and one giant clock", status: unused, sensitivity: low, source: draft_without_brief}
+  - {id: i05, title_word: RECEIPTS, series: "The Lantern Town", world: "a paper-lantern town where every receipt is a lantern on a string", hero: "Lumi, a lantern keeper with big round glasses", escalation: "the strings tangle until the sky is covered in other people's lanterns", twist: "the longest receipt lists the things no lantern ever bought", ending: "Lumi lets one lantern drift up unsigned", hook: "Everyone in this town can read my lanterns before I do.", thumbnail: "cute lantern keeper under a sky of tangled glowing receipts", status: unused, sensitivity: low, source: draft_without_brief}
+  - {id: i06, title_word: SPLIT, series: "The Table That Grows", world: "a round table that grows a seat for everyone who shares a pie", hero: "Nib, a shy mouse-kid with a tiny fork", escalation: "the pie shrinks as the table grows and the slices get counted", twist: "the pie was never the point, the table was", ending: "Nib passes the fork without counting", hook: "Six of us, one pie, and I am the only one doing maths.", thumbnail: "cute mouse-kid holding a fork over a pie cut into too many slices", status: unused, sensitivity: low, source: draft_without_brief}
+  - {id: i07, title_word: LATER, series: "The Door Called Later", world: "a clock town with one tall door labelled 'Later'", hero: "Wick, a sleepy candle-kid", escalation: "the door grows taller each time Wick puts something behind it", twist: "the door opens onto a small, bright room called Today", ending: "Wick props the door open with a spoon", hook: "I put it behind the door yesterday, and now the door is taller than the town.", thumbnail: "cute candle-kid dwarfed by a giant door stacked with envelopes", status: unused, sensitivity: medium, source: draft_without_brief}
+  - {id: i08, title_word: "ONE DAY", series: "The Coin Stairs", world: "a staircase of coins climbing to a cloud called One Day", hero: "Skip, a hopeful kid with a tiny backpack", escalation: "each step needs two coins to climb one", twist: "the cloud is a bench with a view of where Skip started", ending: "Skip sits down and waves at the small house below", hook: "I have been climbing since I was seven, and the cloud keeps moving.", thumbnail: "cute kid halfway up a staircase of coins toward a far cloud", status: unused, sensitivity: low, source: draft_without_brief}
+  - {id: i09, title_word: TIP, series: "The Seed Diner", world: "a diner of tiny creatures where tips are glowing seeds", hero: "Dot, a waiter-kid with a wobbling tray", escalation: "a rainy night and no seeds in the jar", twist: "the seeds Dot gave away grew into the diner's roof", ending: "Dot sweeps up one lonely seed and plants it", hook: "Rainy night, empty jar, and a customer who will not look up.", thumbnail: "cute waiter-kid holding one glowing seed under a leaking roof", status: unused, sensitivity: low, source: draft_without_brief}
+  - {id: i10, title_word: "JUST ENOUGH", series: "The Lighthouse Chain", world: "a lighthouse keeper with exactly enough oil for one night", hero: "Ember, a small keeper in a big yellow raincoat", escalation: "storm clouds arrive and the keeper counts the oil twice", twist: "every other lighthouse has just enough too, and together they make one chain of light", ending: "Ember's lamp dims, and the next one on the coast turns on", hook: "I had exactly enough oil for one night, and the storm knew it.", thumbnail: "cute keeper with a tiny flame beside a vast dark sea", status: unused, sensitivity: low, source: draft_without_brief}
+  - {id: i11, status: awaiting_brief}
+  - {id: i12, status: awaiting_brief}
+  - {id: i13, status: awaiting_brief}
+  - {id: i14, status: awaiting_brief}
+  - {id: i15, status: awaiting_brief}
+  - {id: i16, status: awaiting_brief}
+  - {id: i17, status: awaiting_brief}
+  - {id: i18, status: awaiting_brief}
+  - {id: i19, status: awaiting_brief}
+  - {id: i20, status: awaiting_brief}
+  - {id: i21, status: awaiting_brief}
+  - {id: i22, status: awaiting_brief}
+  - {id: i23, status: awaiting_brief}
+  - {id: i24, status: awaiting_brief}
+  - {id: i25, status: awaiting_brief}
+  - {id: i26, status: awaiting_brief}
+  - {id: i27, status: awaiting_brief}
+  - {id: i28, status: awaiting_brief}
+  - {id: i29, status: awaiting_brief}
+  - {id: i30, status: awaiting_brief}

@@ -14,6 +14,7 @@ My standing preferences (always loaded, always obeyed):
 - A: owner ratings live in docs/QUALITY_LOG.md (001 v2=5.0, v2.1=7.9); QA rating is calibrated to them; every next video must beat the previous owner rating (8.5+, then 9+).
 - B: all characters cute (big round heads, large friendly eyes, soft shapes, warm colours, never scary); a new, clearly different cast per video, logged in library/history.json; fail on high similarity.
 - C: locked, distinct voices per character + narrator in config/characters.yaml (Chatterbox variants, Kokoro-82M, or owner recordings only; never clone anyone).
+- P-009: channel = Pocket Change Films (animated money-emotion allegories, no advice, cute hero, ideas from library/ideas.yaml, structures from config/story_structures.yaml, title "[WORD] | An Animated Short Film", facts.json or "no factual claims"); docs/PROJECT_BRIEF.md is the source of truth; no disaster niche.
 - D: run factory/preflight.py before every video (time, licence gate, monetization, cast+voices, captions P-006 + blotch check, previous rating); auto-fix, never ask.
 
 ## 1. Mission
