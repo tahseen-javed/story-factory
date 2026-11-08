@@ -481,7 +481,78 @@ export const FlashForwardBanner: React.FC<{ text: string; frame: number; total: 
   );
 };
 
+
+// ---- Pocket Change Films: thought bubble and end card ----
+export const ThoughtBubble: React.FC<OvProps> = ({ args, frame, total }) => {
+  const text = String(args[0]);
+  const w = clamp(text.length * 27 + 140, 420, 1000);
+  const bumps = Array.from({ length: 14 }, (_, i) => i);
+  return (
+    <OverlayFrame frame={frame} total={total} rot={-1} x={1180} y={250}>
+      <svg width={w + 80} height={330} viewBox={`0 0 ${w + 80} 330`} style={{ overflow: "visible" }}>
+        <g transform="translate(40 10)">
+          {bumps.map((i) => (
+            <circle key={i} cx={40 + ((w - 80) * i) / 13} cy={i % 2 ? 40 : 190} r={46} fill="#fffdf6" stroke={INK} strokeWidth={6} />
+          ))}
+          <rect x={20} y={36} width={w - 20} height={170} rx={80} fill="#fffdf6" />
+          <circle cx={60} cy={246} r={20} fill="#fffdf6" stroke={INK} strokeWidth={5} />
+          <circle cx={20} cy={292} r={11} fill="#fffdf6" stroke={INK} strokeWidth={4} />
+        </g>
+        <foreignObject x={70} y={50} width={w - 20} height={160}>
+          <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", fontFamily: FONT.hand, fontSize: 58, lineHeight: 1.05, color: INK }}>
+            <Reveal p={prog(frame, 8, 14)}>{text}</Reveal>
+          </div>
+        </foreignObject>
+      </svg>
+    </OverlayFrame>
+  );
+};
+
+export const EndCard: React.FC<OvProps> = ({ args, frame }) => {
+  const a = easeOut(prog(frame, 0, 20));
+  const word = String(args[0] || "");
+  const sub = String(args[1] || "");
+  return (
+    <div style={{ position: "absolute", inset: 0, opacity: a }}>
+      <div style={{ position: "absolute", left: 110, top: 190, width: 880, height: 560, background: PAPER, border: `8px solid ${INK}`, borderRadius: 26, transform: "rotate(-1.2deg)", boxShadow: "0 24px 30px rgba(0,0,0,0.35)" }}>
+        <div style={{ position: "absolute", left: 40, top: 30, fontFamily: FONT.ui, fontWeight: 900, fontSize: 30, letterSpacing: 10, color: "#7d416f" }}>NEXT FILM</div>
+        <div style={{ position: "absolute", left: 36, top: 70, fontFamily: FONT.display, fontSize: 250, lineHeight: 1, color: INK }}>{word}</div>
+        <div style={{ position: "absolute", left: 40, top: 360, width: 520, fontFamily: FONT.hand, fontSize: 58, lineHeight: 1.1, color: INK }}>{sub}</div>
+        <svg width={260} height={420} viewBox="0 0 260 420" style={{ position: "absolute", right: 30, top: 90 }}>
+          <path d="M120,90 C60,150 90,230 130,250 C160,262 170,300 160,330" fill="none" stroke="#9b94ad" strokeWidth={26} strokeLinecap="round" />
+          <ellipse cx={150} cy={270} rx={62} ry={48} fill="#b9b2c8" stroke={INK} strokeWidth={7} />
+          <circle cx={118} cy={80} r={34} fill="#b9b2c8" stroke={INK} strokeWidth={7} />
+          <path d="M146,76 L236,96 L146,100 Z" fill="#f2b632" stroke={INK} strokeWidth={6} strokeLinejoin="round" />
+          <circle cx={128} cy={72} r={7} fill={INK} />
+          <path d="M140,316 L132,404 M170,316 L186,404" stroke={INK} strokeWidth={9} strokeLinecap="round" />
+          <rect x={196} y={236} width={26} height={34} rx={7} fill="#ffe08a" stroke={INK} strokeWidth={5} />
+        </svg>
+      </div>
+      <div style={{ position: "absolute", left: 1120, top: 190, width: 690, height: 330, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
+        <svg width={230} height={230} viewBox="-115 -115 230 230" style={{ filter: "drop-shadow(0 14px 14px rgba(0,0,0,0.35))" }}>
+          <circle r={104} fill="#b79be0" stroke={INK} strokeWidth={8} />
+          {[0, 60, 120].map((d) => (
+            <g key={d} transform={`rotate(${d})`}>
+              <path d="M0,-80 L0,80 M-20,-58 L0,-36 L20,-58 M-20,58 L0,36 L20,58" stroke="#ffffff" strokeWidth={9} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+            </g>
+          ))}
+        </svg>
+        <div style={{ marginTop: 14, fontFamily: FONT.display, fontSize: 70, color: "#fff", WebkitTextStroke: `8px ${INK}`, paintOrder: "stroke fill", letterSpacing: 4 }}>SUBSCRIBE</div>
+      </div>
+      <div style={{ position: "absolute", left: 1170, top: 560, width: 580, height: 190, background: PAPER, border: `8px solid ${INK}`, borderRadius: 22, transform: "rotate(1.2deg)", display: "flex", alignItems: "center", justifyContent: "center", gap: 26, boxShadow: "0 22px 26px rgba(0,0,0,0.35)" }}>
+        <svg width={84} height={84} viewBox="-42 -42 84 84"><circle r={38} fill="#c8453b" stroke={INK} strokeWidth={6} /><path d="M-12,-20 L24,0 L-12,20 Z" fill="#fff" stroke={INK} strokeWidth={4} strokeLinejoin="round" /></svg>
+        <div style={{ fontFamily: FONT.display, fontSize: 64, color: INK, letterSpacing: 2 }}>BEST VIDEO</div>
+      </div>
+      <div style={{ position: "absolute", left: 0, right: 0, bottom: 52, textAlign: "center" }}>
+        <span style={{ background: "rgba(20,18,26,0.72)", color: "#f2e8d2", fontFamily: FONT.ui, fontWeight: 700, fontSize: 30, padding: "10px 28px", borderRadius: 14 }}>This is a fictional story. It is not financial advice.</span>
+      </div>
+    </div>
+  );
+};
+
 export const OVERLAYS: Record<string, React.FC<any>> = {
+  thought_bubble: ThoughtBubble,
+  end_card: EndCard,
   notepad_tracker: NotepadTracker,
   calendar_countdown: CalendarCountdown,
   sticky_note: StickyNote,

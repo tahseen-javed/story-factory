@@ -26,8 +26,9 @@ Enforced by: text-only (applied by Claude in every reply)
 Status: active
 
 ## P-006 | 2026-11-08 | visual
-Rule: No burned-in captions in the video (owner request). Supersedes the burned-in-captions part of P-002; the .srt is still produced and stays in the release bundle for YouTube. Say "sirf is video tak" to limit it to one video.
-Enforced by: config/factory.yaml captions.burned_in=false; assemble.py; qa text_safety; tests/test_v2.py
+Rule (updated by the 002 GIFT brief): premium burned-in captions, 2-4 words at a time, lower third, never over faces, word highlight; the .srt stays in the release bundle. (Earlier text 'no burned-in captions' is superseded.)
+Superseded text: No burned-in captions in the video (owner request).
+Enforced by: config/factory.yaml captions.burned_in=true, captions.max_words=4; assemble.py build_captions; qa text_safety; tests/test_v2.py
 Status: active
 
 ## P-007 | 2026-11-08 | delivery

@@ -54,6 +54,11 @@ def validate_dir(job_dir: str, cfg=None, prefs=None):
     cfg = cfg or load_cfg()
     prefs = prefs or load_prefs()
     issues: list = []
+    jy = os.path.join(job_dir, "job.yaml")
+    if os.path.exists(os.path.join(job_dir, "script.txt")) and os.path.exists(jy) and (miniyaml.load_file(jy) or {}).get("kind") == "film":
+        from . import film
+
+        return film.validate(job_dir, cfg), None
     script_path = os.path.join(job_dir, "script.md")
     if not os.path.exists(script_path):
         return [Issue("error", "missing-script", f"{script_path} not found")], None

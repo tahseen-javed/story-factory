@@ -212,7 +212,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mood: [calm, tense, urgent, sorrow, climax, hopeful]
+        mood: [calm, tense, urgent, sorrow, climax, hopeful, musicbox, piano_wind, heartbeat, ice_drone, strings_bells]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
@@ -476,7 +476,7 @@ jobs:
         run: |
           NNN=$(python -c "import json;print(json.load(open('build/assembled/plan.json'))['nnn'])")
           ST=$(python -c "import json;print(json.load(open('build/assembled/plan.json'))['short_title'])")
-          python -m factory.bundle --nnn "$NNN" --short-title "$ST" --minutes ${{ steps.fin.outputs.minutes }} --video build/final/final.mp4 --thumb1 build/thumbs/thumb1.jpg --thumb2 build/thumbs/thumb2.jpg --info build/final/info.txt --srt build/assembled/captions.srt --recipient "$AGE_RECIPIENT" --out build/bundle
+          python -m factory.bundle --nnn "$NNN" --short-title "$ST" --minutes ${{ steps.fin.outputs.minutes }} --video build/final/final.mp4 --thumb1 build/thumbs/thumb1.jpg --thumb2 build/thumbs/thumb2.jpg --info build/final/info.txt --srt build/assembled/captions.srt --recipient "$AGE_RECIPIENT" --base "$(python -c "import json;print(json.load(open('build/assembled/plan.json')).get('base_name') or '')")" --out build/bundle
           TAG="video-$(printf '%03d' $NNN)"
           if gh release view "$TAG" >/dev/null 2>&1; then gh release upload "$TAG" build/bundle/* --clobber; else gh release create "$TAG" build/bundle/* --title "$TAG" --notes "video $(printf '%03d' $NNN): ready"; fi
           gh issue create --title "video $(printf '%03d' $NNN): ready" --body "status: ok" || true

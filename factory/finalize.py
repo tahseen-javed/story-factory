@@ -98,16 +98,24 @@ def main(argv=None):
     lic = licence.check(ap, ar)
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     job_dir = os.path.join(root, "pilot" if plan.get("mode") == "pilot" else "jobs", plan["slug"])
+    if plan.get("kind") == "film":
+        job_dir = os.path.join(root, "pilot", plan["slug"]) if os.path.isdir(os.path.join(root, "pilot", plan["slug"])) else os.path.join(root, "jobs", plan["slug"])
     mon = monetization.run(plan, props_data["timeline"], job_dir, cfg)
     from . import cast as castmod, voicecheck
     from .parse import parse as parse_script
     from .uniqueness import shot_signature
 
-    sc_ = parse_script(open(os.path.join(job_dir, "script.md"), encoding="utf-8").read())
+    if plan.get("kind") == "film":
+        chars_ = {k: {"params": v["params"]} for k, v in plan["characters"].items()}
+        sig_ = [f"{s['location']}.{s['variant']}|{len(s['chars'])}" for s in plan["shots"]]
+        text_ = " ".join(s["text"] for s in plan["sentences"])
+    else:
+        sc_ = parse_script(open(os.path.join(job_dir, "script.md"), encoding="utf-8").read())
+        chars_, sig_, text_ = sc_.characters, shot_signature(sc_), " ".join(s.text for s in sc_.shots)
     enforce = int(plan.get("style_version", 1)) >= 3
-    cute = castmod.cute_check(sc_.characters, cfg["style"], " ".join(s.text for s in sc_.shots), enforce)
-    uniq = castmod.unique_check(sc_.characters, shot_signature(sc_), castmod.load_history(), cfg["style"], plan.get("nnn"))
-    vprof = voicecheck.profiles_ok(cfg["characters"], sc_.characters)
+    cute = castmod.cute_check(chars_, cfg["style"], text_, enforce)
+    uniq = castmod.unique_check(chars_, sig_, castmod.load_history(), cfg["style"], plan.get("nnn"))
+    vprof = voicecheck.profiles_ok(cfg["characters"], chars_)
     rep["cast"], rep["voices"] = {"cute": cute, "unique": uniq}, vprof
     rep["categories"]["cast"] = (cute["ok"] or not enforce) and uniq["ok"]
     rep["categories"]["voices"] = vprof["ok"] or not enforce

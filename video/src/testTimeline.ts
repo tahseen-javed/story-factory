@@ -5,9 +5,22 @@ const MARA = { outfit: "plum", hat: "none", hair: "bun", age: "old" };
 const hero = (pose: string, expr: string, x = 0.5, facing: 1 | -1 = 1, prop?: string): CharSpec & { prop?: string } => ({ id: "hero", rig: "rig_hero", params: HERO, pose, expr, x, facing, ...(prop ? { prop } : {}) });
 const mara = (pose: string, expr: string, x = 0.7, facing: 1 | -1 = -1, prop?: string): CharSpec & { prop?: string } => ({ id: "mara", rig: "rig_hero", params: MARA, pose, expr, x, facing, ...(prop ? { prop } : {}) });
 
+const OTTO = { rig: "rig_hero", species: "otter", skin: "#8a5a3c", outfit: "#8a5a3c", belly: "#f3e3c3", hat: "beanie", hatColor: "#d9c7a3", hair: "none", headScale: 1.5, eyeScale: 1.25 };
+const JUNE = { rig: "rig_hero", species: "owl", skin: "#f4f1ea", outfit: "#b79be0", earmuffs: "#b79be0", hair: "none", headScale: 1.5, eyeScale: 1.25 };
+const BRAMBLE = { rig: "rig_hero", species: "badger", skin: "#9a9ca3", outfit: "#c8453b", hair: "none", bodyScale: 1.2, headScale: 1.5, eyeScale: 1.25 };
+const MOUSE = { rig: "rig_hero", species: "mouse", skin: "#c9b8a8", outfit: "#c9b8a8", hair: "none", bodyScale: 0.3, headScale: 1.5, eyeScale: 1.25 };
+const an = (id: string, params: any, pose: string, expr: string, x: number, extra: any = {}): any => ({ id, rig: "rig_hero", params, pose, expr, x, facing: x < 0.5 ? 1 : -1, ...extra });
+
 type Def = Partial<Shot> & { loc: string; variant: string; camera: [string, number, number] };
 
+const BOX = (rib: string, frown: number, sink: number, x = 0.62, y = 0.78, s = 1.2) => ({ k: "box", x, y, s, frown, sink, rib });
 const DEFS: Def[] = [
+  { loc: "home", variant: "day", camera: ["push", 1.0, 1.12], chars: [an("otto", OTTO, "sit", "worried", 0.3), an("mouse", MOUSE, "sit", "worried", 0.62, { dy: -120 })], props: [BOX("red", 1, 0.3)] as any, overlay: { name: "thought_bubble", args: ["What if she thinks it's cheap?"], inFrame: 6, outFrame: 54 } },
+  { loc: "lantern", variant: "night", camera: ["push", 1.02, 1.1], grade: "gold", chars: [an("otto", OTTO, "stand", "relieved", 0.3), an("june", JUNE, "stand", "shocked", 0.7), an("mouse", MOUSE, "stand", "neutral", 0.5)], props: [BOX("red", 0, 0, 0.45), BOX("lilac", 0, 0, 0.58, 0.8, 1.0)] as any, fx: ["snow"] },
+  { loc: "doorstep", variant: "night", camera: ["pull", 1.2, 1.05], chars: [an("bramble", BRAMBLE, "stand", "relieved", 0.7), an("otto", OTTO, "walk", "sad", 0.3)], props: [{ k: "bell", x: 0.86, y: 0.5, s: 1.5 }] as any, fx: ["snow"] },
+  { loc: "bath", variant: "day", camera: ["push", 1.0, 1.1], split: true, bg2: null, chars: [an("otto", OTTO, "stand", "relieved", 0.5, { rot: -90, dy: -40, side: "L" }), an("june", JUNE, "stand", "neutral", 0.5, { side: "R" })] },
+  { loc: "river", variant: "night", camera: ["dutch", 1.05, 1.12], cracks: { x: 0.5, y: 0.8, n: 8 } as any, chars: [an("otto", OTTO, "stand", "scared", 0.28)], props: [BOX("red", 1, 0.5, 0.56, 0.8, 1.3)] as any, fx: ["snow"] },
+  { loc: "row", variant: "dusk", camera: ["parallax_drift", 1.1, 1.1], grade: "gold", chars: [], overlay: { name: "end_card", args: ["TIP", "The Heron Who Counted Thank-Yous"], inFrame: 0, outFrame: 60 }, fx: ["snow"] },
   { loc: "apartment", variant: "night", camera: ["push", 1.0, 1.16], chars: [hero("sit_bed", "scared", 0.3)], overlay: { name: "phone_alert", args: ["EMERGENCY ALERT", "Severe space weather. Impact in 15 hours"], inFrame: 8, outFrame: 56 }, fx: ["flicker"], timeCard: { text: "FRIDAY 3:12 AM", frames: 56 } },
   { loc: "apartment", variant: "night", camera: ["push", 1.04, 1.18], chars: [hero("phone_hold", "shocked", 0.35)], overlay: { name: "timer", args: ["15:00:00", "UNTIL IMPACT"], inFrame: 4, outFrame: 56 } },
   { loc: "street", variant: "night", camera: ["pan_r", 1.12, 1.12], chars: [], overlay: { name: "paper_diagram", args: ["SOLAR STORM PATH", "Sun", "Storm cloud", "Earth", "Power grid"], inFrame: 4, outFrame: 58 }, fx: ["dust"] },
@@ -38,7 +51,7 @@ export function testTimeline(): Timeline {
     bg: null,
     layers: null,
     floorY: 0.9,
-    chars: (d.chars as any) || [],
+    chars: ((d.chars as any) || []).map((c: any) => ({ ...c, params: { ...c.params, headScale: c.params?.headScale ?? 1.5, eyeScale: c.params?.eyeScale ?? 1.25 } })),
     overlay: (d.overlay as any) || null,
     camera: { preset: d.camera[0], z0: d.camera[1], z1: d.camera[2], fx: 0.5, fy: 0.55 },
     fx: d.fx || [],
@@ -48,9 +61,13 @@ export function testTimeline(): Timeline {
     track: (d.track as any) || { hours: 15, water: "6 L" },
     prevTrack: (d.prevTrack as any) || {},
     text: "",
+    props: (d as any).props || [],
+    cracks: (d as any).cracks || null,
+    split: !!(d as any).split,
+    bg2: null,
     framing: ["medium", "closeup", "wide", "ots", "low", "insert", "back", "silhouette", "profile", "xwide"][i % 10],
     trans: ["cut", "whip", "flash", "glitch", "punch", "smash"][i % 6],
-    grade: ["warm", "cold", "alarm", "grey", "gold"][i % 5],
+    grade: (d as any).grade || ["warm", "cold", "alarm", "grey", "gold"][i % 5],
     crowd: i % 5 === 0,
   }));
   shots.forEach((sh) => sh.chars.forEach((c: any, k: number) => { c.speaks = k === 0; c.view = sh.framing === "back" || (sh.framing === "ots" && k === 0) ? "back" : k % 2 ? "front" : "three_quarter"; c.silhouette = sh.framing === "silhouette"; }));

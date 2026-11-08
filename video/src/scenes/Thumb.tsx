@@ -5,6 +5,7 @@ import { Rig } from "../characters/Rig";
 import { ProceduralBackdrop } from "./Backdrop";
 import { OVERLAYS } from "../overlays/Overlays";
 import { useFonts } from "../fonts";
+import { GiftBox, Cracks } from "./Story";
 
 export type ThumbSpec = {
   concept: "A" | "B";
@@ -84,7 +85,64 @@ const Headline: React.FC<{ text: string; x: number; y: number; accent: string; s
   );
 };
 
+
+const FilmThumb: React.FC<{ spec: any }> = ({ spec }) => {
+  const A = spec.film === "A";
+  const left = spec.layout === "left";
+  return (
+    <div style={{ position: "absolute", left: 0, top: 0, width: W, height: H, transform: "scale(0.6667)", transformOrigin: "0 0", overflow: "hidden", background: "#000" }}>
+      <AbsoluteFill>
+        <div style={{ position: "absolute", inset: -40, filter: "blur(5px) saturate(1.2) contrast(1.08)", transform: "scale(1.1)" }}>
+          {spec.bg ? <Img src={staticFile(spec.bg)} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <ProceduralBackdrop location={spec.location} variant={spec.variant} />}
+        </div>
+        <AbsoluteFill style={{ background: A ? "#12315a" : "#2c2a78", opacity: A ? 0.3 : 0.5, mixBlendMode: "multiply" }} />
+        {!A ? <AbsoluteFill style={{ background: "radial-gradient(circle at 84% 26%, rgba(255,190,90,0.9), rgba(255,160,60,0) 22%)", mixBlendMode: "screen" }} /> : null}
+        <AbsoluteFill style={{ background: "radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.55) 100%)" }} />
+      </AbsoluteFill>
+      <svg width={W} height={H} style={{ position: "absolute", inset: 0 }}>
+        <defs>
+          <filter id="rimf" x="-20%" y="-20%" width="140%" height="140%">
+            <feMorphology in="SourceAlpha" operator="dilate" radius="7" result="d" />
+            <feFlood floodColor={A ? "#ffd27a" : "#d9c6ff"} result="c" />
+            <feComposite in="c" in2="d" operator="in" result="rimc" />
+            <feGaussianBlur in="rimc" stdDeviation="6" result="glow" />
+            <feMerge><feMergeNode in="glow" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+        </defs>
+        {A ? (
+          <>
+            <Cracks c={{ x: 0.7, y: 0.9, n: 10 }} frame={40} />
+            <GiftBox p={{ x: 0.7, y: 0.9, s: 3.0, frown: 1, sink: 0.7, rib: "lilac" }} frame={20} />
+            <g filter="url(#rimf)">
+              <g transform="rotate(-78 500 560)">
+                <Rig params={spec.hero.params} pose="stand" expr={spec.hero.expr} frame={10} seed={3} x={500} y={990} scale={1.9} facing={1} />
+              </g>
+            </g>
+          </>
+        ) : (
+          <>
+            <ellipse cx={left ? 560 : 1360} cy={1010} rx={420} ry={70} fill="#0d1c3a" opacity={0.75} />
+            <Cracks c={{ x: left ? 0.29 : 0.71, y: 0.93, n: 9 }} frame={40} />
+            <GiftBox p={{ x: left ? 0.29 : 0.71, y: 0.97, s: 2.6, frown: 1, sink: 1, rib: "lilac" }} frame={20} />
+            <g filter="url(#rimf)">
+              <Rig params={spec.hero.params} pose="stand" expr={spec.hero.expr} frame={10} seed={5} x={left ? 560 : 1360} y={1380} scale={2.9} facing={left ? 1 : -1} />
+            </g>
+            <g transform={`translate(${left ? 1500 : 420},300)`}>
+              <circle r={120} fill="#ffb347" opacity={0.28} />
+              <path d="M-26,-60 L26,-60 L36,40 L-36,40 Z" fill="#ffe08a" stroke={INK} strokeWidth={8} strokeLinejoin="round" />
+              <rect x={-34} y={40} width={68} height={16} rx={6} fill="#5a3a26" stroke={INK} strokeWidth={6} />
+              <path d="M-26,-60 Q0,-100 26,-60" fill="none" stroke={INK} strokeWidth={8} />
+            </g>
+          </>
+        )}
+      </svg>
+      <Headline text={spec.text} x={A ? 940 : (left ? 940 : 70)} y={A ? 70 : 60} accent={spec.accent} size={A ? 300 : 190} width={A ? 900 : 940} />
+    </div>
+  );
+};
+
 export const ThumbFrame: React.FC<{ spec: ThumbSpec }> = ({ spec }) => {
+  if ((spec as any).film) return <FilmThumb spec={spec} />;
   const left = spec.layout === "left";
   const isA = spec.concept === "A";
   const Obj = spec.object ? OVERLAYS[spec.object.name] : null;

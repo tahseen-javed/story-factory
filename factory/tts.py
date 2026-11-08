@@ -18,8 +18,9 @@ from .asr_check import Asr, wer
 
 
 def _cfg():
-    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    return miniyaml.load_file(os.path.join(root, "config", "factory.yaml"))
+    from .validate import load_cfg   # factory.yaml + audio/characters/style data files
+
+    return load_cfg()
 
 
 def valid_wav(path: str) -> bool:
@@ -152,22 +153,37 @@ def run(plan_path: str, out_dir: str, shard: int, nshards: int, only: list | Non
         best = None
         t0 = time.time()
         for attempt in range(int(t["max_regen"]) + 1):
-            seed = int(t["seed"]) + s["idx"] * 31 + attempt * 1009
-            ex = 0.7 if s.get("emotional") else float(t["exaggeration"])
+            ch_ = cfg.get("characters", {})
+            prof = (ch_.get("narrator") if s.get("speaker", "narrator") == "narrator" else (ch_.get("characters") or {}).get(s.get("speaker"))) or {}
+            seed = int(prof.get("seed", t["seed"])) + s["idx"] * 31 + attempt * 1009
+            emo = ((cfg.get("audio") or {}).get("emotion") or {}).get(s.get("emo", "")) if s.get("wpm") else None
+            ex = float(emo[0]) if emo else (0.7 if s.get("emotional") else float(t["exaggeration"]))
             try:
-                cfgw = (float(t["cfg_weight"]) if not s.get("emotional") else 0.35) + [0.0, 0.12, -0.12, 0.2, -0.2, 0.0][attempt % 6]
+                cfgw = (float(emo[1]) if emo else (float(t["cfg_weight"]) if not s.get("emotional") else 0.35)) + [0.0, 0.12, -0.12, 0.2, -0.2, 0.0][attempt % 6]
                 raw = eng.generate(s["tts_text"], seed, ex + 0.05 * (attempt % 3), min(0.95, max(0.1, cfgw)), TEMPS[attempt % len(TEMPS)])
             except Exception as e:  # noqa: BLE001
                 print(f"[tts] {s['id']} generation error: {e!r}")
                 continue
+            st = float(prof.get("pitch_semitones", 0) or 0)
+            if abs(st) > 0.05:   # locked character voice: Chatterbox default voice, shifted per profile
+                import librosa  # type: ignore
+
+                raw = librosa.effects.pitch_shift(raw.astype("float32"), sr=eng.sr, n_steps=st)
             a = postprocess(raw, eng.sr, float(t.get("speed", 1.0)))
+            if s.get("wpm"):   # film: hold the script's pace (145 wpm narrator, 120 slow lines) by gentle time-stretch
+                import librosa  # type: ignore
+
+                d0 = len(a) / eng.sr
+                rate = min(1.3, max(0.78, d0 / max(0.7, s["expected_s"])))
+                if abs(rate - 1.0) > 0.06:
+                    a = librosa.effects.time_stretch(a.astype("float32"), rate=float(rate))
             tmp = os.path.join(out_dir, f"{s['id']}.try.wav")
             sf.write(tmp, a, eng.sr, subtype="PCM_16")
             dur = len(a) / eng.sr
             hyp, w = None, 0.0
             if asr.ok:
                 hyp = asr.transcribe(tmp)
-                w = wer(s["text"], hyp)
+                w = 0.0 if s.get("asr_skip") else wer(s["text"], hyp)
             ratio = dur / max(1.0, s["expected_s"])  # floor: one-word sentences are naturally slower than the wpm average
             ok = w <= wer_max and lo <= ratio <= hi
             cand = {"id": s["id"], "dur": round(dur, 3), "wer": round(w, 3), "ratio": round(ratio, 2), "attempts": attempt + 1,

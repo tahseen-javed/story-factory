@@ -6,3 +6,11 @@ narrator: {engine: chatterbox, voice: default, seed: 1234, pitch_semitones: 0.0,
 characters:
   hero: {engine: kokoro, voice: am_adam, seed: 2101, pitch_semitones: 0.0, pace: 1.04, effects: []}
   mara: {engine: kokoro, voice: bf_emma, seed: 2102, pitch_semitones: 0.0, pace: 0.95, effects: [warm]}
+
+# Pocket Change Films, series 'Ribbon Row' (002 GIFT). Chatterbox default voice variants: locked seed + pitch + pace per character.
+  otto: {engine: chatterbox, voice: default, seed: 3101, pitch_semitones: 2.0, pace: 1.0, effects: []}
+  june: {engine: chatterbox, voice: default, seed: 3102, pitch_semitones: 4.5, pace: 1.05, effects: []}
+  bramble: {engine: chatterbox, voice: default, seed: 3103, pitch_semitones: -3.5, pace: 0.97, effects: [warm]}
+  heron: {silent: true}
+  mouse: {silent: true}
+  squirrel: {silent: true}

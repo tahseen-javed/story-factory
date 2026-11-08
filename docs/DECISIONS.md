@@ -23,3 +23,7 @@ min_free_gb lowered 30 -> 15: the laptop had 27 GB free, so the 30 GB guard woul
 
 ## 2026-11-08 | Quality upgrade v2
 Pacing is solved in code, not by the script author: factory/beats.py splits every authored shot into beats (target 3.8 s, hard cap 5.0 s) at sentence/clause cuts and assigns framing, camera recipe, transition and acting per beat with a seeded RNG. Camera in the script is now optional. End card removed (validator forbids ov:end_screen); the last 8 s are a real scene with a 1 s fade. Look unity is a Remotion-side pass (shared posterise filter + story-arc colour grade from config/style.yaml) so cached SDXL backdrops are reused; a full restyle of the SDXL prompts and a palette-histogram QA are deferred. Delivery: exactly mp4 + 2 thumbnails in the channel folder (owner request).
+
+## 2026-11-08 | 002 GIFT built in pilot mode
+GIT_CRYPT_KEY and BACKUP_KEY are still not set as GitHub secrets, so CI cannot read the encrypted jobs/002_GIFT. The film is produced from a public copy in pilot/002-gift (script.txt, direction.yaml, job.yaml, facts.json); the encrypted original stays in jobs/002_GIFT. The script text is therefore public in the repo history until the video is released; add the two secrets (docs/USER_CHECKLIST.md step 1) so video 003 can run privately.
+Film mode (factory/film.py): the owner's tag-format script is used verbatim; art direction lives in direction.yaml; every beat starts at its tag time; character voices are Chatterbox variants (pitch + seed per profile); P-006 updated to 2-4 word captions.

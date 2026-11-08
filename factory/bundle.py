@@ -27,7 +27,7 @@ def base_name(nnn: int, short_title: str, minutes: int) -> str:
 
 
 def run(args):
-    base = base_name(args.nnn, args.short_title, args.minutes)
+    base = args.base or base_name(args.nnn, args.short_title, args.minutes)
     work = os.path.join(args.out, "stage")
     os.makedirs(work, exist_ok=True)
     names = {
@@ -88,6 +88,7 @@ def main(argv=None):
     ap.add_argument("--srt", required=True)
     ap.add_argument("--recipient", required=True)
     ap.add_argument("--part-gb", default="1.9")
+    ap.add_argument("--base", default="")
     ap.add_argument("--out", required=True)
     return run(ap.parse_args(argv))
 

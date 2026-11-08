@@ -125,12 +125,27 @@ def layout_beat(chars: list, frm: str, view: str, beat_no: int, has_ov: bool) ->
     return base
 
 
-def build_captions(sentences: list, B) -> list:
+def word_chunks(words: list, max_words: int) -> list:
+    """2-4 words per caption (1 only for one-word sentences), sizes balanced."""
+    n = len(words)
+    if n <= max_words:
+        return [words]
+    k = -(-n // max_words)
+    base, extra = divmod(n, k)
+    out, i = [], 0
+    for j in range(k):
+        size = base + (1 if j < extra else 0)
+        out.append(words[i:i + size])
+        i += size
+    return out
+
+
+def build_captions(sentences: list, B, max_words: int = 0) -> list:
     """Burned-in captions: <= 2 lines of <= 36 chars; per-word frame timing proportional to word length."""
     caps = []
     for s in sentences:
         words = s["text"].split()
-        if not words:
+        if not words or s.get("parallel"):
             continue
         weights = [len(w) + 1 for w in words]
         tot = float(sum(weights))
@@ -140,7 +155,7 @@ def build_captions(sentences: list, B) -> list:
             wt.append((w, t, t + d))
             t += d
         idx = 0
-        for chunk in B.caption_chunks(s["text"]):
+        for chunk in ([[ws] for ws in word_chunks(words, max_words)] if max_words else B.caption_chunks(s["text"])):
             lines = []
             for ln in chunk:
                 row = []
@@ -194,18 +209,24 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
     missing = [s["id"] for s in plan["sentences"] if s["id"] not in wavs]
     if missing:
         raise SystemExit(f"assemble: missing TTS audio for {len(missing)} sentences, first: {missing[:5]}")
-    lead_in = 0.6
+    film = plan.get("kind") == "film"
+    lead_in = 0.0 if film else 0.6
     t = lead_in
+    prev_start = 0.0
     for s in plan["sentences"]:
         s["file"] = wavs[s["id"]]
         s["dur"] = round(wav_seconds(s["file"]), 4)
-        s["start"] = round(t, 4)
-        s["end"] = round(t + s["dur"], 4)
-        t = s["end"] + s["pause_after_s"]
+        if s.get("at") is not None:   # film: every beat starts at its script time
+            t = max(t, float(s["at"]))
+        start = prev_start if s.get("parallel") else t
+        s["start"] = round(start, 4)
+        s["end"] = round(start + s["dur"], 4)
+        t = max(t, s["end"] + s["pause_after_s"])
+        prev_start = start
     last_pause = 1.0
-    audio_end = plan["sentences"][-1]["end"] + last_pause
+    audio_end = max(s["end"] for s in plan["sentences"]) + last_pause
     end_s = float(cfg.get("end_screen_s", 20))
-    total_s = audio_end + end_s
+    total_s = max(float(plan["film_end_s"]), audio_end + 1.0) if film else audio_end + end_s
     total_frames = int(round(total_s * FPS))
     by_id = {s["id"]: s for s in plan["sentences"]}
 
@@ -233,7 +254,10 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
     voice_env_q = [round(v, 2) for v in env[:total_frames]]
 
     shots_in = plan["shots"]
-    starts = [0 if k == 0 else int(round(by_id[sh["sentences"][0]]["start"] * FPS)) for k, sh in enumerate(shots_in)]
+    if film:
+        starts = [0 if k == 0 else int(round(sh["at"] * FPS)) for k, sh in enumerate(shots_in)]
+    else:
+        starts = [0 if k == 0 else int(round(by_id[sh["sentences"][0]]["start"] * FPS)) for k, sh in enumerate(shots_in)]
     bg_dir_out = os.path.join(out_dir, "bg")
     os.makedirs(bg_dir_out, exist_ok=True)
     have = {}
@@ -249,6 +273,7 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
     IMPACT = ("thunder", "glass_crack", "power_down", "alert_siren")
     timeline_shots, sfx_events, ambience, music_runs = [], [], [], []
     prev_frm, last_frms, prev_cam, prev_tr, prev_views, prev_loc, beat_no = None, [], None, "cut", [], None, 0
+    cur_mood = "musicbox"
     for k, sh in enumerate(shots_in):
         s_start = starts[k]
         s_end = starts[k + 1] if k + 1 < len(shots_in) else total_frames
@@ -282,15 +307,22 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
             amb = "hum_dark" if indoor else "wind"
         act = sh.get("act") or (timeline_shots[-1]["act"] if timeline_shots else "hook")
         tension = B.tension_of([c["expr"] for c in sh["chars"]], act)
+        if film:
+            tension = min(tension, 1)
         for j in range(len(edges) - 1):
             f0, f1 = edges[j], edges[j + 1]
             dur = f1 - f0
             dur_s = dur / FPS
             first = j == 0
-            has_ov = bool(sh["overlay"]) and first
-            frm = B.choose_framing(len(sh["chars"]), has_ov, tension, prev_frm, last_frms, rng)
+            has_ov = bool(sh["overlay"]) and (first or bool(sh.get("endcard")))
+            pool = sh.get("frm_pool") if film else None
+            frm = rng.choice([x for x in pool if x != prev_frm] or pool) if pool else B.choose_framing(len(sh["chars"]), has_ov, tension, prev_frm, last_frms, rng)
             view = B.view_for(frm, beat_no, prev_views)
-            cam = fix_camera(B.choose_camera(tension, frm, dur_s, prev_cam, rng), dur_s, cfg, notes, beat_no)
+            if film and first and sh["camera"].get("preset") and sh["camera"]["preset"] != "push" or (film and first and sh["camera"].get("z1", 1.1) != 1.1):
+                cam0 = dict(sh["camera"])
+            else:
+                cam0 = B.choose_camera(tension, frm, dur_s, prev_cam, rng, calm=film)
+            cam = fix_camera(cam0, dur_s, cfg, notes, beat_no)
             prev_cam = cam["preset"]
             chars_in = []
             btext = " ".join(by_id[sid]["text"] for sid in sh["sentences"] if f0 / FPS - 0.2 <= by_id[sid]["start"] < f1 / FPS + 0.2) or sh["text"]
@@ -298,6 +330,10 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
                 pose, expr = B.acting(btext, c["pose"], c["expr"], j, rng)
                 chars_in.append({**c, "pose": pose, "expr": expr})
             chars = layout_beat(chars_in, frm, view, beat_no, has_ov)
+            src_ = {c["id"]: c for c in chars_in}
+            for c in chars:
+                for kx in ("rot", "dy", "s", "side"):
+                    c[kx] = src_[c["id"]].get(kx)
             fullchars = [{**c, "rig": plan["characters"][c["id"]]["rig"], "params": ({"headScale": cfg["style"]["characters"]["head_scale"], "eyeScale": cfg["style"]["characters"]["eye_scale"]} if int(plan.get("style_version", 1)) >= 3 else {}) | plan["characters"][c["id"]]["params"], "speaks": ci == 0}
                          for ci, c in enumerate(chars)]
             fx_ = 0.5
@@ -305,13 +341,15 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
                 fx_ = clamp(sum(c["x"] for c in chars) / len(chars), 0.3, 0.7)
             fy_ = {"closeup": 0.42, "insert": 0.5, "low": 0.38, "wide": 0.6, "xwide": 0.62}.get(frm, 0.55)
             ov = None
-            if has_ov:
+            if has_ov and sh.get("endcard"):
+                ov = {**sh["overlay"], "inFrame": -(f0 - s_start), "outFrame": dur + 1}
+            elif has_ov:
                 ov = {**sh["overlay"], "inFrame": 4, "outFrame": max(24, dur - 3)}
             tc = {"text": chapter_first[sh["i"]]["time_card"], "frames": min(72, dur)} if (first and sh["i"] in chapter_first) else None
             electronics = bool(sh["overlay"] and sh["overlay"]["name"] in ELECTRONIC) or "glitch" in sh["fx"]
             impact = any(x in IMPACT for x in sh["sfx"])
-            tr = B.pick_transition(beat_no, first, first and prev_loc is not None and prev_loc != key, first and sh["i"] in chapter_first,
-                                   first and bool(sh.get("silence")), first and electronics, first and impact, prev_tr, rng)
+            tr = "cut" if film else B.pick_transition(beat_no, first, first and prev_loc is not None and prev_loc != key, first and sh["i"] in chapter_first,
+                                                      first and bool(sh.get("silence")), first and electronics, first and impact, prev_tr, rng)
             prev_tr, prev_frm, prev_loc = tr, frm, key
             last_frms = (last_frms + [frm])[-3:]
             prev_views = (prev_views + [view])[-3:]
@@ -323,11 +361,16 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
                 "banner": sh["banner"] if first else None, "cta": bool(sh["cta"]) and first, "timeCard": tc, "track": sh["track"], "prevTrack": sh["prev_track"],
                 "text": btext, "framing": frm, "trans": tr, "grade": grade_map.get(act, "warm"), "act": act, "crowd": bool(crowd),
                 "tension": tension,
+                "props": sh.get("props") or [], "cracks": sh.get("cracks"), "endcard": bool(sh.get("endcard")),
+                "split": bool(sh.get("split")), "bg2": (f"bg/{sh['split']}.jpg" if sh.get("split") else None),
             }
+            if sh.get("grade"):
+                tl_shot["grade"] = sh["grade"]
             timeline_shots.append(tl_shot)
             t0 = f0 / FPS
             if first:
-                for jj, name in enumerate(sh["sfx"]):
+                skip_clunk = film and re.search(r"clunk", sh["text"], re.I)
+                for jj, name in enumerate([x for x in sh["sfx"] if not (skip_clunk and x.startswith("clunk"))]):
                     sfx_events.append({"t": round(t0 + 0.04 + 0.12 * jj, 3), "name": name, "gain": 0.0})
                 if sh["i"] in chapter_first:
                     sfx_events.append({"t": round(t0, 3), "name": "stinger_chapter", "gain": 0.0})
@@ -344,10 +387,14 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
                 ambience[-1]["end"] = round(f1 / FPS, 3)
             else:
                 ambience.append({"start": round(t0, 3), "end": round(f1 / FPS, 3), "kind": amb})
-            if music_runs and music_runs[-1]["act"] == act:
+            mood_now = None
+            if film:
+                cur_mood = sh.get("mood") or cur_mood
+                mood_now = cur_mood
+            if music_runs and music_runs[-1]["act"] == act and music_runs[-1].get("mood") == mood_now:
                 music_runs[-1]["end"] = round(f1 / FPS, 3)
             else:
-                music_runs.append({"act": act, "start": round(t0, 3), "end": round(f1 / FPS, 3)})
+                music_runs.append({"act": act, "mood": mood_now, "start": round(t0, 3), "end": round(f1 / FPS, 3)})
             beat_no += 1
         for sid in sh["sentences"]:
             sn = by_id[sid]
@@ -362,8 +409,19 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
                 silences.append([round(a, 3), round(b, 3)])
                 sfx_events.append({"t": round(max(0.1, a - 1.3), 3), "name": "riser", "gain": -4.0})
                 sfx_events.append({"t": round(s["start"], 3), "name": "impact", "gain": -3.0})
+    if film:
+        for sh in shots_in:
+            if sh.get("silent_s"):
+                silences.append([round(starts[sh["i"]] / FPS, 3), round(starts[sh["i"]] / FPS + sh["silent_s"], 3), -90.0])
+        by_shot_cl = {}
+        for s in plan["sentences"]:
+            if re.fullmatch(r"clunk\.?", s["text"].strip(), re.I):
+                by_shot_cl.setdefault(s["shot"], []).append(s)
+        for ss in by_shot_cl.values():
+            for sn_, nm in zip(ss, ["clunk_s", "clunk_m", "clunk_l"] if len(ss) >= 3 else ["clunk_m"] * len(ss)):
+                sfx_events.append({"t": round(sn_["start"] + 0.02, 3), "name": nm, "gain": 0.0})
     # keyword sfx
-    for s in plan["sentences"]:
+    for s in ([] if film else plan["sentences"]):
         for pat, name in KEYWORD_SFX:
             if re.search(pat, s["text"].lower()):
                 if not any(e["name"] == name and abs(e["t"] - s["start"]) < 2.0 for e in sfx_events):
@@ -377,7 +435,7 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
         t = a
         while b - t > gap_max:
             t += gap_max * 0.85
-            if not any(sa <= t <= sb for sa, sb in silences):
+            if not any(w_[0] <= t <= w_[1] for w_ in silences):
                 sfx_events.append({"t": round(t, 3), "name": fill[n_fill % 4], "gain": -5.0})
                 n_fill += 1
 
@@ -386,7 +444,8 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
         "style": {"accent": plan["style"].get("accent", "amber"), "lut": plan["style"].get("lut", "cold_night"),
                   "titlecard": plan["style"].get("titlecard", "clock_strip"), "transition": plan["style"].get("transition", "hard_cuts")},
         "shots": timeline_shots, "endScreenFrames": int(end_s * FPS), "fadeOut": 30,
-        "captions": build_captions(plan["sentences"], B) if cfg.get("captions", {}).get("burned_in", True) else [],
+        "captions": build_captions(plan["sentences"], B, int(cfg.get("captions", {}).get("max_words", 0) or 0)) if cfg.get("captions", {}).get("burned_in", True) else [],
+        "silenceBeatsMin": 1 if film else None,
         "voiceEnv": voice_env_q,
     }
     final_shots = timeline_shots
@@ -411,7 +470,7 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
         "total_s": round(total_s, 3), "audio_end_s": round(audio_end, 3), "lead_in_s": lead_in, "end_screen_s": end_s,
         "voice": [{"id": s["id"], "start": s["start"], "end": s["end"], "file": os.path.basename(s["file"]), "room": s.get("room", "indoor")} for s in plan["sentences"]],
         "music": [{"act": r["act"], "start": r["start"], "end": r["end"] if i + 1 < len(music_runs) else round(total_s, 3),
-                   "mood": acfg["music_mood"].get(r["act"], "tense"), "db": float(acfg["intensity_db"].get(r["act"], 0.0))}
+                   "mood": r.get("mood") or acfg["music_mood"].get(r["act"], "tense"), "db": float(acfg["intensity_db"].get(r["act"], 0.0))}
                   for i, r in enumerate(music_runs)],
         "ambience": ambience, "silence": silences, "chapters": chapters_out,
         "sfx": sorted(sfx_events, key=lambda e: e["t"]), "style": plan["style"],
@@ -424,7 +483,7 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
 
     # ---------- captions + chapters ----------
     with open(os.path.join(out_dir, "captions.srt"), "w", encoding="utf-8") as fh:
-        for i, s in enumerate(plan["sentences"], 1):
+        for i, s in enumerate([x for x in plan["sentences"] if not x.get("parallel")], 1):
             fh.write(f"{i}\n{srt_time(s['start'])} --> {srt_time(min(s['end'] + 0.25, s['end'] + s['pause_after_s']))}\n{wrap_caption(s['text'])}\n\n")
     json.dump({"chapters": chapters_out, "total_s": round(total_s, 2)}, open(os.path.join(out_dir, "chapters.json"), "w"), indent=1)
 

@@ -39,6 +39,18 @@ def pick_bg(plan, bg_dir, prefer_banner=True, avoid=None):
     return loc, var, (f"bg/{loc}.{var}.jpg" if ok else None)
 
 
+def film_candidates(plan, bg_dir, accent):
+    """002 GIFT: A = Otto on his back in the snow, heavy box with a frowning lilac ribbon sinking into cracked ice, text GIFT;
+    B = June (lilac palette), box pressing a deep dent into the ice, cold blue background and one warm lantern, text TOO HEAVY?"""
+    have = {f[:-4] for f in os.listdir(bg_dir) if f.endswith(".jpg") and f.count(".") == 2} if bg_dir and os.path.isdir(bg_dir) else set()
+    bg = lambda k: (f"bg/{k}.jpg" if k in have else None)
+    otto, june = plan["characters"]["otto"]["params"], plan["characters"]["june"]["params"]
+    mk = lambda c, f, key, text, layout, e, p_: {"concept": c, "film": f, "bg": bg(key), "location": key.split(".")[0], "variant": key.split(".")[1], "hero": {"params": {**p_, "headScale": 1.5, "eyeScale": 1.3}, "pose": "stand", "expr": e},
+                                                  "other": None, "text": text, "accent": accent, "layout": layout, "threat": "clock", "object": None}
+    return ([mk("A", "A", "river.night", "GIFT", "left", e, otto) for e in ("shocked", "scared", "shocked", "worried")] +
+            [mk("B", "B", "lantern.night", "TOO HEAVY?", lay, e, june) for lay, e in (("left", "worried"), ("right", "worried"), ("left", "scared"), ("right", "sad"))])
+
+
 def hook_words(plan):
     title = re.findall(r"[A-Za-z0-9]+", plan["short_title"] or plan["title"])
     pair = " ".join(w.upper() for w in title[:2])
@@ -189,12 +201,12 @@ def run(plan_path, bg_dir, video_dir, out_dir, cfg_path=None):
     os.makedirs(out_dir, exist_ok=True)
     accent = plan["style"].get("accent", "amber")
     ocr = _ocr()
-    thr = 0.62
+    thr = 0.5 if plan.get("kind") == "film" else 0.62
     best = {}
     pool = []
     all_scores = []
     rounds = 0
-    specs = candidates(plan, bg_dir, accent)
+    specs = film_candidates(plan, bg_dir, accent) if plan.get("kind") == "film" else candidates(plan, bg_dir, accent)
     while rounds < 2:
         files = render(specs, video_dir, out_dir, f"r{rounds}")
         for sp, f in zip(specs, files):

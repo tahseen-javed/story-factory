@@ -151,13 +151,15 @@ def run(audio_plan_path: str, voice_dir: str, out_dir: str, cfg_audio: dict, luf
     sil = np.ones(total, dtype="float32")
     floor = 10 ** (float(cfg_audio.get("silence_floor_db", -30)) / 20.0)
     ramp = int(0.06 * SR)
-    for a0, b0 in ap.get("silence", []):
+    for w_ in ap.get("silence", []):
+        a0, b0 = w_[0], w_[1]
+        fl_ = 10 ** (float(w_[2]) / 20.0) if len(w_) > 2 else floor
         i0, i1 = int(a0 * SR), min(total, int(b0 * SR))
-        sil[i0:i1] = floor
+        sil[i0:i1] = fl_
         if i0 - ramp >= 0:
-            sil[i0 - ramp:i0] = np.linspace(1, floor, ramp)
+            sil[i0 - ramp:i0] = np.linspace(1, fl_, ramp)
         if i1 + ramp <= total:
-            sil[i1:i1 + ramp] = np.linspace(floor, 1, ramp)
+            sil[i1:i1 + ramp] = np.linspace(fl_, 1, ramp)
     amb = np.zeros(total, dtype="float32")
     for k, seg in enumerate(ap.get("ambience", [])):
         i0, i1 = int(seg["start"] * SR), min(total, int(seg["end"] * SR) + int(0.5 * SR))

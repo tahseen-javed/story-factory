@@ -9,6 +9,10 @@ export type CharSpec = {
   view?: string; // front | three_quarter | back
   silhouette?: boolean;
   speaks?: boolean;
+  rot?: number;
+  dy?: number;
+  s?: number;
+  side?: string | null;
 };
 
 export type CamSpec = {
@@ -52,6 +56,11 @@ export type Shot = {
   grade?: string;
   crowd?: boolean;
   tension?: number;
+  props?: any[];
+  cracks?: { x: number; y: number; n: number } | null;
+  split?: boolean;
+  bg2?: string | null;
+  endcard?: boolean;
 };
 
 export type Caption = { s: number; e: number; lines: Array<Array<[string, number, number]>> };

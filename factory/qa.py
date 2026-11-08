@@ -191,10 +191,10 @@ def check_v2(path, timeline, audio_plan, srt, cfg, rep):
     sil = [float(x) for x in re.findall(r"silence_duration: ([\d.]+)", r.stderr)]
     sil_beats = len([x for x in sil if 0.3 <= x <= 1.6])
     sil_win = audio_plan.get("silence", [])
-    ev = sorted(e["t"] for e in audio_plan.get("sfx", []) if not any(a0 <= e["t"] <= b0 for a0, b0 in sil_win))
+    ev = sorted(e["t"] for e in audio_plan.get("sfx", []) if not any(w_[0] <= e["t"] <= w_[1] for w_ in sil_win))
     marks = [audio_plan.get("lead_in_s", 0.6)] + ev + [audio_plan.get("audio_end_s", 0)]
     gap = max((b - a0 for a0, b in zip(marks, marks[1:])), default=0)
-    dyn_ok = a["lra"] >= ac["lra_min"] and sil_beats >= ac["silence_beats_min"] and gap <= ac["sfx_gap_max_s"] + 0.5 and 10 <= ac["duck_db"] <= 14
+    dyn_ok = a["lra"] >= ac["lra_min"] and sil_beats >= int(timeline.get("silenceBeatsMin") or ac["silence_beats_min"]) and gap <= ac["sfx_gap_max_s"] + 0.5 and 10 <= ac["duck_db"] <= 14
     caps = timeline.get("captions", [])
     text_ok = all(len(l) <= 2 and all(len(" ".join(w[0] for w in ln)) <= 38 for ln in l) for l in (c["lines"] for c in caps)) and (bool(caps) or not cfg.get("captions", {}).get("burned_in", True))
     chars = [c for s in shots for c in s["chars"]]

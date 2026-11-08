@@ -1,0 +1,143 @@
+FINAL PRODUCTION SCRIPT 002: GIFT (Pocket Change Films)
+Use exactly as written. Do not change story, lines, timings, tics or the twist.
+
+TITLE: GIFT | An Animated Short Film
+THUMBNAIL A: Otto the otter on his back in the snow, eyes wide, a tiny wrapped box with a frowning lilac ribbon sunk into the ice in front of him, cracks spreading. Text: "GIFT".
+THUMBNAIL B (different colour and angle): top-down view of June the owl, lilac palette, her tiny box pressing a deep dent into the ice; cold blue background, one warm lantern. Text: "TOO HEAVY?"
+HOOK: "This box weighed as much as a piano. It was empty." (mute text: WHY IS IT SO HEAVY?)
+DESCRIPTION: This box weighed as much as a piano. It was empty. | In Ribbon Row, a gift weighs exactly as much as the worry inside it. Otto the otter has one week to find the right gift for his best friend. | Which gift did you ever overthink the most? Tell us below. | This is a fictional story. It is not financial advice. | Chapters: 0:00 The Heavy Box | 3:55 Three Nights Before | 7:11 Swap Night | 9:22 The Twist | Credits: voices and music licences listed in the project repo.
+PINNED COMMENT: Which gift did you overthink the most? Be honest. This is a fictional story and not financial advice.
+FORMAT: long film, 8-12 min. Spoken words 1,267. Runtime 10:33 including 20 s end screen. Structure: two worlds in contrast.
+
+CAST (all characters: big round heads, large friendly eyes, soft shapes)
+- OTTO (hero): small round otter, chestnut fur, cream belly, oatmeal beanie with one earflap. Props: favorite smooth stone in armpit pocket, carved wooden spoon. Voice: soft, slightly nasal young-adult male. Polite, over-apologizes. Tic: "Right. Right, right." and "Sorry."
+- JUNE (second lead): round snowy owl with lilac-tipped feathers, tiny lilac earmuffs. Props: knitting needles, lumpy tail mitten. Voice: crisp, bright young-adult female. Short cheerful sentences and questions. Tic: "Hoo-kay."
+- MRS. BRAMBLE: big round badger in a striped apron. Prop: enormous floating gift box. Voice: booming, jolly older female. Exclamations, calls everyone "dear".
+- HERON (cameo, next-film tease): tall lilac-gray heron with a tiny lantern. Silent.
+- NARRATOR: unseen, calm, warm, slightly amused adult storyteller. 145 wpm, 120 on emotional lines, [beat] pauses. Never an expert.
+- PALETTE: Otto's bank warm orange and red; June's bank lilac and silver; Act 2 deep blue night; Act 3 lantern gold on white ice. Background extras (mouse, squirrel, neighbours in windows) are silent reusable rigs.
+- CHANNEL-ONLY DETAIL: the frowning ribbon (one blend shape on one box asset, reused on every box).
+- BUILD NOTE: build the river as one wide master plate; split screens and the final pull-back are crops of it. Keep June's side visually calm until 6:34.
+
+SCRIPT (tag format [time | emotion | on-screen action | camera | sound/music | voice direction])
+ACT 1: SEVEN NIGHTS BEFORE (feeling: excitement, then the first worry)
+[0:00 | curiosity | Night. A frozen river under falling snow. A small gift box with a lilac ribbon sits on the ice. The ice creaks and the box sinks a finger's width. Mute text: WHY IS IT SO HEAVY? | ECU on the box, slow pull back | one long ice creak, then silence | calm, warm, a smile in the voice]
+NARRATOR: This box weighed as much as a piano. [beat] It was empty.
+[0:07 | curiosity | The ribbon on the box tightens into a little frown shape | MCU on the ribbon | soft cello note | lightly amused]
+NARRATOR: Nobody on Ribbon Row would have believed it. Least of all the one who wrapped it.
+[0:15 | wonder | Wide of Ribbon Row: cozy round houses on two snowy banks, the river frozen between them. A squirrel tosses a wrapped box in the air; it floats down like a feather | crane down | sleigh-bell music box theme starts | storybook]
+NARRATOR: In Ribbon Row, gifts had one rule. A wrapped box weighed exactly as much as the worry inside it.
+[0:24 | warmth into laugh | Otto the otter floats on his back in a bathtub, his gift list resting on his belly like a raft. He cracks his walnut coin purse open on his tummy, the way otters crack shells. One coin pings off his nose into the tub (first laugh, 0:26) | top-down MS | bath bubbles, walnut crack, coin "ping", "plip" | warm, wry]
+NARRATOR: Otto was an otter, so he did his best thinking on his back. Tonight he was thinking about one name.
+OTTO: Right. Right, right. June.
+[0:35 | contrast | Split screen down the river. Right side: June the owl in her tree hollow, turning her head all the way round to read her own list, which says OTTO | split screen, mirrored framing | owl "hoo", harp on June's side | brisk, warm]
+NARRATOR: June lived on the other bank. Every winter, on the night the river froze solid, they met in the middle and swapped one gift. They had done it for six years. [beat] Neither of them had ever missed.
+JUNE: Hoo-kay. Otto. Easy.
+[0:54 | delight | Otto's workbench by the fire. He sands a small wooden spoon. He blows off sawdust, sneezes, sawdust everywhere | MS, warm firelight | sandpaper, sneeze, crackling fire | gentle, proud]
+NARRATOR: Otto had a plan. June loved soup more than anyone he knew, so he carved her a spoon. It took four evenings. It cost him nothing but one splinter and most of his patience. He tested it on his own soup. It worked. He tested it again, just to be sure. [beat] It still worked.
+[1:19 | small win | Otto places the spoon in a box and ties a red ribbon. He lifts it with one claw. It weighs nothing | close on paws, then MCU of his proud face | tiny "ting" of success | pleased]
+NARRATOR: He wrapped it. The box was light as a snowflake. [beat] For about a minute, Otto felt like the best friend on the whole river. He set it by the door, where he could see it every time he walked past.
+[1:38 | recognition | Ribbon Row market. Otto passes Mrs. Bramble's shop window: a snow globe with a real tiny snowstorm swirling inside. He turns the price tag over. We don't see it. His whiskers droop | tracking shot, push in on the tag from behind | jingle-bell market bed, music stops on the flip | quieter]
+NARRATOR: Then he walked past Mrs. Bramble's shop. In the window sat a snow globe with a real snowstorm inside. Otto turned the price tag over. [beat] He wished he hadn't.
+MRS. BRAMBLE: Lovely, isn't it, dear? Everyone's buying one!
+OTTO: Right. Right, right. Lovely. Sorry. Bye.
+[1:58 | first worry | Back home. Otto looks at his box. A tiny thought bubble: "What if she thinks it's cheap?" The ribbon tightens into a frown. The box drops an inch onto the table with a "clunk" | MCU on the box | "clunk", music wobbles | slower]
+NARRATOR: He looked at the little box and a little question crept in. What if she thinks it's cheap? [beat] Clunk. The box got heavier.
+[2:10 | laugh | Otto tries to pick the box up. It's like lifting a bowling ball. He tips over backwards onto his tail | wide, static | strain grunt, "flump" | deadpan]
+NARRATOR: That was new.
+[2:15 | rhythm of three | Montage over two nights. Each question appears as a small thought bubble; each lands with a clunk; the box sinks into the tablecloth | quick cuts, same framing | clunk, clunk, CLUNK on the beat | building]
+NARRATOR: What if she bought me something nicer? Clunk. What if a spoon is a silly thing to give a grown owl? Clunk. What if this is the year she finally notices I'm not very good at this? [beat] Clunk.
+[2:33 | scale jump | Exterior, from far across the river: Otto's whole house tilts slightly toward the side where the box sits | extreme wide | the house creaks like an old ship | dry]
+NARRATOR: By the third night, his whole house leaned a little to the left. The neighbors assumed it was the snow.
+[2:43 | contrast, re-hook 1 | From Otto's window, across the river: June's hollow glows warm. A shadow of June dances. Faint singing | over Otto's shoulder, long lens | June humming, distant | wistful]
+NARRATOR: Across the river, June's window was always bright. Some nights he could hear her singing. June, Otto decided, never worried about anything.
+[2:54 | rule of the world | Otto rubs his favorite smooth stone from his armpit pocket, the way otters do when nervous | ECU on the stone in his paw | soft cello | gentle, slow]
+NARRATOR: Otters keep a favorite stone in a pocket under one arm. When the world gets too big, they hold it. Otto had been holding his all week. It had been his grandmother's. It fit his paw exactly. It had never once asked him what it cost.
+[3:15 | recognition | Night. Otto in bed, doing quiet math on his fingers, then his toes, then the toes of his other foot | MCU, low light | soft ticking clock | quiet, wry]
+NARRATOR: He did the math on his fingers. Then on his toes. The math said the same thing both times. He did it again, in case his toes had made a mistake.
+[3:29 | mini-loop 1 closes | Otto returns to the shop window. Now we see the snow globe tag. It reads: MORE THAN YOU HAVE | push in on the tag | single sad piano note | flat, honest]
+NARRATOR: The tag on the snow globe didn't have a number. It just said what every price tag says when you're scared. [beat] More than you have.
+[3:42 | act break cliffhanger | Otto, at home, unties the ribbon and takes the spoon out. He sets it aside. He reties the box. Then he tries to lift it. It slams to the floor and cracks a floorboard | MS, then low angle on the cracked board | ribbon slide, then a huge "THOOM" | slow, ominous]
+NARRATOR: So Otto took the spoon out. If the gift wasn't enough, maybe no gift was better. [beat] And the empty box got heavier than it had ever been.
+ACT 2: THREE NIGHTS BEFORE (feeling: comparison and shame)
+[3:55 | cold shift | Palette shifts from warm orange to deep blue. The river at night, wind. Otto drags the box outside on a sled. The sled's runners bend | wide, slow dolly | wind, creaking sled | cooler tone]
+NARRATOR: Three nights before the swap, Otto needed a sled to move a box that held nothing at all.
+[4:04 | comparison | Mrs. Bramble the badger strolls past, tossing an enormous shiny box from paw to paw like a beach ball | low angle on Otto, Bramble huge and breezy | Bramble whistling, box "boing" | MRS. BRAMBLE: booming, jolly]
+MRS. BRAMBLE: Swap Night soon, dear! I didn't even think about mine. Grabbed the first thing I saw!
+OTTO: Right. Lovely. Very... floaty.
+NARRATOR: Her box was the size of a doghouse. It floated. Otto watched it bounce away down the lane.
+[4:21 | shame | Otto pulls his beanie down over his eyes and pulls the sled faster, head low | tracking, side-on | sled scrape, his footsteps quick | soft, close to the mic]
+NARRATOR: Everyone else's gifts looked so easy. Otto pulled his hat down a little lower and walked a little faster, as if a heavy box were something you could be caught with. He took the long way home, the one with no windows.
+[4:40 | recognition | Otto practicing in a mirror: "It's just a little something!" "It's nothing, really!" "The real one's coming!" Each with a worse fake smile | MCU into the mirror | three takes, each cut by a "boop" | wry, slow on the last line]
+NARRATOR: He practiced what he would say. It's just a little something. [beat] It's nothing, really. [beat] The real one is coming, I promise. That last one he practiced the most. The mirror did not look convinced.
+[4:57 | warm, CTA 1 | Otto sits on his doorstep beside the box, holding his stone, looking at June's bright window. On the porch rail, a little bell shaped like a snowflake with a SUBSCRIBE ribbon rings once | wide, still | snowflake-bell chime (sonic logo), solo piano | warm, friend-to-friend, slow]
+NARRATOR: If you've ever stood in a store holding something small and wondered if it was enough, you're not alone. We tell small stories about money and how it feels. Subscribe, and the next one will find you.
+[5:14 | laugh | A tiny mouse hops onto Otto's box for a rest, and is instantly stuck flat, unable to lift its own feet | MCU on the mouse | tiny squeak, a "fwump" | dry]
+NARRATOR: A mouse sat on it for a rest. Otto had to help him back up. The mouse said thank you, and then, very politely, never sat on anything again.
+[5:27 | scale jump | Top-down drone over Ribbon Row: dozens of houses, and through every window a tiny silhouette staring at a box. Most look calm from outside | extreme top-down, slow rotate | music drops to a single sustained note, wind | hushed]
+NARRATOR: From up high, Ribbon Row looked like a postcard. Warm windows. Quiet snow. Every house holding something it wasn't sure was good enough. [beat] You couldn't tell from the outside. You never can.
+[5:43 | dread | Two nights before. Otto drags the box to the river's edge to test the ice. He sets it down. A crack spiders out across the ice | low angle, ice level | sharp crack, long groan | tight, faster]
+NARRATOR: Two nights before the swap, Otto tested the ice. The ice that had held the whole town every winter for a hundred years took one look at his box and cracked.
+[5:57 | escalation | Otto drags it back in a panic. He tries the spoon back in: clunk. Out: CLUNK. In: clunk. Out: CLUNK | quick cuts, same framing | each clunk louder | quick, then slower]
+NARRATOR: He put the spoon back in. Too small. He took it out. Too empty. In. Out. In. [beat] Out.
+[6:07 | decision (the wrong one) | Otto slips the spoon into his coat pocket and ties the box shut, empty, with a tight double knot | ECU on paws knotting | one hard pluck of a string | quiet, honest, 120 wpm]
+NARRATOR: In the end, Otto put the spoon in his coat pocket and wrapped the box empty. He would say the real gift was coming. Something better. Something enough. Because somewhere along the way, Otto had decided that a small gift said small things about him.
+[6:27 | re-hook 2 | Close on June's bright window from Otto's side. The camera starts to drift across the river toward it | slow push across the ice | music drops to a heartbeat-like pulse | low, intimate]
+NARRATOR: But in six years, Otto had never once looked inside June's window. Not really.
+[6:34 | mini-loop 2 closes | Inside June's hollow at 3 AM. The singing is June humming to stay calm. She knits a small mitten, holds it up, frowns, unravels it. Her lilac-ribboned box behind her has cracked the floor. Her ribbon is frowning too | slow push in, then reveal of the cracked floor | June humming, yarn unravelling | soft, tender]
+NARRATOR: June's light was on at three in the morning because June was knitting. And unknitting. And knitting again. The humming was just to keep her paws from shaking. Across the river, Otto's window was always bright too. June had decided he never worried about anything.
+JUNE: Hoo-kay. Hoo-kay. It's fine. It's fine.
+[6:57 | act break | Swap Night. The lantern on the post in the middle of the river is lit. From each bank, a small figure steps onto the ice, dragging a sled with a small box | symmetrical wide shot, banks left and right | a single deep bell, then wind | storybook, slow]
+NARRATOR: Then it was Swap Night. The lantern in the middle of the river was lit. And two friends stepped onto the ice, each pulling a box neither of them could lift.
+ACT 3: SWAP NIGHT (feeling: dread, then tenderness, then relief)
+[7:11 | dread | Otto and June meet under the lantern. Both sleds groan. Both smile too hard | two-shot, centered | ice creaking under both sleds | tight, awkward]
+OTTO: June! Hi. You look... well. Very well. Sorry.
+JUNE: Otto! You look well too! So well. Is that... a sled?
+OTTO: It's a very small box. It's a long story.
+NARRATOR: They both looked terrible. Neither of them had slept in a week.
+[7:29 | laugh | They both gesture to the boxes at the same time | two-shot, then quick back and forth | comic beat, one plucked note per line | quick]
+OTTO: You first.
+JUNE: No, you first.
+OTTO: No, no. You.
+JUNE: Hoo-kay, we'll be here all night.
+[7:36 | dread | A crack runs from Otto's sled toward June's. Another runs from June's toward Otto's. They meet in the middle, right under their feet | top-down on the ice | sharp crack, crack, then a long groan | slow]
+NARRATOR: Under Otto's box, the ice cracked. Under June's box, the ice cracked too. The two cracks ran toward each other and met right between their feet.
+[7:48 | SILENCE BEAT | Everything stops. All music and wind drop out. Only the faint drip of water under the ice. Otto looks at June's box, sunk into the ice exactly like his | ECU on June's box, 2 seconds held | silence, one drip | no narration]
+[7:52 | realization | Otto looks from June's sunken box to his own, then up at June's tired eyes | slow push in on Otto | one sustained cello note | 120 wpm, almost a whisper]
+NARRATOR: June's box was as heavy as his. [beat] All week Otto had thought the weight was the gift. It wasn't. It was him, asking the same question every night, and never asking her.
+[8:08 | brave decision | Otto takes a breath, reaches into his coat pocket, and pulls out the little spoon | MCU, steady | breath, fabric rustle | quiet, steady]
+OTTO: Mine's empty. [beat] I made you a spoon. I thought it was too small. So I took it out. I'm sorry.
+[8:19 | relief begins | The instant he says it, his box's ribbon un-frowns and the box pops up out of the ice, weightless | MS, the box rising slightly | a soft "pop", music swell begins | gentle, rising]
+NARRATOR: The moment he said it out loud, his box weighed nothing at all.
+[8:26 | tender laugh | June stares. Then she laughs, and cries a little, and pulls a small knitted mitten from under her wing. It has a long tail-shaped thumb | two-shot, then close on the mitten | June's laugh, swell grows, strings join | warm]
+JUNE: Mine's empty too. [beat] I knitted you a tail mitten. I unknitted it four times. It's lumpy.
+OTTO: It's perfect. It's the best lumpy thing I've ever seen.
+NARRATOR: Her box popped up out of the ice like a cork.
+[8:44 | tag-a-friend | They both look at each other's tiny handmade gift, and say at exactly the same moment: | two-shot, held | music pauses one breath | both, overlapping]
+OTTO AND JUNE: You shouldn't have.
+[8:49 | joy | They laugh. The ice stops creaking. Otto sits in his weightless box, June hops into hers, and they push off and slide across the frozen river together like two little sleds | tracking alongside, then wide | full swell, the music box theme on strings and bells | quick, joyful]
+NARRATOR: Two empty boxes turned out to be the lightest things on the whole river. So they did the only sensible thing. They climbed in and slid.
+[9:01 | tenderness | By the lantern: Otto wears the lumpy tail mitten. June stirs a cup of soup with the spoon, and it fits her perfectly | MS, warm lantern light | crackle of the lantern, soft bells | slow, warm]
+NARRATOR: The tail mitten was lumpy. The spoon had a little splinter mark near the handle. Neither of them would trade them for every snow globe in Ribbon Row. June said the soup tasted better with it. Otto said that was impossible. [beat] June said it anyway.
+[9:22 | twist | June, sipping, says it lightly. Otto freezes mid-sip | two-shot, then MCU on Otto | single music box note | JUNE: casual; OTTO: stunned]
+JUNE: Mine was so heavy last night, it cracked the ice on my side before I even got here.
+OTTO: That was yours?
+NARRATOR: The box at the very beginning, the one sinking into the ice? Otto thought he was the only one. [beat] It was June's.
+[9:42 | reframe | Wide shot of the river: on both banks, neighbors sit in warm windows, each holding a small box with a frowning ribbon. On her doorstep, Mrs. Bramble holds a second, much smaller box nobody has seen | slow pull back to extreme wide | music softens | slow, 120 wpm]
+NARRATOR: Every bank has a heavy box. You just never see the other side. Even Mrs. Bramble had a small one she hadn't shown anyone.
+[9:51 | share line | Held image: Otto and June in their boxes, side by side, the lantern between them, snow falling | static, held 5 s | music resolves to one note | slow, 120 wpm, the hook echoed]
+NARRATOR: Two empty boxes, and not one ounce between them. [beat] The gifts were never heavy. We were.
+[10:00 | CTA 2 | Over the held image, a tiny lantern-bearing heron waddles past at the edge of the frame, counting something on her feathers | static | snowflake-bell chime (sonic logo) | warm, light]
+NARRATOR: The next story is about the heron who runs Ribbon Row's tea shop, and counts thank-yous like coins. Subscribe if you've ever wondered if you tipped enough.
+[10:13-10:33 | end screen | End card: Ribbon Row at dawn. Left: next film "TIP: The Heron Who Counted Thank-Yous" with the heron silhouette. Right: subscribe snowflake button + best video link. Small text: This is a fictional story. It is not financial advice. | static | music box outro | no voice]
+
+Music by act: Act 1 sleigh-bell music-box theme, warm cello on Otto's side, harp on June's. Act 2 deep-blue solo piano and wind, dropping to a heartbeat pulse at the re-hook. Act 3 ice drone and silence, then the theme returns on strings and bells for the slide, resolving to one note on the share line.
+SFX list: ice creaks and cracks, cello frown note, bath bubbles, walnut crack, coin ping, owl hoo, sandpaper, sneeze, fire crackle, success ting, market jingle bells, clunk (3 sizes), THOOM floor crack, house creak, sled scrape, mirror "boop" x3, mouse squeak, water drip, box "pop", cork pop, sliding whoosh, lantern crackle.
+Sonic logo: single snowflake-bell chime at CTA 1 (4:57), CTA 2 (10:00) and end card.
+
+SHORTS CUT PLAN (9:16, captions burned in)
+1. 1:58-2:43 "How heavy is 'is it enough?'" (first clunk, Otto tips over, clunk montage, house leans)
+2. 4:40-5:27 "Practicing 'it's just a little something'" (mirror rehearsal, mouse stuck on the box)
+3. 8:08-8:49 "Tag the friend you swap gifts with" (confession, both boxes empty, "You shouldn't have")
+
+This is a fictional story. It is not financial advice.
