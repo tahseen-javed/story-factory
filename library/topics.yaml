@@ -3,7 +3,7 @@
 version: 1
 rule: "pick the first status: unused entry; mark it used when its script is pushed"
 topics:
-  - {id: t01, title: "Last Ferry", clock: "02:00:00 UNTIL STORM", situation: "island town, one ferry left before the storm closes the sea", partner: "a nervous deckhand", meter: [hours, water, phone, cash], twist: "the ferry you chased is the one that was never meant to leave", status: unused}
+  - {id: t01, title: "Last Ferry", clock: "02:00:00 UNTIL STORM", situation: "island town, one ferry left before the storm closes the sea", partner: "a nervous deckhand", meter: [hours, water, phone, cash], twist: "Finn relit the dark lighthouse to guide you home", status: used}
   - {id: t02, title: "Elevator Night", clock: "10:00:00 UNTIL MORNING", situation: "stuck between floors 31 and 32 during a city blackout", partner: "a night cleaner on the other side of the doors", meter: [hours, water, phone, air], twist: "the voice in the shaft is the building itself counting floors", status: unused}
   - {id: t03, title: "Heat Dome", clock: "48:00:00 UNTIL POWER", situation: "high-rise flat, grid down in a record heatwave", partner: "an upstairs grandfather with a battery fan", meter: [hours, water, phone, ice], twist: "the coolest room in the building was always the stairwell you ignored", status: unused}
   - {id: t04, title: "Flash Flood Garage", clock: "03:00:00 UNTIL CREST", situation: "underground car park, river overflowing above", partner: "a delivery rider who knows the exits", meter: [hours, water, phone, battery], twist: "the exit you needed was the one marked do not use", status: unused}
