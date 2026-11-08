@@ -31,5 +31,10 @@ Last updated: 2026-11-08 (UTC 20:15). Repo: https://github.com/tahseen-javed/sto
 - QA pass (all categories): -14.3 LUFS, TP -1.8 dBTP, LRA 1.3, motion share 0.99, flash 0.5/s, A/V sync 0 frames, TTS mean WER 0.017, thumbnails 0.96 / 0.88, scorecard ok (reference numbers provisional).
 - Remaining risk: placeholders (voice, music) and public pilot script; TTS has a few ASR-flagged sentences (truncated word endings) accepted under the 5% rule; per-sentence repair loop is the next improvement.
 
+## v2 quality upgrade: DONE 2026-11-08 (run 42464375998, QA 2.0 rating 10/10, status ok)
+- Before -> after: shots 31 -> 73 (18.6/min), avg shot 8.5 s -> 3.2 s, max shot 59 s -> 4.8 s, LRA 1.4 -> 4.8 LU, silence beats 0 -> 3, frozen end card 16 s -> none (8 s moving tail + fade), -14.3 LUFS, TP -1.7.
+- New: factory/beats.py, burned-in captions, lip-sync, HUD, 10 framings, 6 transitions, story-arc grades, 4-layer audio, QA 2.0 (qa.check_v2), tests/test_v2.py. Delivered: mp4 + 2 thumbnails only (P-002).
+- Deferred (honest): SDXL restyle + palette-histogram QA (look unity is a Remotion posterise + grade pass), hook 3-option scorer, new poses/ambience variety, auto-regenerate-weakest-dimension loop, light beams / screen glow, kinetic keyword text.
+
 ## Phase 4 (fault injection): DONE (tests/test_faults.py: black, freeze, static motion, flash, resolution, quiet and clipped audio + loudnorm re-master fixer; CI green).
 ## Phase 0a / 5 / 6: waiting for owner secrets (docs/USER_CHECKLIST.md); then analyze_reference.yml, first encrypted jobs/ video, /batch of 5.

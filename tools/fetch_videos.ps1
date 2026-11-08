@@ -71,6 +71,9 @@ foreach ($rel in $todo) {
     & $tarExe -xf $tar -C $dest
     if ($LASTEXITCODE -ne 0) { throw "tar extract failed" }
     $new = @(Get-ChildItem $dest -File | Where-Object { $before -notcontains $_.Name } | Select-Object -ExpandProperty Name)
+    # P-002: the channel folder gets exactly 3 files per video (mp4 + 2 thumbnails); info/srt stay inside the release bundle
+    foreach ($f in @($new | Where-Object { $_ -notlike "*.mp4" -and $_ -notlike "*Thumbnail*.jpg" })) { Remove-Item -LiteralPath (Join-Path $dest $f) -Force }
+    $new = @($new | Where-Object { $_ -like "*.mp4" -or $_ -like "*Thumbnail*.jpg" })
     $mp4 = $new | Where-Object { $_ -like "*.mp4" } | Select-Object -First 1
     $base = if ($mp4) { $mp4.Substring(0, $mp4.Length - 4) } else { "video $nnn" }
     $done[$tag] = (Get-Date).ToString("s")
