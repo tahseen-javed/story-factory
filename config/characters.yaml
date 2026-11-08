@@ -1,0 +1,8 @@
+# P-008 C: locked voice profiles. Same character = same voice in every scene and every video of the series.
+# Allowed sources only: Chatterbox default voice variants, Kokoro-82M (Apache-2.0) built-in voices, the owner's own recordings (voices/me.wav). Never clone a real person.
+version: 1
+allowed_engines: [chatterbox, kokoro, recording]
+narrator: {engine: chatterbox, voice: default, seed: 1234, pitch_semitones: 0.0, pace: 1.0, effects: [room]}
+characters:
+  hero: {engine: kokoro, voice: am_adam, seed: 2101, pitch_semitones: 0.0, pace: 1.04, effects: []}
+  mara: {engine: kokoro, voice: bf_emma, seed: 2102, pitch_semitones: 0.0, pace: 0.95, effects: [warm]}

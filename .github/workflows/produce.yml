@@ -452,6 +452,12 @@ jobs:
           cp -r build/assembled/bg/. video/public/bg/
           N=$(python -c "import json;print(len(json.load(open('build/assembled/plan.json'))['sources']))")
           python -m factory.finalize --chunks-dir build/chunks --assembled build/assembled --video-dir video --thumbs build/thumbs --out build/final --plan build/assembled/plan.json --sources $N
+      - name: PerTh watermark check on the final mp4 audio (records the result, never blocks)
+        continue-on-error: true
+        run: |
+          python -m pip install -q torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -q resemble-perth==1.0.1 librosa
+          python -m factory.wmcheck build/final/final.mp4 build/assembled build/final/watermark_report.json
       - name: Contact sheet (20 frames)
         run: |
           D=$(python -c "import json;print(json.load(open('build/final/qa_report.json'))['duration']['actual'])")
@@ -500,7 +506,7 @@ jobs:
         if: always()
         run: |
           mkdir -p build/qa
-          cp build/final/qa_report.json build/final/scorecard.txt build/final/status.json build/final/contact.jpg build/final/info.txt build/qa/ 2>/dev/null || true
+          cp build/final/qa_report.json build/final/scorecard.txt build/final/status.json build/final/contact.jpg build/final/info.txt build/final/licence_report.json build/final/watermark_report.json build/qa/ 2>/dev/null || true
       - uses: ./.github/actions/pack
         if: always()
         with:

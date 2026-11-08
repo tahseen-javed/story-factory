@@ -1,6 +1,6 @@
 import { Shot, Timeline, CharSpec } from "./types";
 
-const HERO = { outfit: "teal", hat: "cap", hair: "short" };
+const HERO = { outfit: "teal", hat: "cap", hair: "short", headScale: 1.5, eyeScale: 1.25 };
 const MARA = { outfit: "plum", hat: "none", hair: "bun", age: "old" };
 const hero = (pose: string, expr: string, x = 0.5, facing: 1 | -1 = 1, prop?: string): CharSpec & { prop?: string } => ({ id: "hero", rig: "rig_hero", params: HERO, pose, expr, x, facing, ...(prop ? { prop } : {}) });
 const mara = (pose: string, expr: string, x = 0.7, facing: 1 | -1 = -1, prop?: string): CharSpec & { prop?: string } => ({ id: "mara", rig: "rig_hero", params: MARA, pose, expr, x, facing, ...(prop ? { prop } : {}) });

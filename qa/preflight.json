@@ -1,0 +1,49 @@
+{
+ "job": "pilot/solar-storm-blackout",
+ "ok": false,
+ "checks": {
+  "1_time_estimate": {
+   "ok": true,
+   "eta_min": 55,
+   "budget_min": 60
+  },
+  "2_licence_gate": {
+   "ok": true,
+   "missing": [],
+   "assets": 32
+  },
+  "3_monetization": {
+   "ok": true,
+   "checks": {
+    "original_script": true,
+    "scene_structure_varies": true,
+    "no_reused_long_segment": true,
+    "no_third_party_clips": true,
+    "no_real_person_or_brand": true,
+    "facts_sourced": true
+   },
+   "closest": null
+  },
+  "4_cast_voices": {
+   "ok": true,
+   "cute": false,
+   "cute_enforced": false,
+   "unique": true,
+   "voices_locked_distinct": true,
+   "problems": []
+  },
+  "5_captions_and_blotch": {
+   "ok": true,
+   "captions": "P-006: none burned in",
+   "blotch": "not measured (no images manifest yet; measured in the images job)"
+  },
+  "6_previous_rating": {
+   "ok": false,
+   "previous": "001 Solar Storm Blackout v2.1",
+   "previous_owner_rating": 7.9,
+   "target": 8.5,
+   "improvements": [],
+   "note": "add 'improvements:' list to job.yaml"
+  }
+ }
+}

@@ -18,3 +18,7 @@ style_seed:
   thumbnail_layout: close_left
   outfit: teal_cap
   wpm: 170
+improvements:
+  - QA calibrated to the owner rating (7.9) with known-weakness penalties
+  - licence gate, monetization checklist, cast and voice checks run in the CI finalize job
+  - PerTh watermark measured on the final mp4 audio

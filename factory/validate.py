@@ -29,7 +29,7 @@ class Issue:
 def load_cfg():
     """factory.yaml plus the v2 data files (style.yaml, pacing.yaml, audio.yaml); audio.yaml overrides cfg["audio"] keys."""
     cfg = miniyaml.load_file(os.path.join(ROOT, "config", "factory.yaml"))
-    for name in ("style", "pacing", "audio"):
+    for name in ("style", "pacing", "audio", "qa_calibration", "characters"):
         p = os.path.join(ROOT, "config", f"{name}.yaml")
         if os.path.exists(p):
             data = miniyaml.load_file(p) or {}

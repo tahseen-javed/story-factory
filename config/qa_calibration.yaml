@@ -1,0 +1,7 @@
+# P-008 A: QA 2.0 is calibrated to the owner's ratings (docs/QUALITY_LOG.md). A penalty applies until its feature ships.
+version: 1
+anchor: {video: "001 v2.1", owner_rating: 7.9}
+features_shipped: {blotch_free_backgrounds: false, poses_beams_particles_kinetic: false, auto_fix_loop: false, character_acting: false, story_payoff: false}
+penalties: {blotch_free_backgrounds: 0.7, poses_beams_particles_kinetic: 0.6, auto_fix_loop: 0.2, character_acting: 0.4, story_payoff: 0.2}
+previous_owner_rating: 7.9
+target_rating: 8.5

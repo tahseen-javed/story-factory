@@ -185,6 +185,8 @@ export const Rig: React.FC<RigProps> = ({ params = {}, pose, expr, frame, fps = 
     bob = -Math.abs(c) * P.cycle.bob;
     dx = (progress - 0.5) * (P.travel || 0);
   }
+  const hs = Number(params.headScale || 1);
+  const es = Number(params.eyeScale || 1);
   const talking = mouth !== undefined && mouth > 0.06;
   if (talking && !P.cycle) { armF = [armF[0] + mouth! * 9, armF[1] + mouth! * 6]; head += mouth! * 2.2 * Math.sin(t * 7); }
   const gaze = 3 + 2.5 * Math.sin(t * 0.8 + seed);
@@ -260,7 +262,7 @@ export const Rig: React.FC<RigProps> = ({ params = {}, pose, expr, frame, fps = 
           {/* neck + head */}
           <g transform={`rotate(${head} 0 ${SH_Y})`}>
             <rect x={-14} y={SH_Y - 22} width={28} height={30} rx={8} fill={skinBack} stroke={INK} strokeWidth={SW} />
-            <g transform={`translate(0 ${SH_Y - 82})`}>
+            <g transform={`translate(0 ${SH_Y - 82 - (hs - 1) * 22}) scale(${hs})`}>
               {/* hair behind head */}
               {hairName === "bun" ? <circle cx={-6} cy={-72} r={26} fill={hairCol} stroke={INK} strokeWidth={SW} /> : null}
               <ellipse cx={-64} cy={-4} rx={12} ry={17} fill={skin} stroke={INK} strokeWidth={SW} />
@@ -294,8 +296,8 @@ export const Rig: React.FC<RigProps> = ({ params = {}, pose, expr, frame, fps = 
               ) : null}
               <g transform={`translate(${faceX} 0) scale(${faceS} 1)`} opacity={view === "back" ? 0 : 1}>
                 {old ? <path d="M-46,4 q8,6 16,0 M30,4 q8,6 16,0" stroke={INK} strokeWidth={2.5} fill="none" opacity={0.45} /> : null}
-                <Eye cx={-27} cy={eyeY + 70} e={E} blink={blink} look={gaze} />
-                <Eye cx={27} cy={eyeY + 70} e={E} blink={blink} look={gaze} />
+                <g transform={`translate(-27 ${eyeY + 70}) scale(${es}) translate(27 ${-(eyeY + 70)})`}><Eye cx={-27} cy={eyeY + 70} e={E} blink={blink} look={gaze} /></g>
+                <g transform={`translate(27 ${eyeY + 70}) scale(${es}) translate(-27 ${-(eyeY + 70)})`}><Eye cx={27} cy={eyeY + 70} e={E} blink={blink} look={gaze} /></g>
                 <path d={`M-48,${browBase + 66 + 0} L-14,${browBase + 66 - E.browInner}`} stroke={hairName === "bun" || old ? shade(hairCol, 0.8) : INK} strokeWidth={7} strokeLinecap="round" />
                 <path d={`M14,${browBase + 66 - E.browInner + (E.browR || 0)} L48,${browBase + 66 + (E.browR ? E.browR * 0.4 : 0)}`} stroke={hairName === "bun" || old ? shade(hairCol, 0.8) : INK} strokeWidth={7} strokeLinecap="round" />
                 <g transform="translate(0 30)">{talking ? <ellipse cx={0} cy={5} rx={9 + 9 * mouth!} ry={3 + 17 * mouth!} fill="#5a1f24" stroke={INK} strokeWidth={5} /> : <Mouth kind={E.mouth} />}</g>

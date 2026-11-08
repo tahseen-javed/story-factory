@@ -298,7 +298,7 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
                 pose, expr = B.acting(btext, c["pose"], c["expr"], j, rng)
                 chars_in.append({**c, "pose": pose, "expr": expr})
             chars = layout_beat(chars_in, frm, view, beat_no, has_ov)
-            fullchars = [{**c, "rig": plan["characters"][c["id"]]["rig"], "params": plan["characters"][c["id"]]["params"], "speaks": ci == 0}
+            fullchars = [{**c, "rig": plan["characters"][c["id"]]["rig"], "params": ({"headScale": cfg["style"]["characters"]["head_scale"], "eyeScale": cfg["style"]["characters"]["eye_scale"]} if int(plan.get("style_version", 1)) >= 3 else {}) | plan["characters"][c["id"]]["params"], "speaks": ci == 0}
                          for ci, c in enumerate(chars)]
             fx_ = 0.5
             if chars:

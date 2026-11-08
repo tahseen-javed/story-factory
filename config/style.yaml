@@ -25,3 +25,17 @@ acts:
   sacrifice: grey
   climax: alarm
   resolution: gold
+
+# P-008 B: every character is cute and unique (enforced for style_version >= 3 by factory/cast.py)
+characters:
+  cute: true
+  head_scale: 1.5          # default Rig headScale for new casts (rig head height 126 of 450 total at scale 1.0)
+  eye_scale: 1.25          # default Rig eyeScale (large friendly eyes)
+  head_to_body_min: 0.36   # head height / total figure height
+  eye_to_head_min: 0.30    # eye height / head height
+  rounded: true            # soft shapes only (rig is built from rounded paths)
+  rig: {head_height: 126, body_height: 450, eye_height: 36}
+  warm_palette_only: true
+  banned_words: [gore, blood, skull, weapon, gun, knife, zombie_face, monster_teeth, scary_mask]
+  cast_similarity_max: 0.5
+  shot_similarity_max: 0.5
