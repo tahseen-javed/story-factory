@@ -386,7 +386,7 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
         "style": {"accent": plan["style"].get("accent", "amber"), "lut": plan["style"].get("lut", "cold_night"),
                   "titlecard": plan["style"].get("titlecard", "clock_strip"), "transition": plan["style"].get("transition", "hard_cuts")},
         "shots": timeline_shots, "endScreenFrames": int(end_s * FPS), "fadeOut": 30,
-        "captions": build_captions(plan["sentences"], B),
+        "captions": build_captions(plan["sentences"], B) if cfg.get("captions", {}).get("burned_in", True) else [],
         "voiceEnv": voice_env_q,
     }
     final_shots = timeline_shots

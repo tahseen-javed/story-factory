@@ -196,7 +196,7 @@ def check_v2(path, timeline, audio_plan, srt, cfg, rep):
     gap = max((b - a0 for a0, b in zip(marks, marks[1:])), default=0)
     dyn_ok = a["lra"] >= ac["lra_min"] and sil_beats >= ac["silence_beats_min"] and gap <= ac["sfx_gap_max_s"] + 0.5 and 10 <= ac["duck_db"] <= 14
     caps = timeline.get("captions", [])
-    text_ok = all(len(l) <= 2 and all(len(" ".join(w[0] for w in ln)) <= 38 for ln in l) for l in (c["lines"] for c in caps)) and bool(caps)
+    text_ok = all(len(l) <= 2 and all(len(" ".join(w[0] for w in ln)) <= 38 for ln in l) for l in (c["lines"] for c in caps)) and (bool(caps) or not cfg.get("captions", {}).get("burned_in", True))
     chars = [c for s in shots for c in s["chars"]]
     mouth_ok = bool(timeline.get("voiceEnv")) and max(timeline["voiceEnv"] or [0]) > 0.3
     variety = {"framings": len({s.get("framing") for s in shots}), "expressions": len({c["expr"] for c in chars}), "poses": len({c["pose"] for c in chars})}

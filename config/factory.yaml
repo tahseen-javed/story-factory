@@ -97,8 +97,11 @@ depth:
   engine: depth_anything_v2_small
   layers: 3
 
+captions:
+  burned_in: false          # P-006: no captions inside the video (the .srt stays in the bundle)
+
 render:
-  chunk_seconds: 30
+  chunk_seconds: 15
   max_chunks: 20
   concurrency: 2           # videos in parallel
   quality: premium

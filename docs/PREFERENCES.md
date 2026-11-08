@@ -24,3 +24,8 @@ Status: active
 Rule: Before starting ANY task, state the exact total time the whole task will take (minutes, per-stage breakdown, slowest stage), then start immediately without waiting. If the estimate is above the budget given, cut scope to what fits and list what moved to the next job. Update the ETA every 10 minutes. If real time goes more than 20% over the estimate, say so in one line with the reason. P-004 clarification: the 35/60-minute budgets apply to producing a normal video from a title only; one-time build jobs follow the scope the owner gives.
 Enforced by: text-only (applied by Claude in every reply)
 Status: active
+
+## P-006 | 2026-11-08 | visual
+Rule: No burned-in captions in the video (owner request). Supersedes the burned-in-captions part of P-002; the .srt is still produced and stays in the release bundle for YouTube. Say "sirf is video tak" to limit it to one video.
+Enforced by: config/factory.yaml captions.burned_in=false; assemble.py; qa text_safety; tests/test_v2.py
+Status: active

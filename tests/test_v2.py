@@ -73,7 +73,8 @@ class TestStoryAndAssemble(unittest.TestCase):
         self.assertGreaterEqual(tl["durationInFrames"] / 30.0 - ap["audio_end_s"], 7.5)
         self.assertEqual(sum(1 for a, b in zip(tl["shots"], tl["shots"][1:]) if a["framing"] == b["framing"]), 0)
         self.assertGreaterEqual(len(ap["silence"]), 3)
-        self.assertTrue(max(tl["voiceEnv"]) > 0.5 and tl["captions"])
+        self.assertTrue(max(tl["voiceEnv"]) > 0.5)
+        self.assertEqual(tl["captions"] == [], not load_cfg().get("captions", {}).get("burned_in", True))
         ev = sorted(e["t"] for e in ap["sfx"])
         self.assertLessEqual(max(b - a for a, b in zip(ev, ev[1:])), 4.5)
 
