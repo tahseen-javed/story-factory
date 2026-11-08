@@ -455,7 +455,7 @@ jobs:
       - name: PerTh watermark check on the final mp4 audio (records the result, never blocks)
         continue-on-error: true
         run: |
-          python -m pip install -q torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -q torch==2.6.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cpu
           python -m pip install -q "setuptools<81" resemble-perth==1.0.1 librosa
           python -m factory.wmcheck build/final/final.mp4 build/assembled build/final/watermark_report.json
       - name: Contact sheet (20 frames)
