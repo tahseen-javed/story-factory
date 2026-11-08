@@ -111,23 +111,23 @@ const FilmThumb: React.FC<{ spec: any }> = ({ spec }) => {
         </defs>
         {A ? (
           <>
-            <Cracks c={{ x: 0.7, y: 0.9, n: 10 }} frame={40} />
-            <GiftBox p={{ x: 0.7, y: 0.9, s: 3.0, frown: 1, sink: 0.7, rib: "lilac" }} frame={20} />
+            <Cracks c={{ x: 0.74, y: 0.88, n: 10 }} frame={40} />
+            <GiftBox p={{ x: 0.74, y: 0.88, s: 2.8, frown: 1, sink: 0.7, rib: "lilac" }} frame={20} />
             <g filter="url(#rimf)">
-              <g transform="rotate(-78 500 560)">
-                <Rig params={spec.hero.params} pose="stand" expr={spec.hero.expr} frame={10} seed={3} x={500} y={990} scale={1.9} facing={1} />
+              <g transform="rotate(-78 600 590)">
+                <Rig params={spec.hero.params} pose="stand" expr={spec.hero.expr} frame={10} seed={3} x={600} y={1000} scale={1.7} facing={1} />
               </g>
             </g>
           </>
         ) : (
           <>
-            <ellipse cx={left ? 560 : 1360} cy={1010} rx={420} ry={70} fill="#0d1c3a" opacity={0.75} />
-            <Cracks c={{ x: left ? 0.29 : 0.71, y: 0.93, n: 9 }} frame={40} />
-            <GiftBox p={{ x: left ? 0.29 : 0.71, y: 0.97, s: 2.6, frown: 1, sink: 1, rib: "lilac" }} frame={20} />
+            <ellipse cx={left ? 1400 : 520} cy={1000} rx={330} ry={64} fill="#0d1c3a" opacity={0.8} />
+            <Cracks c={{ x: left ? 0.73 : 0.27, y: 0.91, n: 9 }} frame={40} />
+            <GiftBox p={{ x: left ? 0.73 : 0.27, y: 0.93, s: 2.3, frown: 1, sink: 1, rib: "lilac" }} frame={20} />
             <g filter="url(#rimf)">
-              <Rig params={spec.hero.params} pose="stand" expr={spec.hero.expr} frame={10} seed={5} x={left ? 560 : 1360} y={1380} scale={2.9} facing={left ? 1 : -1} />
+              <Rig params={spec.hero.params} pose="stand" expr={spec.hero.expr} frame={10} seed={5} x={left ? 520 : 1400} y={1300} scale={2.6} facing={left ? 1 : -1} />
             </g>
-            <g transform={`translate(${left ? 1500 : 420},300)`}>
+            <g transform={`translate(${left ? 1560 : 360},210)`}>
               <circle r={120} fill="#ffb347" opacity={0.28} />
               <path d="M-26,-60 L26,-60 L36,40 L-36,40 Z" fill="#ffe08a" stroke={INK} strokeWidth={8} strokeLinejoin="round" />
               <rect x={-34} y={40} width={68} height={16} rx={6} fill="#5a3a26" stroke={INK} strokeWidth={6} />
