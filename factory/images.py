@@ -125,7 +125,9 @@ def painted_post(img, variant: str, scale: float, grain_seed: int):
 
     w, h = img.size
     try:
-        img = palette_snap(img, _cfg())
+        _c = _cfg()
+        if float(_c["style"]["look"].get("palette_pull", 0) or 0) > 0:
+            img = palette_snap(img, _c)
     except Exception as e:  # noqa: BLE001
         print(f"[images] palette snap skipped: {e!r}")
     big = img.resize((int(w * scale), int(h * scale)), Image.LANCZOS)
@@ -292,6 +294,8 @@ def run(plan_path: str, out_dir: str, shard: int, nshards: int):
         g = torch.Generator().manual_seed(seed)
         im0 = pipe(prompt_embeds=pe, pooled_prompt_embeds=pooled, num_inference_steps=int(ic["steps"]), guidance_scale=0.0, width=W, height=H, generator=g).images[0]
         # v2.1 restyle: one img2img pass (0.35-0.45) so every base shares the bible look; variants then derive from this base
+        if float(ic.get("restyle_strength", 0) or 0) <= 0:   # P-011: no restyle pass (it made blotchy backgrounds)
+            return im0
         g2 = torch.Generator().manual_seed(seed + 7)
         return i2i(prompt_embeds=pe, pooled_prompt_embeds=pooled, image=im0, strength=float(ic["restyle_strength"]), num_inference_steps=int(ic["steps"]), guidance_scale=0.0, generator=g2).images[0]
 

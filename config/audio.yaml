@@ -10,14 +10,14 @@ sfx_gap_max_s: 3.8
 music_bed_db: -26
 # loudness offset per story act (dB, applied to the whole mix before the final loudnorm)
 intensity_db:
-  hook: 0.5
-  act1: -1.5
+  hook: 1.0
+  act1: -2.0
   act2a: 0.0
-  midpoint: 1.0
-  act2b: 1.0
-  sacrifice: -4.0
-  climax: 2.0
-  resolution: -3.0
+  midpoint: 1.5
+  act2b: 1.5
+  sacrifice: -5.5
+  climax: 3.0
+  resolution: -4.0
 music_mood:
   hook: tense
   act1: calm

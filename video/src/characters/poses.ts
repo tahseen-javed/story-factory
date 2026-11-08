@@ -31,6 +31,10 @@ export const POSES: Record<string, PoseDef> = {
   fight: { torso: 10, head: -2, rootY: 14, armB: [78, 150], armF: [92, 156], legB: [-24, -10], legF: [26, 8] },
   crouch: { torso: 12, head: 4, rootY: 92, armB: [30, 60], armF: [40, 70], legB: [98, -6], legF: [104, -2] },
   hands_up: { torso: -2, head: -4, rootY: 0, armB: [168, 176], armF: [170, 178], legB: [-3, -3], legF: [3, 3] },
+  look_up: { torso: -4, head: -22, rootY: 0, armB: [-6, -3], armF: [150, 160], legB: [-3, -3], legF: [3, 3] },
+  back_away: { torso: -12, head: 4, rootY: 0, armB: [60, 95], armF: [75, 100], legB: [-20, -10], legF: [18, 10] },
+  reach: { torso: 12, head: 4, rootY: 0, armB: [24, 30], armF: [100, 104], legB: [-12, -12], legF: [14, 14] },
+  shrug: { torso: 0, head: 5, rootY: 0, armB: [-42, 34], armF: [42, -34], legB: [-3, -3], legF: [3, 3] },
 };
 
 export type ExprDef = {

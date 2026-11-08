@@ -280,7 +280,7 @@ def parse(text: str) -> Script:
             if ma and ma.group(1) == "ACT":
                 cur_act = ma.group(2)
             elif ma:
-                pend_silence = True
+                pend_silence = ma.group(2) or True
             continue
         if not s:
             continue

@@ -17,8 +17,8 @@ EXPR_ALT = {
     "determined": ["determined", "worried", "angry"], "sad": ["sad", "worried", "sleepy"], "sleepy": ["sleepy", "worried"],
     "relieved": ["relieved", "neutral", "sly"], "neutral": ["neutral", "worried", "relieved"], "angry": ["angry", "determined"], "sly": ["sly", "neutral"],
 }
-POSE_ALT = {"stand": ["stand", "point", "hands_up", "stand"], "point": ["point", "stand"], "sit": ["sit"], "sit_bed": ["sit_bed"]}
-POSE_KEYWORDS = [(r"\b(look up|sky|sun)\b", "hands_up"), (r"\b(point|there)\b", "point"), (r"\b(hide|duck)\b", "crouch")]
+POSE_ALT = {"stand": ["stand", "shrug", "reach", "look_up", "point", "stand"], "phone_hold": ["phone_hold", "back_away", "phone_hold"], "point": ["point", "stand"], "sit": ["sit"], "sit_bed": ["sit_bed"]}
+POSE_KEYWORDS = [(r"\b(step|steps) back|backs? away|flinch", "back_away"), (r"\b(reach|grab|grabs)\b", "reach"), (r"\b(look up|sky|sun)\b", "look_up"), (r"\b(point|there)\b", "point"), (r"\b(hide|duck)\b", "crouch")]
 
 
 def split_beats(t0: float, t1: float, cands: list, pc: dict) -> list:

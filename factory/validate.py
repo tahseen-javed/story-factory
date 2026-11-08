@@ -66,7 +66,10 @@ def validate_dir(job_dir: str, cfg=None, prefs=None):
     except ScriptError as e:
         return [Issue("error", "parse", str(e))], None
     mode = job_mode(job_dir)
-    issues += validate_script(sc, raw, cfg, prefs, mode)
+    _v4 = False
+    if os.path.exists(os.path.join(job_dir, "job.yaml")):
+        _v4 = int((miniyaml.load_file(os.path.join(job_dir, "job.yaml")) or {}).get("style_version", 1)) >= 4
+    issues += validate_script(sc, raw, cfg, prefs, mode, _v4)
     issues += validate_facts(job_dir, sc, cfg)
     return issues, sc
 
@@ -79,7 +82,7 @@ def _warn(issues, code, msg, line=0):
     issues.append(Issue("warn", code, msg, line))
 
 
-def validate_script(sc, raw: str, cfg: dict, prefs: dict, mode: str = "job") -> list:
+def validate_script(sc, raw: str, cfg: dict, prefs: dict, mode: str = "job", v4: bool = False) -> list:
     I: list = []
     sconf, cam, shotsc = cfg["script"], cfg["camera"], cfg["shots"]
     wpm = float(sconf["wpm"])
@@ -87,7 +90,7 @@ def validate_script(sc, raw: str, cfg: dict, prefs: dict, mode: str = "job") -> 
     # ---------- header ----------
     if not sc.title:
         _err(I, "header", "TITLE missing")
-    min_len = sconf["min_len_min"] if mode == "pilot" else 10
+    min_len = sconf["min_len_min"]   # P-011: the 4-minute format is the channel format
     if not (min_len <= sc.length_min <= sconf["max_len_min"]):
         _err(I, "length", f"LENGTH_MIN {sc.length_min} outside {min_len}-{sconf['max_len_min']}")
     if sc.voice not in ("default", "me"):
@@ -126,7 +129,7 @@ def validate_script(sc, raw: str, cfg: dict, prefs: dict, mode: str = "job") -> 
             _err(I, "tracker", f"CH{ch.n}: tracker not updated (add track:{{key:value}} to a shot)", ch.line)
         for s in ch.shots:
             L = s.line
-            if s.location not in sc.locations:
+            if s.location not in sc.locations and s.location != "insert":
                 _err(I, "location", f"location '{s.location}' not declared in LOCATIONS", L)
             if s.variant not in vocab.VARIANTS:
                 _err(I, "variant", f"variant '{s.variant}'.{vocab.suggest(s.variant, vocab.VARIANTS)}", L)
@@ -234,7 +237,24 @@ def validate_script(sc, raw: str, cfg: dict, prefs: dict, mode: str = "job") -> 
             _err(I, "hook-options", f"picked option {pick} scores {sc_[pick]} (scores {sc_}); pick the best and reach the floor")
 
     # ---------- CTA / end screen ----------
-    if len(cta_shots) != 1:
+    if v4:   # P-011: one soft subscribe line at 45-60% and one at the end, never in the first 20 s; hook inside the problem; one short last line
+        if len(cta_shots) != 2:
+            _err(I, "cta", f"need exactly two cta:subscribe shots (45-60% and the end), found {len(cta_shots)}")
+        else:
+            f1, f2 = (cta_shots[0][1] / max(1, total_words)), (cta_shots[1][1] / max(1, total_words))
+            if not (float(sconf["cta_v4_min"]) <= f1 <= float(sconf["cta_v4_max"])):
+                _err(I, "cta", f"first subscribe line at {f1*100:.0f}%; need 45-60%", cta_shots[0][0].line)
+            if f2 < 0.88:
+                _err(I, "cta", f"closing subscribe line at {f2*100:.0f}%; it belongs at the end (88%+)", cta_shots[1][0].line)
+        if not re.search(r"^//\s*LASTLINE\b", raw, re.M):
+            _err(I, "lastline", "add '// LASTLINE' before the final shot (one memorable last line)")
+        last_s = (split_sentences(sc.shots[-1].text) or [""])[-1] if sc.shots else ""
+        if count_words(last_s) > 14:
+            _err(I, "lastline", f"last line has {count_words(last_s)} words; keep it to 14 or fewer")
+        first2 = " ".join(split_sentences(" ".join(s.text for s in sc.shots))[:2])
+        if count_words(first2) > 26:
+            _err(I, "hook", f"first 2 sentences have {count_words(first2)} words; the hook must land inside 8 s (26 words max)")
+    elif len(cta_shots) != 1:
         _err(I, "cta", f"need exactly one cta:subscribe shot, found {len(cta_shots)}")
     else:
         frac = cta_shots[0][1] / max(1, total_words)
@@ -244,7 +264,7 @@ def validate_script(sc, raw: str, cfg: dict, prefs: dict, mode: str = "job") -> 
         _err(I, "end-screen", "frozen end card removed in v2 (P-002): no ov:end_screen; the last scene keeps animating")
 
     # ---------- chapters ----------
-    cmin = sconf["chapter_min_s"] if mode == "job" else 55
+    cmin = 55
     for ch in sc.chapters:
         secs = sum(s.words for s in ch.shots) / (wpm / 60)
         last = ch is sc.chapters[-1]

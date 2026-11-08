@@ -1,0 +1,21 @@
+nnn: 2
+slug: last-ferry
+mode: pilot
+short_title: Last Ferry
+length_min: 4
+base_name: "002 Last Ferry 04min"
+style_version: 4
+topic: t01
+style_seed:
+  opening: in_medias_res
+  ritual: radio_check
+  ending: quiet_reveal
+  accent: teal
+  lut: dusty_dusk
+  music_set: dread_pad
+  camera_rhythm: pulse_cut
+  transition: paper_slide_mix
+  titlecard: paper_tab
+  thumbnail_layout: object_center
+  outfit: coral_beanie
+  wpm: 170

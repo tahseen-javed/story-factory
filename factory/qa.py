@@ -205,12 +205,13 @@ def check_v2(path, timeline, audio_plan, srt, cfg, rep):
     variety = {"framings": len({s.get("framing") for s in shots}), "expressions": len({c["expr"] for c in chars}), "poses": len({c["pose"] for c in chars})}
     anim_ok = mouth_ok and variety["framings"] >= 6 and variety["expressions"] >= 5
     dims = {"pacing": pacing_ok, "dead_windows": dead_ok, "ending": ending_ok, "audio_dynamics": dyn_ok, "text_safety": text_ok, "character_animation": anim_ok,
-            "motion": rep["motion"]["ok"], "visual": rep["black"]["ok"] and rep["freeze"]["ok"] and rep["flash"]["ok"], "loudness": a["ok"], "subtitle_sync": rep["captions"]["ok"]}
+            "motion": rep["motion"]["ok"], "visual": rep["black"]["ok"] and rep["freeze"]["ok"] and rep["flash"]["ok"], "loudness": a["ok"], "subtitle_sync": rep["captions"]["ok"],
+            "visible_change": rep["av_sync"]["detected_cuts"] >= (timeline["durationInFrames"] / 30.0) / 3.5}
     raw = round(10.0 * sum(dims.values()) / len(dims), 1)
     cal = cfg.get("qa_calibration", {})   # P-008 A: subtract the penalty of every known weakness that has not shipped yet
     pen = {k: v for k, v in (cal.get("penalties") or {}).items() if not (cal.get("features_shipped") or {}).get(k)}
     rating = round(max(0.0, raw - sum(pen.values())), 1)
-    rep["v2"] = {"ok": all(dims.values()), "rating": rating, "raw_rating": raw, "calibration_penalties": pen, "previous_owner_rating": cal.get("previous_owner_rating"),
+    rep["v2"] = {"ok": all(dims.values()), "scene_changes": rep["av_sync"]["detected_cuts"], "rating": rating, "raw_rating": raw, "calibration_penalties": pen, "previous_owner_rating": cal.get("previous_owner_rating"),
                  "beats_previous": rating > float(cal.get("previous_owner_rating", 0) or 0), "dims": dims, "shots": len(shots), "avg_shot_s": round(avg, 2), "max_shot_s": round(max(durs), 2),
                  "shots_per_min": round(len(shots) / (timeline["durationInFrames"] / 1800.0), 1), "dead_windows": dead[:8], "holds": holds,
                  "lra": a["lra"], "silence_beats": sil_beats, "max_sfx_gap_s": round(gap, 2), "variety": variety}

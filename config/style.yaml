@@ -10,7 +10,7 @@ look:
   lens_blur_px: 8
   texture: paper_grain
   posterize_colors: 14
-  palette_pull: 0.5        # how far each posterised colour is pulled toward the nearest bible hue (lightness kept)
+  palette_pull: 0.0        # how far each posterised colour is pulled toward the nearest bible hue (lightness kept)
   outline_strength: 0.5
 qa:
   palette_distance_max: 34   # mean LAB distance of a scene to the bible; outliers above this are flagged

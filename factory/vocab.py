@@ -11,7 +11,7 @@ VARIANTS = ("day", "night", "alarm", "dusk", "blackout")
 
 POSES = (
     "stand", "walk", "run", "sit", "sit_bed", "carry", "push_cart",
-    "phone_hold", "point", "write", "hide", "fight", "crouch", "hands_up",
+    "phone_hold", "point", "write", "hide", "fight", "crouch", "hands_up", "look_up", "back_away", "reach", "shrug",
 )
 
 EXPRESSIONS = (
@@ -41,6 +41,7 @@ OVERLAYS = {
     "paper_bar_chart": (3, 7),
     "hand_pen": (1, 2),
     "end_screen": (1, 1),
+    "meter": (2, 3),
 }
 
 CAMERA = (

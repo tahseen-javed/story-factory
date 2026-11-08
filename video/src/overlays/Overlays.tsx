@@ -481,7 +481,56 @@ export const FlashForwardBanner: React.FC<{ text: string; frame: number; total: 
   );
 };
 
+
+// ---- survival meter insert (battery, water, cash, hours) ----
+export const Meter: React.FC<OvProps> = ({ args, frame, total }) => {
+  const kind = String(args[0]);
+  const val = String(args[1]);
+  const label = String(args[2] || kind).toUpperCase();
+  const num = parseFloat(val.replace(/[^0-9.]/g, "")) || 0;
+  const p = easeOut(prog(frame, 4, 22));
+  const level = kind === "battery" ? clamp(num / 100, 0, 1) : kind === "water" ? clamp(num / 10, 0, 1) : kind === "cash" ? clamp(num / 100, 0, 1) : clamp(num / 12, 0, 1);
+  const low = level < 0.2;
+  const col = low ? "#ff5a5a" : "#7be08a";
+  const lv = level * p;
+  const icon =
+    kind === "battery" ? (
+      <g>
+        <rect x={-170} y={-80} width={320} height={160} rx={22} fill="#1c1a1f" stroke="#f2e8d2" strokeWidth={12} />
+        <rect x={150} y={-34} width={26} height={68} rx={8} fill="#f2e8d2" />
+        <rect x={-150} y={-60} width={Math.max(8, 280 * lv)} height={120} rx={10} fill={col} />
+      </g>
+    ) : kind === "water" ? (
+      <g>
+        <path d="M-90,-110 L90,-110 L110,-70 L110,100 Q110,120 90,120 L-90,120 Q-110,120 -110,100 L-110,-70 Z" fill="#14233a" stroke="#f2e8d2" strokeWidth={12} strokeLinejoin="round" />
+        <rect x={-96} y={110 - 200 * lv} width={192} height={Math.max(6, 200 * lv)} fill="#5fb4ff" />
+        <rect x={-40} y={-140} width={80} height={32} rx={8} fill="#f2e8d2" />
+      </g>
+    ) : kind === "cash" ? (
+      <g>
+        {[0, 1, 2].map((i) => <rect key={i} x={-150 + i * 14} y={-70 + i * 22} width={270} height={130} rx={12} fill={i === 2 ? "#6fcf7f" : "#4f9f61"} stroke="#1c1a1f" strokeWidth={8} />)}
+        <text x={-12} y={72} textAnchor="middle" fontFamily="Anton, Impact, sans-serif" fontSize={110} fill="#1c1a1f">$</text>
+      </g>
+    ) : (
+      <g>
+        <circle r={125} fill="#14233a" stroke="#f2e8d2" strokeWidth={12} />
+        {Array.from({ length: 12 }).map((_, i) => <line key={i} x1={Math.cos(i * 0.5236) * 100} y1={Math.sin(i * 0.5236) * 100} x2={Math.cos(i * 0.5236) * 116} y2={Math.sin(i * 0.5236) * 116} stroke="#f2e8d2" strokeWidth={6} />)}
+        <line x1={0} y1={0} x2={Math.sin(lv * Math.PI * 2) * 90} y2={-Math.cos(lv * Math.PI * 2) * 90} stroke={col} strokeWidth={14} strokeLinecap="round" />
+      </g>
+    );
+  return (
+    <OverlayFrame frame={frame} total={total} rot={0}>
+      <div style={{ width: 760, textAlign: "center" }}>
+        <div style={{ fontFamily: FONT.marker, fontSize: 64, color: "#f2e8d2", letterSpacing: 4, textShadow: "0 4px 0 #1c1a1f" }}>{label}</div>
+        <svg width={420} height={300} viewBox="-210 -150 420 300" style={{ margin: "6px auto 0", display: "block" }}>{icon}</svg>
+        <div style={{ fontFamily: FONT.display, fontSize: 190, lineHeight: 1, color: col, WebkitTextStroke: "10px #1c1a1f", paintOrder: "stroke fill" }}>{val}</div>
+      </div>
+    </OverlayFrame>
+  );
+};
+
 export const OVERLAYS: Record<string, React.FC<any>> = {
+  meter: Meter,
   notepad_tracker: NotepadTracker,
   calendar_countdown: CalendarCountdown,
   sticky_note: StickyNote,

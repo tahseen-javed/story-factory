@@ -37,7 +37,16 @@ const PosterFilter: React.FC = () => {
   );
 };
 
+const InsertBackdrop: React.FC<{ variant: string }> = ({ variant }) => {
+  const frame = useCurrentFrame();
+  const warm = variant === "day" || variant === "dusk";
+  const c = warm ? ["#2e2036", "#d9803f"] : ["#0b1228", "#2c3d80"];
+  const w = Math.sin(frame * 0.02);
+  return <AbsoluteFill style={{ background: `radial-gradient(ellipse at ${50 + w * 14}% ${45 + w * 7}%, ${c[1]} 0%, ${c[0]} 78%)` }} />;
+};
+
 const Backdrop: React.FC<{ shot: Shot; tx: number; ty: number }> = ({ shot, tx, ty }) => {
+  if (shot.location === "insert") return <InsertBackdrop variant={shot.variant} />;
   if (shot.layers && shot.layers.far) {
     const L = shot.layers;
     return (
@@ -127,7 +136,7 @@ const Captions: React.FC<{ caps: Caption[] }> = ({ caps }) => {
   const c = caps.find((x) => frame >= x.s && frame < x.e);
   if (!c) return null;
   return (
-    <div style={{ position: "absolute", left: "5%", right: "5%", bottom: "6%", textAlign: "center" }}>
+    <div style={{ position: "absolute", left: "5%", right: "5%", bottom: "6%", textAlign: "center", opacity: clamp((frame - c.s) / 3, 0, 1), transform: `scale(${0.92 + 0.08 * clamp((frame - c.s) / 3, 0, 1)})` }}>
       {c.lines.map((ln, i) => (
         <div key={i} style={{ lineHeight: 1.12 }}>
           {ln.map(([w, a, b], k) => {

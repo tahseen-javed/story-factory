@@ -396,6 +396,12 @@ def ambience(kind: str, sec: float, seed: int = 0) -> np.ndarray:
         x = bp(nz, 120, 700) * (0.6 + 0.4 * np.sin(2 * np.pi * 0.13 * t + seed))
     elif kind == "city":
         x = bp(nz, 100, 900) * (0.7 + 0.3 * np.sin(2 * np.pi * 0.07 * t)) + 0.15 * np.sin(2 * np.pi * 60 * t)
+    elif kind == "sea":
+        x = lp(nz, 520) * (0.55 + 0.45 * np.sin(2 * np.pi * 0.11 * t)) + 0.18 * bp(_noise(sec, seed + 31), 1200, 4200) * (0.5 + 0.5 * np.sin(2 * np.pi * 0.11 * t + 1.3)) ** 2
+    elif kind == "engine":
+        x = 0.7 * np.sin(2 * np.pi * 48 * t) + 0.4 * np.sin(2 * np.pi * 96 * t) + 0.25 * np.sin(2 * np.pi * 144 * t) + 0.3 * lp(nz, 220)
+    elif kind == "crowd":
+        x = bp(nz, 300, 1800) * (0.6 + 0.4 * np.sin(2 * np.pi * 0.4 * t))
     elif kind == "hum_dark":
         x = 0.5 * np.sin(2 * np.pi * 60 * t) + 0.25 * np.sin(2 * np.pi * 120 * t) + 0.4 * lp(nz, 120)
     else:

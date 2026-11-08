@@ -77,8 +77,10 @@ def build_plan(job_dir: str, cfg=None) -> dict:
                     "chapter_end": bool(last_in_ch and ci < n_ch - 1), "emotional": bool(emo),
                 })
                 if s.silence and k == 0 and sentences[:-1]:
+                    big = s.silence == "big"
                     sentences[-1]["silence_before"] = True
-                    sentences[-2]["pause_after_s"] = max(sentences[-2]["pause_after_s"], float(audio_cfg.get("silence_beat_s", 0.9)))
+                    sentences[-1]["silence_big"] = big
+                    sentences[-2]["pause_after_s"] = max(sentences[-2]["pause_after_s"], 1.9 if big else float(audio_cfg.get("silence_beat_s", 0.9)))
                 ids.append(f"s{sidx:04d}")
                 sidx += 1
             shots.append({
@@ -93,13 +95,17 @@ def build_plan(job_dir: str, cfg=None) -> dict:
     # locations needing images: one base per location (first variant used), others via img2img of the base
     order: dict = {}
     for sh in shots:
+        if sh["location"] == "insert":   # inserts are drawn procedurally (no SDXL image)
+            continue
         order.setdefault(sh["location"], [])
         if sh["variant"] not in order[sh["location"]]:
             order[sh["location"]].append(sh["variant"])
     stylep = img["style_prompt"]
     bases, variants = [], []
+    for loc in (list(order) if int(job.get("style_version", 1)) >= 4 else []):   # P-011 (style_version 4): a second camera angle per place, so sub-beats cut between two real images
+        order[loc + "2"] = list(order[loc])
     for loc, vs in order.items():
-        desc = sc.locations[loc]
+        desc = (sc.locations[loc[:-1]] + ", reverse angle, closer medium view, different composition") if (loc.endswith("2") and loc[:-1] in sc.locations) else sc.locations[loc]
         base_v = vs[0]
         bprompt = f"{desc}, {VARIANT_PROMPTS[base_v]}, {stylep}"
         bseed = int(img["seed"]) + int(sha(loc), 16) % 10000

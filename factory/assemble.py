@@ -264,6 +264,7 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
     IMPACT = ("thunder", "glass_crack", "power_down", "alert_siren")
     timeline_shots, sfx_events, ambience, music_runs = [], [], [], []
     prev_frm, last_frms, prev_cam, prev_tr, prev_views, prev_loc, beat_no = None, [], None, "cut", [], None, 0
+    last_amb, last_indoor = "room", True
     for k, sh in enumerate(shots_in):
         s_start = starts[k]
         s_end = starts[k + 1] if k + 1 < len(shots_in) else total_frames
@@ -281,20 +282,33 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
                 edges.append(fr)
         edges.append(s_end)
         key = f"{sh['location']}.{sh['variant']}"
-        bg = f"bg/{key}.jpg" if key in have else None
-        layers = None
-        if bg and os.path.exists(os.path.join(bg_dir_out, f"{key}.far.jpg")):
-            layers = {"far": f"bg/{key}.far.jpg"}
-            for nm in ("mid", "near"):
-                if os.path.exists(os.path.join(bg_dir_out, f"{key}.{nm}.webp")):
-                    layers[nm] = f"bg/{key}.{nm}.webp"
-        if bg is None:
+        def bg_layers(kk):
+            bg_ = f"bg/{kk}.jpg" if kk in have else None
+            lay_ = None
+            if bg_ and os.path.exists(os.path.join(bg_dir_out, f"{kk}.far.jpg")):
+                lay_ = {"far": f"bg/{kk}.far.jpg"}
+                for nm in ("mid", "near"):
+                    if os.path.exists(os.path.join(bg_dir_out, f"{kk}.{nm}.webp")):
+                        lay_[nm] = f"bg/{kk}.{nm}.webp"
+            return bg_, lay_
+
+        bg, layers = bg_layers(key)
+        key_b = f"{sh['location']}2.{sh['variant']}"   # second camera angle of the same place: every other beat cuts to it (a real cut, not a reframe)
+        bg_b, layers_b = bg_layers(key_b) if key_b in have else (None, None)
+        if bg is None and sh["location"] != "insert":
             notes.append({"shot": k, "fix": "backdrop_fallback", "key": key})
         desc = plan["locations"].get(sh["location"], "").lower()
         indoor = any(w in desc for w in ("apartment", "kitchen", "corridor", "stairwell", "shop", "room"))
         amb = "room" if indoor else "city"
+        if any(w in desc for w in ("sea", "pier", "harbour", "harbor", "dock", "shore", "waves", "ferry", "lighthouse")):
+            amb = "sea"
+        if any(w in desc for w in ("wheelhouse", "engine", "car deck", "outboard")):
+            amb = "engine"
         if sh["variant"] == "blackout":
             amb = "hum_dark" if indoor else "wind"
+        if sh["location"] == "insert":
+            amb, indoor = last_amb, last_indoor
+        last_amb, last_indoor = amb, indoor
         act = sh.get("act") or (timeline_shots[-1]["act"] if timeline_shots else "hook")
         tension = B.tension_of([c["expr"] for c in sh["chars"]], act)
         for j in range(len(edges) - 1):
@@ -333,7 +347,7 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
             crowd = ("crowd" in sh["fx"]) or (frm in ("wide", "xwide") and not indoor and sh["variant"] != "blackout" and sh["location"] in ("street", "gas_station"))
             tl_shot = {
                 "i": len(timeline_shots), "chapter": sh["chapter"], "start": f0, "dur": dur, "location": sh["location"], "variant": sh["variant"],
-                "bg": bg, "layers": layers, "floorY": 0.9, "chars": fullchars, "overlay": ov,
+                "bg": (bg_b if (j % 2 == 1 and bg_b) else bg), "layers": (layers_b if (j % 2 == 1 and bg_b) else layers), "floorY": 0.9, "chars": fullchars, "overlay": ov,
                 "camera": {**cam, "fx": round(fx_, 3), "fy": fy_}, "fx": sh["fx"] if first else [x for x in sh["fx"] if x not in ("glitch", "alarm_pulse")] + [],
                 "banner": sh["banner"] if first else None, "cta": bool(sh["cta"]) and first, "timeCard": tc, "track": sh["track"], "prevTrack": sh["prev_track"],
                 "text": btext, "framing": frm, "trans": tr, "grade": grade_map.get(act, "warm"), "act": act, "crowd": bool(crowd),
@@ -374,7 +388,7 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
             prev = plan["sentences"][s["idx"] - 1]
             a, b = prev["end"] + 0.12, s["start"] - 0.02
             if b - a >= 0.4:
-                silences.append([round(a, 3), round(b, 3)])
+                silences.append([round(a, 3), round(b, 3), -90.0] if s.get("silence_big") else [round(a, 3), round(b, 3)])
                 sfx_events.append({"t": round(max(0.1, a - 1.3), 3), "name": "riser", "gain": -4.0})
                 sfx_events.append({"t": round(s["start"], 3), "name": "impact", "gain": -3.0})
     # keyword sfx
@@ -392,7 +406,7 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
         t = a
         while b - t > gap_max:
             t += gap_max * 0.85
-            if not any(sa <= t <= sb for sa, sb in silences):
+            if not any(w_[0] <= t <= w_[1] for w_ in silences):
                 sfx_events.append({"t": round(t, 3), "name": fill[n_fill % 4], "gain": -5.0})
                 n_fill += 1
 

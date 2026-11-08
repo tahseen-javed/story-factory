@@ -15,7 +15,7 @@ from . import synth
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OWN_PROOF = "docs/licences/OWN-WORK-CC0.txt"
 MIT_PROOF = "docs/licences/chatterbox-MIT.txt"
-AMBIENCE = ("room", "city", "wind", "hum_dark")
+AMBIENCE = ("room", "city", "wind", "hum_dark", "sea", "engine", "crowd")
 
 
 def _own(where: str) -> dict:

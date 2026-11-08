@@ -8,6 +8,9 @@ const mara = (pose: string, expr: string, x = 0.7, facing: 1 | -1 = -1, prop?: s
 type Def = Partial<Shot> & { loc: string; variant: string; camera: [string, number, number] };
 
 const DEFS: Def[] = [
+  { loc: "insert", variant: "night", camera: ["push", 1.0, 1.1], chars: [], overlay: { name: "meter", args: ["battery", "12%", "PHONE"], inFrame: 6, outFrame: 54 }, fx: ["dust"] },
+  { loc: "insert", variant: "dusk", camera: ["push", 1.0, 1.1], chars: [], overlay: { name: "meter", args: ["cash", "$23", "CASH"], inFrame: 6, outFrame: 54 }, fx: ["dust"] },
+  { loc: "street", variant: "dusk", camera: ["push", 1.0, 1.1], chars: [hero("look_up", "shocked", 0.3), mara("back_away", "scared", 0.7)], overlay: null, fx: ["rain"] },
   { loc: "apartment", variant: "night", camera: ["push", 1.0, 1.16], chars: [hero("sit_bed", "scared", 0.3)], overlay: { name: "phone_alert", args: ["EMERGENCY ALERT", "Severe space weather. Impact in 15 hours"], inFrame: 8, outFrame: 56 }, fx: ["flicker"], timeCard: { text: "FRIDAY 3:12 AM", frames: 56 } },
   { loc: "apartment", variant: "night", camera: ["push", 1.04, 1.18], chars: [hero("phone_hold", "shocked", 0.35)], overlay: { name: "timer", args: ["15:00:00", "UNTIL IMPACT"], inFrame: 4, outFrame: 56 } },
   { loc: "street", variant: "night", camera: ["pan_r", 1.12, 1.12], chars: [], overlay: { name: "paper_diagram", args: ["SOLAR STORM PATH", "Sun", "Storm cloud", "Earth", "Power grid"], inFrame: 4, outFrame: 58 }, fx: ["dust"] },
