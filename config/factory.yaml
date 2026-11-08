@@ -72,7 +72,7 @@ tts:
   cfg_weight: 0.5
   wer_max: 0.08
   duration_ratio: [0.6, 1.6]
-  max_regen: 5
+  max_regen: 8
   matrix: 8                # shards (benchmark.yml retunes)
   seed: 1234
   speed: 1.0
@@ -85,7 +85,8 @@ images:
   steps: 4
   guidance: 0.0
   variant_mode: img2img    # img2img | grade
-  variant_strength: 0.75
+  variant_strength: 0.42     # v2.1: one img2img pass at 0.35-0.45 from the restyled base keeps every variant in one style
+  restyle_strength: 0.40     # base restyle pass (SDXL-Lightning img2img) into the shared look
   matrix: 7
   seed: 777
   new_background_share_min: 0.60
@@ -105,6 +106,7 @@ render:
 qa:
   max_fix_rounds: 2
   asr_wer_max: 0.08
+  asr_target_wer: 0.03     # v2.1: ASR match >= 97% per sentence, failed sentences are re-synthesised
   clip_relevance_min: 0.18
   style_similarity_min: 0.55
   phash_distance_min: 10

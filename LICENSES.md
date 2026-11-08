@@ -34,3 +34,4 @@ Checked 2026-11-08. If a licence or model page changes, switch to the configured
 - Any non-commercial model, dataset, font or sound (CC-BY-NC, research-only, "personal use only")
 - Any attribution-required music unless the description auto-adds the credit (current policy: no-attribution only)
 - Cloning of any voice that is not the owner's own recording or a CC0 / explicitly commercial-use sample
+- Music library (factory/musiclib.py): 6 moods rendered by our own synthesiser (original code, no third-party audio), dedicated CC0; cached and reused (P-003).

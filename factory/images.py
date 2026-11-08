@@ -23,7 +23,56 @@ LIGHT = ("ByteDance/SDXL-Lightning", "sdxl_lightning_4step_unet.safetensors")
 
 def _cfg():
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    return miniyaml.load_file(os.path.join(root, "config", "factory.yaml"))
+    cfg = miniyaml.load_file(os.path.join(root, "config", "factory.yaml"))
+    sp = os.path.join(root, "config", "style.yaml")
+    if os.path.exists(sp):
+        cfg["style"] = miniyaml.load_file(sp)
+    return cfg
+
+
+def _palette_lab(cfg):
+    """Style-bible palette (hues + accents) as OpenCV 8-bit LAB rows."""
+    import cv2
+    import numpy as np
+
+    hexes = list(cfg["style"]["palette"]["hues"]) + list(cfg["style"]["palette"]["accents"])
+    rgb = np.array([[[int(h[i:i + 2], 16) for i in (1, 3, 5)] for h in hexes]], dtype="uint8")
+    return cv2.cvtColor(rgb, cv2.COLOR_RGB2LAB)[0].astype("float32")
+
+
+def palette_distance(img, cfg) -> float:
+    """Mean chroma (a,b) distance of the image pixels to the nearest bible colour (lower = closer to the style bible)."""
+    import cv2
+    import numpy as np
+
+    small = np.asarray(img.convert("RGB").resize((192, 108)))
+    ab = cv2.cvtColor(small, cv2.COLOR_RGB2LAB).reshape(-1, 3)[:, 1:].astype("float32")
+    pal = _palette_lab(cfg)[:, 1:]
+    return float(np.sqrt(((ab[:, None, :] - pal[None, :, :]) ** 2).sum(-1)).min(axis=1).mean())
+
+
+def palette_snap(img, cfg):
+    """Flatten (mean shift), quantise to k colours and pull each colour's chroma toward the nearest bible hue (lightness kept)."""
+    import cv2
+    import numpy as np
+    from PIL import Image
+
+    look = cfg["style"]["look"]
+    a = np.asarray(img.convert("RGB"))
+    sm = cv2.pyrMeanShiftFiltering(a, 6, 18)
+    lab = cv2.cvtColor(sm, cv2.COLOR_RGB2LAB).astype("float32")
+    flat = lab.reshape(-1, 3)
+    crit = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 12, 1.0)
+    _, _, centers = cv2.kmeans(np.ascontiguousarray(flat[::13]), int(look["posterize_colors"]), None, crit, 2, cv2.KMEANS_PP_CENTERS)
+    pal = _palette_lab(cfg)[:, 1:]
+    near = pal[((centers[:, None, 1:] - pal[None, :, :]) ** 2).sum(-1).argmin(1)]
+    pull = float(look["palette_pull"])
+    centers[:, 1:] = centers[:, 1:] * (1 - pull) + near * pull
+    idx = np.empty(len(flat), dtype="int32")
+    for i in range(0, len(flat), 250000):
+        idx[i:i + 250000] = ((flat[i:i + 250000, None, :] - centers[None, :, :]) ** 2).sum(-1).argmin(1)
+    out = cv2.cvtColor(np.clip(centers[idx], 0, 255).astype("uint8").reshape(lab.shape), cv2.COLOR_LAB2RGB)
+    return Image.fromarray(out)
 
 
 def encode_prompts(prompts: dict):
@@ -75,6 +124,10 @@ def painted_post(img, variant: str, scale: float, grain_seed: int):
     from PIL import Image, ImageFilter
 
     w, h = img.size
+    try:
+        img = palette_snap(img, _cfg())
+    except Exception as e:  # noqa: BLE001
+        print(f"[images] palette snap skipped: {e!r}")
     big = img.resize((int(w * scale), int(h * scale)), Image.LANCZOS)
     big = big.filter(ImageFilter.UnsharpMask(radius=2.2, percent=90, threshold=3))
     a = np.asarray(big).astype("float32") / 255.0
@@ -237,7 +290,10 @@ def run(plan_path: str, out_dir: str, shard: int, nshards: int):
     def gen_base(key, seed):
         pe, pooled = emb[key]
         g = torch.Generator().manual_seed(seed)
-        return pipe(prompt_embeds=pe, pooled_prompt_embeds=pooled, num_inference_steps=int(ic["steps"]), guidance_scale=0.0, width=W, height=H, generator=g).images[0]
+        im0 = pipe(prompt_embeds=pe, pooled_prompt_embeds=pooled, num_inference_steps=int(ic["steps"]), guidance_scale=0.0, width=W, height=H, generator=g).images[0]
+        # v2.1 restyle: one img2img pass (0.35-0.45) so every base shares the bible look; variants then derive from this base
+        g2 = torch.Generator().manual_seed(seed + 7)
+        return i2i(prompt_embeds=pe, pooled_prompt_embeds=pooled, image=im0, strength=float(ic["restyle_strength"]), num_inference_steps=int(ic["steps"]), guidance_scale=0.0, generator=g2).images[0]
 
     def gen_variant(key, init, seed):
         pe, pooled = emb[key]
@@ -250,11 +306,14 @@ def run(plan_path: str, out_dir: str, shard: int, nshards: int):
             t1 = time.time()
             img = gen_base(b["key"], b["seed"] + attempt * 101)
             reasons = check_image(img, b["prompt"], seen[:], ocr, None)
+            pd_ = palette_distance(img, cfg)
+            if attempt == 0 and pd_ > float(cfg["style"]["qa"]["palette_distance_max"]):   # outliers are regenerated once
+                reasons = list(reasons) + [f"palette_outlier({pd_:.1f})"]
             print(f"[images] {b['key']} base try {attempt} {time.time()-t1:.0f}s reasons={reasons}", flush=True)
             if not reasons or attempt == 2:
                 break
         raw[b["key"]] = img
-        manifest[b["key"]] = {"attempt": attempt, "reasons": reasons, "seed": b["seed"] + attempt * 101, "kind": "base"}
+        manifest[b["key"]] = {"attempt": attempt, "reasons": reasons, "seed": b["seed"] + attempt * 101, "kind": "base", "palette_distance": round(palette_distance(img, cfg), 1)}
         for v in grp["variants"]:
             for attempt in range(2):
                 t1 = time.time()
@@ -264,7 +323,7 @@ def run(plan_path: str, out_dir: str, shard: int, nshards: int):
                 if not reasons or attempt == 1:
                     break
             raw[v["key"]] = vi
-            manifest[v["key"]] = {"attempt": attempt, "reasons": reasons, "seed": v["seed"] + attempt * 101, "kind": "variant"}
+            manifest[v["key"]] = {"attempt": attempt, "reasons": reasons, "seed": v["seed"] + attempt * 101, "kind": "variant", "palette_distance": round(palette_distance(vi, cfg), 1)}
         if _has("imagehash"):
             seen.append(__import__("imagehash").phash(raw[b["key"]].resize((256, 144))))
     del pipe, i2i

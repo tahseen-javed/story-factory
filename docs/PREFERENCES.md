@@ -19,3 +19,8 @@ Status: active
 Rule: Speed and delivery. Time budgets: up to 4 min video = 35 min start to delivered files, 10-12 min video = 60 min. Always deliver the 3 files (mp4 + 2 thumbnails); if the budget is nearly used, deliver the best ready version and put the small fix list in docs/PROGRESS.md. Cache every scene/audio chunk/asset by content hash; re-render only changed scenes. Run independent stages in parallel (matrix up to 20), concatenate with ffmpeg -c copy. Slow AI generation (SDXL restyle) builds a reusable cached library once, not per video. QA samples frames, max 3 min, runs alongside rendering, fixes only the weakest scene. Measure every stage into qa/timings.json. First line of every reply = ETA + stage, updated every 10 min. Never lowers resolution, bitrate, fps or audio quality (hard rule 8 stays).
 Enforced by: config/preferences.yaml delivery.time_budget_min; qa/timings.json; text-only otherwise
 Status: active
+
+## P-005 | 2026-11-08 | workflow
+Rule: Before starting ANY task, state the exact total time the whole task will take (minutes, per-stage breakdown, slowest stage), then start immediately without waiting. If the estimate is above the budget given, cut scope to what fits and list what moved to the next job. Update the ETA every 10 minutes. If real time goes more than 20% over the estimate, say so in one line with the reason. P-004 clarification: the 35/60-minute budgets apply to producing a normal video from a title only; one-time build jobs follow the scope the owner gives.
+Enforced by: text-only (applied by Claude in every reply)
+Status: active

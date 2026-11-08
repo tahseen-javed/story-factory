@@ -42,7 +42,7 @@ class Engine:
         self.name, self.model, self.ref = name, model, ref
         self.sr = getattr(model, "sr", 24000)
 
-    def generate(self, text: str, seed: int, exaggeration: float, cfg_weight: float):
+    def generate(self, text: str, seed: int, exaggeration: float, cfg_weight: float, temperature: float = 0.75):
         import torch
 
         torch.manual_seed(seed)
@@ -54,7 +54,7 @@ class Engine:
         if self.name == "chatterbox_turbo":
             wav = self.model.generate(text, audio_prompt_path=self.ref)
         else:
-            kw = dict(exaggeration=exaggeration, cfg_weight=cfg_weight, temperature=0.75)
+            kw = dict(exaggeration=exaggeration, cfg_weight=cfg_weight, temperature=temperature)
             if self.ref:
                 kw["audio_prompt_path"] = self.ref
             wav = self.model.generate(text, **kw)
@@ -133,9 +133,22 @@ def run(plan_path: str, out_dir: str, shard: int, nshards: int, only: list | Non
     asr = Asr(cache_dir=os.path.join(out_dir, "..", ".asr"))
     print(f"[tts] shard {shard}/{nshards}: {len(mine)} sentences, engine={eng.name}, asr={asr.name}, ref={'yes' if voice_ref else 'built-in'}")
     meta = []
-    wer_max = float(cfg["qa"]["asr_wer_max"])
+    wer_max = float(cfg["qa"].get("asr_target_wer", cfg["qa"]["asr_wer_max"]))
+    prev = {}
+    mp = os.path.join(out_dir, f"meta_{shard}.json")
+    if os.path.exists(mp):  # cache restore from the previous run: keep sentences that already meet the target, re-synthesise only the rest
+        try:
+            prev = {m["id"]: m for m in json.load(open(mp, encoding="utf-8"))["sentences"]}
+        except Exception:  # noqa: BLE001
+            prev = {}
+    TEMPS = [0.75, 0.65, 0.85, 0.7, 0.8, 0.6, 0.9, 0.55, 0.75]
     lo, hi = t["duration_ratio"]
     for s in mine:
+        pm = prev.get(s["id"])
+        if pm and pm.get("ok") and pm.get("wer", 1) <= wer_max and os.path.exists(os.path.join(out_dir, f"{s['id']}.wav")):
+            meta.append(pm)
+            print(f"[tts] {s['id']} kept (wer={pm.get('wer')})", flush=True)
+            continue
         best = None
         t0 = time.time()
         for attempt in range(int(t["max_regen"]) + 1):
@@ -143,7 +156,7 @@ def run(plan_path: str, out_dir: str, shard: int, nshards: int, only: list | Non
             ex = 0.7 if s.get("emotional") else float(t["exaggeration"])
             try:
                 cfgw = (float(t["cfg_weight"]) if not s.get("emotional") else 0.35) + [0.0, 0.12, -0.12, 0.2, -0.2, 0.0][attempt % 6]
-                raw = eng.generate(s["tts_text"], seed, ex + 0.05 * (attempt % 3), min(0.95, max(0.1, cfgw)))
+                raw = eng.generate(s["tts_text"], seed, ex + 0.05 * (attempt % 3), min(0.95, max(0.1, cfgw)), TEMPS[attempt % len(TEMPS)])
             except Exception as e:  # noqa: BLE001
                 print(f"[tts] {s['id']} generation error: {e!r}")
                 continue

@@ -112,7 +112,8 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: build/tts
-          key: tts-v1-${{ needs.prepare.outputs.tts_hash }}-${{ needs.prepare.outputs.n_tts }}-${{ matrix.shard }}
+          key: tts-v2-${{ needs.prepare.outputs.tts_hash }}-${{ needs.prepare.outputs.n_tts }}-${{ matrix.shard }}
+          restore-keys: tts-v1-${{ needs.prepare.outputs.tts_hash }}-${{ needs.prepare.outputs.n_tts }}-${{ matrix.shard }}
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         if: steps.shardcache.outputs.cache-hit != 'true'
         with:
@@ -174,7 +175,7 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: build/images
-          key: images-v1-${{ needs.prepare.outputs.img_hash }}-${{ needs.prepare.outputs.n_img }}-${{ matrix.shard }}
+          key: images-v2-${{ needs.prepare.outputs.img_hash }}-${{ needs.prepare.outputs.n_img }}-${{ matrix.shard }}
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         if: steps.shardcache.outputs.cache-hit != 'true'
         with:
@@ -202,10 +203,43 @@ jobs:
           mode: ${{ needs.prepare.outputs.mode }}
           recipient: ${{ env.AGE_RECIPIENT }}
 
+  music:
+    # reusable licence-safe music library: 6 moods rendered in parallel once, cached by content hash
+    needs: prepare
+    if: inputs.until != 'plan' && inputs.until != 'tts'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        mood: [calm, tense, urgent, sorrow, climax, hopeful]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.11"
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        id: musiccache
+        with:
+          path: build/musiclib
+          key: musiclib-v1-${{ matrix.mood }}-${{ hashFiles('factory/synth.py', 'factory/musiclib.py') }}
+      - name: Render this mood (skipped on cache hit)
+        if: steps.musiccache.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq libsndfile1
+          python -m pip install numpy==1.26.4 scipy==1.13.1 soundfile==0.12.1
+          python -m factory.musiclib build/musiclib ${{ matrix.mood }}
+      - uses: ./.github/actions/pack
+        with:
+          name: music-${{ matrix.mood }}
+          path: build/musiclib
+          mode: ${{ needs.prepare.outputs.mode }}
+          recipient: ${{ env.AGE_RECIPIENT }}
+
   assemble:
-    needs: [prepare, tts, images]
+    needs: [prepare, tts, images, music]
     # images may fail: assemble then falls back to the procedural SVG backdrops and records it in the QA warnings
-    if: ${{ always() && !cancelled() && needs.prepare.result == 'success' && needs.tts.result == 'success' && !contains('plan tts images', inputs.until || 'all') }}
+    if: ${{ always() && !cancelled() && needs.prepare.result == 'success' && needs.tts.result == 'success' && needs.music.result != 'failure' && !contains('plan tts images', inputs.until || 'all') }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     outputs:
@@ -245,9 +279,17 @@ jobs:
         run: |
           mkdir -p build/images
           python -m factory.assemble --plan build/plan/plan.json --tts build/tts --images build/images --out build/assembled
+      - uses: ./.github/actions/unpack
+        continue-on-error: true
+        with:
+          name: music-all
+          pattern: music-*
+          dest: build/musiclib
+          mode: ${{ needs.prepare.outputs.mode }}
+          key: ${{ secrets.BACKUP_KEY }}
       - name: Mix audio (voice chain, music, sfx, ducking, loudnorm -14 LUFS)
         run: |
-          python -m factory.mix --plan build/assembled/audio_plan.json --voice build/assembled/voice --out build/assembled
+          MUSIC_LIB_DIR=build/musiclib python -m factory.mix --plan build/assembled/audio_plan.json --voice build/assembled/voice --out build/assembled
           cp build/plan/plan.json build/assembled/plan.json
       - uses: ./.github/actions/pack
         with:

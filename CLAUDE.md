@@ -28,6 +28,7 @@ Every video must be top tier, unique, checked, auto-fixed, and delivered with 2 
 - Build mode (P-001): run Phases 0, 0a, 1-6 back to back, never wait for "go". Proof goes to docs/PROGRESS.md; in chat only a 3-line Roman Urdu update per finished phase. Owner-only steps live in docs/USER_CHECKLIST.md; build on with placeholders/test data. Stop only for an irreversible/leak risk or a total block only the owner can clear (ask in one line). On a usage limit, write the exact next step into docs/PROGRESS.md; "continue" resumes from it.
 - Errors: diagnose and fix automatically (max 3 attempts per problem). Tell me only if something truly needs me, in one line, with the exact action I must take.
 - Never ask permission for routine work covered by .claude/settings.json (section 17).
+- P-005: before ANY task state the exact total time (per-stage breakdown + slowest stage), then start at once; cut scope if over budget; ETA every 10 min; flag >20% overrun in one line. First line of every reply = total time, stage, ETA.
 - Do not re-confirm decisions already recorded in docs/PREFERENCES.md or docs/DECISIONS.md.
 
 ## 4. Memory: save my preferences automatically

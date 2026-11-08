@@ -21,9 +21,9 @@ intensity_db:
 music_mood:
   hook: tense
   act1: calm
-  act2a: mystery
+  act2a: tense
   midpoint: urgent
-  act2b: dread
+  act2b: urgent
   sacrifice: sorrow
   climax: climax
   resolution: hopeful

@@ -103,11 +103,11 @@ def build_plan(job_dir: str, cfg=None) -> dict:
         base_v = vs[0]
         bprompt = f"{desc}, {VARIANT_PROMPTS[base_v]}, {stylep}"
         bseed = int(img["seed"]) + int(sha(loc), 16) % 10000
-        bases.append({"key": f"{loc}.{base_v}", "location": loc, "variant": base_v, "prompt": bprompt, "seed": bseed, "hash": sha(bprompt, bseed, img["width"], img["height"])})
+        bases.append({"key": f"{loc}.{base_v}", "location": loc, "variant": base_v, "prompt": bprompt, "seed": bseed, "hash": sha(bprompt, bseed, img["width"], img["height"], cfg.get("style_version", 1), img.get("restyle_strength", 0))})
         for v in vs[1:]:
             vprompt = f"{desc}, {VARIANT_PROMPTS[v]}, {stylep}"
             variants.append({"key": f"{loc}.{v}", "location": loc, "variant": v, "base": f"{loc}.{base_v}", "prompt": vprompt, "seed": bseed + 1,
-                             "hash": sha(vprompt, bseed + 1, img["variant_strength"])})
+                             "hash": sha(vprompt, bseed + 1, img["variant_strength"], cfg.get("style_version", 1))})
     image_groups = []
     for b in bases:
         image_groups.append({"location": b["location"], "base": b, "variants": [v for v in variants if v["location"] == b["location"]]})
