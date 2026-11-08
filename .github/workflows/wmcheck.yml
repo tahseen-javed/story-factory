@@ -1,0 +1,41 @@
+name: wmcheck
+# Manual: re-checks the Chatterbox/PerTh watermark on the final audio track of an earlier produce run (pilot artifacts are plain files).
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: produce run id whose "assembled" artifact is checked
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  wmcheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg libsndfile1
+          python -m pip install -q torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -q "setuptools<81" resemble-perth==1.0.1 librosa soundfile
+      - name: Get the assembled artifact and rebuild the final audio track (AAC 192k 48 kHz, same parameters as factory.finalize.mux)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download ${{ inputs.run_id }} -n assembled -D build/assembled
+          ffmpeg -v error -y -i build/assembled/master.wav -c:a aac -b:a 192k -ar 48000 build/final_audio.m4a
+      - name: PerTh detection (raw TTS, voice-only master, final AAC track)
+        run: python -m factory.wmcheck build/final_audio.m4a build/assembled build/watermark_report.json
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: watermark-report
+          path: build/watermark_report.json
+          retention-days: 3

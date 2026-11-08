@@ -29,7 +29,10 @@ def main(argv=None):
     mp4, asm, out = (argv or sys.argv[1:])[:3]
     import perth
 
-    wm = perth.PerthImplicitWatermarker()
+    cls = getattr(perth, "PerthImplicitWatermarker", None)
+    if cls is None:  # perth swallows its own import error (usually a missing pkg_resources); surface the real one
+        from perth.perth_net.perth_net_implicit.perth_watermarker import PerthImplicitWatermarker as cls
+    wm = cls()
     tmp = tempfile.mkdtemp()
     final_wav = os.path.join(tmp, "final.wav")
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", mp4, "-vn", "-ac", "1", "-ar", "24000", final_wav], check=True)
