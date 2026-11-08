@@ -41,13 +41,14 @@ class TestCast(unittest.TestCase):
 
 class TestVoices(unittest.TestCase):
     def test_profiles_locked_and_distinct(self):
-        cfg = load_cfg()["characters"]
-        self.assertTrue(voicecheck.profiles_ok(cfg, {"hero": {}, "mara": {}})["ok"])
+        cfg = {"allowed_engines": ["chatterbox", "kokoro", "recording"], "narrator": {"engine": "chatterbox", "voice": "default", "seed": 1234, "pitch_semitones": 0.0},
+               "characters": {"a": {"engine": "kokoro", "voice": "am_adam", "seed": 1, "pitch_semitones": 0.0}, "b": {"engine": "kokoro", "voice": "bf_emma", "seed": 2, "pitch_semitones": 0.0}, "mute": {"silent": True}}}
+        self.assertTrue(voicecheck.profiles_ok(cfg, {"a": {}, "b": {}, "mute": {}})["ok"])
         self.assertFalse(voicecheck.profiles_ok(cfg, {"stranger": {}})["ok"])           # no locked profile
-        bad = json.loads(json.dumps(cfg)); bad["characters"]["mara"] = dict(bad["characters"]["hero"])
-        self.assertFalse(voicecheck.profiles_ok(bad, {"hero": {}, "mara": {}})["ok"])    # same recipe
-        bad2 = json.loads(json.dumps(cfg)); bad2["characters"]["hero"]["engine"] = "elevenlabs_clone"
-        self.assertFalse(voicecheck.profiles_ok(bad2, {"hero": {}})["ok"])               # not an allowed source
+        bad = json.loads(json.dumps(cfg)); bad["characters"]["b"] = dict(bad["characters"]["a"])
+        self.assertFalse(voicecheck.profiles_ok(bad, {"a": {}, "b": {}})["ok"])          # same recipe
+        bad2 = json.loads(json.dumps(cfg)); bad2["characters"]["a"]["engine"] = "elevenlabs_clone"
+        self.assertFalse(voicecheck.profiles_ok(bad2, {"a": {}})["ok"])                  # not an allowed source
 
     def test_fingerprint_separates_voices(self):
         sr = 16000

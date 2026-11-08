@@ -4,5 +4,6 @@ version: 1
 allowed_engines: [chatterbox, kokoro, recording]
 narrator: {engine: chatterbox, model: ResembleAI/chatterbox, voice: default, seed: 1234, exaggeration: 0.5, cfg_weight: 0.5, temperature: 0.75, speed: 1.0, pitch_semitones: 0.0, pace: 1.0, sample_rate: 24000, loudness_dbfs_rms: -21, effects: [room], locked_on: "2026-11-08"}
 characters:
-  hero: {engine: kokoro, voice: am_adam, seed: 2101, pitch_semitones: 0.0, pace: 1.04, effects: []}
-  mara: {engine: kokoro, voice: bf_emma, seed: 2102, pitch_semitones: 0.0, pace: 0.95, effects: [warm]}
+  hero: {silent: true}
+  mara: {silent: true}
+  kit: {silent: true}

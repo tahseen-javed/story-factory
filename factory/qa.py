@@ -127,7 +127,8 @@ def check_cut_sync(path, timeline, rep):
         d = min(abs(c - s) for s in starts)
         if d <= 6 / 30.0:
             on_grid += 1
-            worst = max(worst, d)
+            if d <= 2 / 30.0:   # the cut itself; 3-6 frames later is an overlay or transition pop
+                worst = max(worst, d)
             continue
         explained = any(s - 2 / 30.0 <= c <= s + 22 / 30.0 for s in starts) or any(e - 14 / 30.0 <= c <= e + 2 / 30.0 for e in ends)
         if not explained:

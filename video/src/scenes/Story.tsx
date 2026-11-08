@@ -40,7 +40,7 @@ const PosterFilter: React.FC = () => {
 const InsertBackdrop: React.FC<{ variant: string }> = ({ variant }) => {
   const frame = useCurrentFrame();
   const warm = variant === "day" || variant === "dusk";
-  const c = warm ? ["#2e2036", "#d9803f"] : ["#0b1228", "#2c3d80"];
+  const c = warm ? ["#4a3050", "#f2a04d"] : variant === "alarm" ? ["#4a1420", "#e0485a"] : ["#1d2d63", "#5b7ae0"];
   const w = Math.sin(frame * 0.02);
   return <AbsoluteFill style={{ background: `radial-gradient(ellipse at ${50 + w * 14}% ${45 + w * 7}%, ${c[1]} 0%, ${c[0]} 78%)` }} />;
 };
@@ -156,7 +156,8 @@ export const ShotView: React.FC<{ shot: Shot; tl: Timeline }> = ({ shot, tl }) =
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const cam = cameraAt(shot.camera, frame, shot.dur);
-  const mood = MOODS[shot.variant] || MOODS.day;
+  const isInsert = shot.location === "insert";
+  const mood = MOODS[isInsert ? "day" : shot.variant] || MOODS.day;
   const grade = GRADES[shot.grade || ""] || null;
   const ov = shot.overlay;
   const ovOn = !!ov && frame >= ov.inFrame && frame < ov.outFrame;
@@ -172,7 +173,8 @@ export const ShotView: React.FC<{ shot: Shot; tl: Timeline }> = ({ shot, tl }) =
   const progress = shot.dur > 1 ? frame / (shot.dur - 1) : 0;
   const wrapX = trans === "whip" && frame < 8 ? -160 * (1 - easeOut(k8)) : 0;
   const punch = trans === "punch" && frame < 6 ? 1 + 0.07 * (1 - frame / 6) : 1;
-  const worldFilter = `url(#poster) ${mood.filter}${grade ? " " + grade.filter : ""}`;
+  const angleB = (shot as any).angle === "b";
+  const worldFilter = `url(#poster) ${mood.filter}${grade ? " " + grade.filter : ""}${angleB ? " hue-rotate(-14deg) saturate(1.12) brightness(0.94)" : ""}`;
 
   return (
     <AbsoluteFill style={{ overflow: "hidden", background: "#000" }}>
@@ -195,7 +197,7 @@ export const ShotView: React.FC<{ shot: Shot; tl: Timeline }> = ({ shot, tl }) =
             })}
           </svg>
         </div>
-        <MoodTint variant={shot.variant} />
+        <MoodTint variant={isInsert ? "day" : shot.variant} />
         {grade ? <AbsoluteFill style={{ background: grade.tint, opacity: grade.opacity, mixBlendMode: grade.blend as any, pointerEvents: "none" }} /> : null}
         <FxLayer fx={shot.fx} variant={shot.variant} />
       </div>

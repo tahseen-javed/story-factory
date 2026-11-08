@@ -352,6 +352,7 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
                 "banner": sh["banner"] if first else None, "cta": bool(sh["cta"]) and first, "timeCard": tc, "track": sh["track"], "prevTrack": sh["prev_track"],
                 "text": btext, "framing": frm, "trans": tr, "grade": grade_map.get(act, "warm"), "act": act, "crowd": bool(crowd),
                 "tension": tension,
+                "angle": "b" if (j % 2 == 1 and bg_b) else "a",
             }
             timeline_shots.append(tl_shot)
             t0 = f0 / FPS

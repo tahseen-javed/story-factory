@@ -37,12 +37,12 @@ Finn, your brother, is twelve, alone on the island, and he just stopped answerin
 @ dock.dusk | hero:stand/scared | fx:rain | sfx:heartbeat
 Why would he go quiet now?
 // SILENCE
-@ dock.dusk | hero:back_away/shocked | banner:"LAST FERRY 4:21 PM" | fx:rain | sfx:impact,wind
+@ dock.dusk | hero:back_away/shocked | fx:rain | sfx:impact,wind
 The ferry horn blows once. Nine minutes become eight.
 // ACT act1
 @ insert.dusk | ov:receipt("FERRY TICKET","Adult single   $20.00","You have   $18.00","SHORT   $2.00") | fx:dust | sfx:paper_slide
 The ticket costs twenty dollars. You are two short.
-@ dock.dusk | hero:stand/worried | kit:stand/neutral | fx:rain | sfx:click
+@ dock.dusk | hero:stand/worried | kit:stand/neutral | banner:"LAST FERRY 4:21 PM" | fx:rain | sfx:click
 Kit, the deckhand, checks his watch twice. Nobody boards without a full ticket.
 // PLANT voicemail: Finn's unplayed voice message
 @ dock.dusk | hero:phone_hold/sad | kit:stand/neutral | fx:rain | sfx:phone_buzz
