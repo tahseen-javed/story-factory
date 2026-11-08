@@ -474,7 +474,7 @@ export const FlashForwardBanner: React.FC<{ text: string; frame: number; total: 
   return (
     <div style={{ position: "absolute", left: -40, right: -40, top: 130, transform: `translateX(${(1 - inP) * 1400 + outP * 1400}px) rotate(-2.2deg)`, background: "repeating-linear-gradient(45deg, #f2b632 0 36px, #1b1a1f 36px 72px)", padding: 10, boxShadow: "0 14px 0 rgba(0,0,0,0.3)" }}>
       <div style={{ background: "#c6232c", border: `6px solid ${INK}`, padding: "10px 60px", display: "flex", alignItems: "baseline", gap: 40, color: "#fff" }}>
-        <span style={{ fontFamily: FONT.ui, fontWeight: 900, fontSize: 44, letterSpacing: 8, opacity: 0.9 }}>FLASH FORWARD</span>
+        <span style={{ fontFamily: FONT.ui, fontWeight: 900, fontSize: 44, letterSpacing: 8, opacity: 0.9 }}>{/EARLIER|AGO|BEFORE/i.test(text) ? "FLASHBACK" : "FLASH FORWARD"}</span>
         <span style={{ fontFamily: FONT.display, fontSize: 130, letterSpacing: 6 }}>{text}</span>
       </div>
     </div>
