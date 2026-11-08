@@ -58,6 +58,8 @@ def segment(lib_dir: str, mood: str, seconds: float, seed: int = 0):
             seg[:, :k] *= np.linspace(0, 1, k)
             out[:, pos:pos + k] *= np.linspace(1, 0, k)
         out[:, pos:pos + take] += seg
+        if pos + take >= n:
+            break
         pos += max(1, take - xf)
         start = (start + int(11.3 * SR)) % L
     return out
