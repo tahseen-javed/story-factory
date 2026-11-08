@@ -29,3 +29,8 @@ Status: active
 Rule: No burned-in captions in the video (owner request). Supersedes the burned-in-captions part of P-002; the .srt is still produced and stays in the release bundle for YouTube. Say "sirf is video tak" to limit it to one video.
 Enforced by: config/factory.yaml captions.burned_in=false; assemble.py; qa text_safety; tests/test_v2.py
 Status: active
+
+## P-007 | 2026-11-08 | delivery
+Rule: Audio licence + monetization safety. Every audio asset (voice model, music mood, ambience, SFX) needs a licence entry with proof (docs/LICENCES.md, library/audio_licences.json) or delivery fails; only CC0/public-domain/own-code audio is allowed (music, ambience, SFX are synthesised by our own code, so no Content ID match is possible). Each video must pass the monetization checklist: original script, varied scene structure vs previous videos, no long reused segment, no third-party clips, no real-person likeness, facts sourced.
+Enforced by: factory/licence.py, factory/monetization.py (finalize gate, categories licence + monetization), config/factory.yaml monetization.*, tests/test_v2.py
+Status: active

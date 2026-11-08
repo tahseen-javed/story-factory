@@ -1,0 +1,4 @@
+Own work dedication (story-factory audio)
+All music, ambience beds and sound effects used by story-factory videos are generated procedurally by this repository's own code
+(factory/synth.py, factory/musiclib.py) from oscillators and noise. No third-party recording, sample, loop or sound library is used.
+The repository owner dedicates the generated audio to the public domain under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/).

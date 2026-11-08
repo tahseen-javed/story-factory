@@ -1,0 +1,250 @@
+{
+ "sfx:alert_siren": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "sfx:phone_buzz": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "sfx:door_knock": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "sfx:door_creak": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "sfx:footsteps": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "sfx:whoosh": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "sfx:paper_slide": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "sfx:stinger_chapter": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "sfx:heartbeat": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "sfx:power_down": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "sfx:radio_static": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "sfx:glass_crack": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "sfx:water_pour": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "sfx:car_engine": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "sfx:crowd_murmur": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "sfx:thunder": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "sfx:click": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "sfx:beep": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "sfx:typing": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "sfx:rustle": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "sfx:ticking_clock": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "sfx:spark": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "sfx:wind": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "sfx:riser": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "sfx:impact": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "sfx:glitch": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "sfx:text_pop": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "ambience:room": {
+  "source": "generated in repo (factory/synth.py ambience())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "ambience:city": {
+  "source": "generated in repo (factory/synth.py ambience())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "ambience:wind": {
+  "source": "generated in repo (factory/synth.py ambience())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "ambience:hum_dark": {
+  "source": "generated in repo (factory/synth.py ambience())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "music:tense": {
+  "source": "generated in repo (factory/synth.py render_music(), factory/musiclib.py)",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "music:dread": {
+  "source": "generated in repo (factory/synth.py render_music(), factory/musiclib.py)",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "music:urgent": {
+  "source": "generated in repo (factory/synth.py render_music(), factory/musiclib.py)",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "music:climax": {
+  "source": "generated in repo (factory/synth.py render_music(), factory/musiclib.py)",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "music:hopeful": {
+  "source": "generated in repo (factory/synth.py render_music(), factory/musiclib.py)",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "music:sorrow": {
+  "source": "generated in repo (factory/synth.py render_music(), factory/musiclib.py)",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "music:calm": {
+  "source": "generated in repo (factory/synth.py render_music(), factory/musiclib.py)",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "music:mystery": {
+  "source": "generated in repo (factory/synth.py render_music(), factory/musiclib.py)",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "voice:chatterbox": {
+  "source": "https://github.com/resemble-ai/chatterbox (model ResembleAI/chatterbox on Hugging Face)",
+  "licence": "MIT",
+  "attribution_required": false,
+  "proof": "docs/licences/chatterbox-MIT.txt",
+  "note": "Chatterbox applies Resemble's Perth implicit watermark inside generate(); factory/tts.py never disables it"
+ },
+ "voice:chatterbox_turbo": {
+  "source": "https://github.com/resemble-ai/chatterbox (model ResembleAI/chatterbox on Hugging Face)",
+  "licence": "MIT",
+  "attribution_required": false,
+  "proof": "docs/licences/chatterbox-MIT.txt",
+  "note": "Chatterbox applies Resemble's Perth implicit watermark inside generate(); factory/tts.py never disables it"
+ }
+}

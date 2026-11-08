@@ -91,6 +91,17 @@ def main(argv=None):
     card = scorecard.compute(props_data, plan, rep, thumbs, a.sources, cfg)
     rep["scorecard"] = card
     rep["categories"]["reference_scorecard"] = card["ok"]
+    # P-007 gates: audio licence (every asset needs an entry + proof) and monetization safety; failure = needs_review, not delivered
+    from . import licence, monetization
+
+    ap = json.load(open(os.path.join(a.assembled, "audio_plan.json")))
+    lic = licence.check(ap, ar)
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    job_dir = os.path.join(root, "pilot" if plan.get("mode") == "pilot" else "jobs", plan["slug"])
+    mon = monetization.run(plan, props_data["timeline"], job_dir, cfg)
+    rep["licence"], rep["monetization"] = lic, mon
+    rep["categories"]["licence"], rep["categories"]["monetization"] = lic["ok"], mon["ok"]
+    json.dump(lic, open(os.path.join(a.out, "licence_report.json"), "w"), indent=1)
     rep["pass"] = all(rep["categories"].values()) and rep["duration"]["ok"]
     rep["warnings"] = ([f"procedural backdrops used for: {', '.join(ar['backdrop_fallbacks'])}"] if ar.get("backdrop_fallbacks") else []) +         ([f"TTS flagged sentences: {len(ar['tts_flagged'])}"] if ar.get("tts_flagged") else []) +         (["TTS fallback engine used (voice consistency)"] if any(e != "chatterbox" and e != "chatterbox_turbo" for e in ar.get("tts_engines", [])) else [])
     rep["fix_rounds"] = rounds

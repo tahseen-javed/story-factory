@@ -79,5 +79,15 @@ class TestStoryAndAssemble(unittest.TestCase):
         self.assertLessEqual(max(b - a for a, b in zip(ev, ev[1:])), 4.5)
 
 
+class TestLicenceGate(unittest.TestCase):
+    def test_unlisted_asset_fails_delivery_gate(self):
+        from factory import licence
+        ok = licence.check({"sfx": [{"name": "click"}], "music": [{"mood": "calm"}], "ambience": [{"kind": "room"}]}, {"tts_engines": ["chatterbox"]})
+        self.assertTrue(ok["ok"])
+        bad = licence.check({"sfx": [{"name": "stock_whoosh.wav"}], "music": [{"mood": "calm"}]}, {"tts_engines": ["kokoro"]})
+        self.assertFalse(bad["ok"])
+        self.assertEqual(bad["missing"], ["sfx:stock_whoosh.wav", "voice:kokoro"])
+
+
 if __name__ == "__main__":
     unittest.main()

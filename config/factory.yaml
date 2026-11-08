@@ -158,3 +158,8 @@ reference:
   height: 720
   fps: 30
   video_kbps: 482
+
+monetization:             # P-007 reused/inauthentic-content safety
+  script_similarity_max: 0.35
+  shot_similarity_max: 0.5
+  reused_segment_max_s: 20
