@@ -24,7 +24,7 @@ jobs:
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg libsndfile1
           python -m pip install -q torch==2.6.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cpu
-          python -m pip install -q "setuptools<81" resemble-perth==1.0.1 librosa soundfile
+          python -m pip install -q "setuptools<81" resemble-perth==1.0.1 librosa pyyaml tqdm soundfile
       - name: Get the assembled artifact and rebuild the final audio track (AAC 192k 48 kHz, same parameters as factory.finalize.mux)
         env:
           GH_TOKEN: ${{ github.token }}
