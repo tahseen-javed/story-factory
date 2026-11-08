@@ -193,7 +193,10 @@ def check_v2(path, timeline, audio_plan, srt, cfg, rep):
     sil_win = audio_plan.get("silence", [])
     ev = sorted(e["t"] for e in audio_plan.get("sfx", []) if not any(w_[0] <= e["t"] <= w_[1] for w_ in sil_win))
     marks = [audio_plan.get("lead_in_s", 0.6)] + ev + [audio_plan.get("audio_end_s", 0)]
-    gap = max((b - a0 for a0, b in zip(marks, marks[1:])), default=0)
+    def _eff(a_, b_):   # a deliberate silence beat is not a missing-SFX gap
+        return (b_ - a_) - sum(max(0.0, min(b_, w_[1]) - max(a_, w_[0])) for w_ in sil_win)
+
+    gap = max((_eff(a0, b) for a0, b in zip(marks, marks[1:])), default=0)
     dyn_ok = a["lra"] >= ac["lra_min"] and sil_beats >= int(timeline.get("silenceBeatsMin") or ac["silence_beats_min"]) and gap <= ac["sfx_gap_max_s"] + 0.5 and 10 <= ac["duck_db"] <= 14
     caps = timeline.get("captions", [])
     text_ok = all(len(l) <= 2 and all(len(" ".join(w[0] for w in ln)) <= 38 for ln in l) for l in (c["lines"] for c in caps)) and (bool(caps) or not cfg.get("captions", {}).get("burned_in", True))
