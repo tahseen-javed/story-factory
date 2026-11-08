@@ -36,7 +36,7 @@ beats:
   "0:54": {loc: workbench.day, frm: [medium, insert], chars: [{id: otto, pose: write, expr: relieved, x: .4}], sfx: [sandpaper, sneeze, fire_crackle]}
   "1:19": {loc: workbench.day, frm: [insert, closeup], chars: [{id: otto, pose: carry, expr: relieved, x: .4}], props: [{k: box, x: .66, y: .72, s: 1.0, frown: 0, sink: 0, rib: red}], sfx: [success_ting]}
   "1:38": {loc: market.day, frm: [medium, closeup], chars: [{id: otto, pose: stand, expr: worried, x: .35}, {id: bramble, pose: stand, expr: relieved, x: .72}], sfx: [market_jingle]}
-  "1:58": {loc: home.day, frm: [medium], chars: [{id: otto, pose: sit, expr: worried, x: .3}], props: [{k: box, x: .66, y: .74, s: 1.3, frown: 1, sink: .1, rib: red}], ov: "thought_bubble(\"What if she thinks it's cheap?\")", sfx: [clunk_m]}
+  "1:58": {loc: home.day, frm: [medium], chars: [{id: otto, pose: sit, expr: worried, x: .3}], props: [{k: box, x: .66, y: .74, s: 1.3, frown: 1, sink: .1, rib: red}], ov: 'thought_bubble("What if she thinks it’s cheap?")', sfx: [clunk_m]}
   "2:10": {loc: home.day, hold: true, frm: [wide], chars: [{id: otto, pose: carry, expr: scared, x: .35, rot: -25}], props: [{k: box, x: .62, y: .74, s: 1.3, frown: 1, sink: .2, rib: red}], sfx: [grunt, flump]}
   "2:15": {loc: home.day, frm: [medium], chars: [{id: otto, pose: sit, expr: sad, x: .3}], props: [{k: box, x: .66, y: .74, s: 1.3, frown: 1, sink: .35, rib: red}], ov: 'thought_bubble("What if she bought me something nicer?")', sfx: [clunk_s, clunk_m, clunk_l]}
   "2:33": {loc: row.dusk, frm: [xwide], cam: "dutch 1.05>1.12", fx: [snow], sfx: [house_creak]}
