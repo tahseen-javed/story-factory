@@ -1,7 +1,8 @@
 # Sound design v2: 4 layers (voice, music, ambience, sfx), dynamic range, silence beats.
 version: 2
 duck_db: 6           # the bed may rise at most 6 dB when nobody speaks (P-012 A3)
-music_below_voice_db: 17   # music bed sits 20 dB under the voice while speaking (P-012 A3: 18-22)
+music_below_voice_db: 17
+hold_release_s: 1.2         # gentle entry and release of the bed around a decision hold (P-017 prevention)   # music bed sits 20 dB under the voice while speaking (P-012 A3: 18-22)
 lra_min: 4.0
 lra_target: 5.0
 silence_beat_s: 0.9

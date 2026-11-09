@@ -168,7 +168,7 @@ def run(audio_plan_path: str, voice_dir: str, out_dir: str, cfg_audio: dict, luf
             sil[i1:i1 + ramp] = np.linspace(fl_, 1, ramp)
     hold_g = np.ones(total, dtype="float32")   # decision hold: the bed stays pinned (no rise, no swell) while the room tone and heartbeat carry the scene
     hg = 10 ** (-float(cfg_audio.get("hold_music_db", 6.0)) / 20.0)
-    r2 = int(1.2 * SR)   # gentle entry and release of the decision hold
+    r2 = int(float(cfg_audio.get("hold_release_s", 1.2)) * SR)   # gentle entry and release of the decision hold
     for w_ in ap.get("holds", []):
         i0, i1 = int(w_[0] * SR), min(total, int(w_[1] * SR))
         hold_g[i0:i1] = hg

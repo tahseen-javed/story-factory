@@ -245,6 +245,9 @@ def cmd_final(mp4: str, asm: str, out: str, th: dict, expect: tuple = (1920, 108
     for code in sorted({f["code"] for f in findings} | {"A1-GAP", "A3-MUSIC-LOUD", "A3-MUSIC-DROPOUT", "V1-FACE-OVERLAP", "V4-BLACK"}):
         fs = [f for f in findings if f["code"] == code]
         checks[code] = {"status": "FAIL" if any(x["severity"] in ("BLOCKER", "MAJOR") for x in fs) else ("WARN" if fs else "PASS"), "count": len(fs)}
+    for f_ in findings:
+        f_.setdefault("class", "LIKELY_FALSE_ALARM" if f_["code"] == "A2-UNCONFIRMED" else "REAL")
+    metrics["timings_s"] = {"audio_scan": audio_scan_s, "final_scan_total": metrics["final_scan_s"]}
     report = {"doctor_version": VERSION, "status": status, "findings": findings, "metrics": metrics, "checks": checks}
     _dump(os.path.join(out, "FAST_REPORT.json"), report)
     cp = cert.write(mp4, out, status, report, video_id=os.path.splitext(os.path.basename(mp4))[0])
