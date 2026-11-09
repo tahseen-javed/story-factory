@@ -152,9 +152,9 @@ def run(plan_path: str, out_dir: str, shard: int, nshards: int, only: list | Non
             continue
         best = None
         t0 = time.time()
-        for attempt in range(int(t["max_regen"]) + 1):
+        for attempt in range(int(t["max_regen"]) + 1 + (4 if s.get("reroll") else 0)):
             nar = (cfg.get("characters") or {}).get("narrator") or {}   # locked narrator voice (config/characters.yaml)
-            seed = int(nar.get("seed", t["seed"])) + s["idx"] * 31 + attempt * 1009
+            seed = int(nar.get("seed", t["seed"])) + s["idx"] * 31 + attempt * 1009 + int(s.get("reroll", 0)) * 7919
             ex = 0.7 if s.get("emotional") else float(nar.get("exaggeration", t["exaggeration"]))
             try:
                 cfgw = (float(nar.get("cfg_weight", t["cfg_weight"])) if not s.get("emotional") else 0.35) + [0.0, 0.12, -0.12, 0.2, -0.2, 0.0][attempt % 6]

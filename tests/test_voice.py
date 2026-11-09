@@ -60,7 +60,7 @@ class TestVoiceLogic(unittest.TestCase):
         self.assertIn("A2-WPM", {x["code"] for x in f})
 
     def test_normalisation(self):
-        self.assertEqual(voice.norm_words("Mrs. Hale, 3 minutes, 50%"), ["missus", "hale", "three", "minutes", "50", "percent"])
+        self.assertEqual(voice.norm_words("Mrs. Hale, 3 minutes, 50%"), ["missus", "hale", "three", "minutes", "fifty", "percent"])
 
 
 if __name__ == "__main__":

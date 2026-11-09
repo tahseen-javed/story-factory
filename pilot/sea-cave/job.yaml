@@ -37,6 +37,21 @@ expect:
   - "the water touches the white line|tide|SALT LINE"
   - "begins to fall|tide|DRAINING"
   - "it reads two hours|lamp|2h"
+reroll:
+  s0003: 1
+  s0034: 1
+  s0037: 1
+  s0046: 1
+  s0048: 1
+  s0051: 1
+  s0056: 1
+  s0061: 1
+  s0080: 1
+  s0097: 1
+  s0104: 1
+  s0108: 1
+  s0137: 1
+  s0142: 1
 extras:
   titles: "The Water You Fear Is The Only Way Out|Trapped in a Sea Cave: Which Tunnel Would You Pick?|5 Hours of Light, 3 Tunnels, Rising Water"
   thumb_text: "FOLLOW THE WATER"

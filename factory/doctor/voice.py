@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import difflib
+import glob
 import json
 import os
 import re
@@ -23,20 +24,14 @@ import time
 NUM = {"0": "zero", "1": "one", "2": "two", "3": "three", "4": "four", "5": "five", "6": "six", "7": "seven", "8": "eight", "9": "nine", "10": "ten", "11": "eleven", "12": "twelve",
        "13": "thirteen", "14": "fourteen", "15": "fifteen", "16": "sixteen", "17": "seventeen", "18": "eighteen", "19": "nineteen", "20": "twenty"}
 SPELL = {"neighbour": "neighbor", "neighbours": "neighbors", "colour": "color", "favourite": "favorite", "grey": "gray", "metre": "meter", "metres": "meters", "centre": "center",
-         "realise": "realize", "organise": "organize", "mum": "mom", "okay": "ok", "mrs": "missus", "mr": "mister", "ms": "miss", "dr": "doctor"}
+         "realise": "realize", "organise": "organize", "mum": "mom", "draught": "draft", "okay": "ok", "mrs": "missus", "mr": "mister", "ms": "miss", "dr": "doctor"}
 
 
 def norm_words(text: str) -> list:
-    t = text.lower().replace("’", "'")
-    t = re.sub(r"(\d+)%", r"\1 percent", t)
-    out = []
-    for w in re.findall(r"[a-z0-9']+", t):
-        w = w.strip("'")
-        if not w:
-            continue
-        w = NUM.get(w, w)
-        out.append(SPELL.get(w, w))
-    return out
+    """Same normaliser as the TTS round-trip check (numbers, years, clock times, percent) plus British/American spellings."""
+    from .. import asr_check
+
+    return [SPELL.get(w, w).replace("'s", "s") for w in asr_check.normalize(text)]
 
 
 def _same(a: str, b: str) -> bool:
@@ -46,39 +41,29 @@ def _same(a: str, b: str) -> bool:
 
 
 def align(ref: list, hyp: list) -> dict:
-    """Word-level alignment. Returns counts and the lists of skipped / extra / doubled words with their reference/hypothesis index."""
-    # make fuzzy-equal tokens identical so SequenceMatcher treats spelling variants as matches
-    canon = {}
-    for w in ref:
-        canon.setdefault(w, w)
-    h2 = []
-    for w in hyp:
-        hit = next((r for r in canon if _same(r, w)), None) if w not in canon else w
-        h2.append(hit or w)
+    """Word-level alignment of the script against the recognised words: skipped, changed (substituted), extra and doubled words with their positions."""
+    canon = {w: w for w in ref}
+    h2 = [w if w in canon else next((r for r in canon if _same(r, w)), w) for w in hyp]
     sm = difflib.SequenceMatcher(None, ref, h2, autojunk=False)
     sub = dele = ins = 0
-    skipped, extra, doubled = [], [], []
+    skipped, extra, doubled, subs = [], [], [], []
     for op, i1, i2, j1, j2 in sm.get_opcodes():
+        if op == "equal":
+            continue
+        nr, nh = i2 - i1, j2 - j1
+        m = min(nr, nh)
         if op == "replace":
-            n = max(i2 - i1, j2 - j1)
-            sub += min(i2 - i1, j2 - j1)
-            dele += max(0, (i2 - i1) - (j2 - j1))
-            ins += max(0, (j2 - j1) - (i2 - i1))
-            if (i2 - i1) > (j2 - j1):
-                skipped += [(i, ref[i]) for i in range(i1 + (j2 - j1), i2)]
-            if (j2 - j1) > (i2 - i1):
-                extra += [(j, hyp[j]) for j in range(j1 + (i2 - i1), j2)]
-        elif op == "delete":
-            dele += i2 - i1
-            skipped += [(i, ref[i]) for i in range(i1, i2)]
-        elif op == "insert":
-            ins += j2 - j1
-            for j in range(j1, j2):
-                extra.append((j, hyp[j]))
-                if (j > 0 and hyp[j] == hyp[j - 1]) or (j + 1 < len(hyp) and hyp[j] == hyp[j + 1]) or (j >= 2 and hyp[j - 2:j] == hyp[j:j + 2]):
-                    doubled.append((j, hyp[j]))
-    n = max(1, len(ref))
-    return {"wer": (sub + dele + ins) / n, "sub": sub, "del": dele, "ins": ins, "skipped": skipped, "extra": extra, "doubled": doubled, "n_ref": len(ref)}
+            subs += [(i1 + k, ref[i1 + k], hyp[j1 + k]) for k in range(m)]
+        sub += m
+        for i in range(i1 + m, i2):
+            skipped.append((i, ref[i]))
+            dele += 1
+        for j in range(j1 + m, j2):
+            extra.append((j, hyp[j], i2))
+            ins += 1
+            if (j > 0 and hyp[j] == hyp[j - 1]) or (j + 1 < len(hyp) and hyp[j] == hyp[j + 1]) or (j >= 2 and hyp[j - 2:j] == hyp[j:j + 2]):
+                doubled.append((j, hyp[j], i2))
+    return {"wer": (sub + dele + ins) / max(1, len(ref)), "sub": sub, "del": dele, "ins": ins, "skipped": skipped, "extra": extra, "doubled": doubled, "subs": subs, "n_ref": len(ref)}
 
 
 def sentence_windows(plan_sentences: list, words: list, margin: float = 0.35) -> dict:
@@ -103,33 +88,52 @@ def finding(th, code, key, t0, t1, value, thr, msg, **extra):
     return d
 
 
-def verify_text(plan_sentences: list, words: list, th: dict) -> tuple:
-    """(findings, metrics, reroll_ids). plan_sentences: [{id,start,end,text}]; words: [(text,t0,t1)] from the recogniser."""
+def verify_text(plan_sentences: list, words: list, th: dict, tts_hyp: dict | None = None) -> tuple:
+    """(findings, metrics, reroll_ids). Whole-track alignment, defects attributed to sentences by position. A defect is CONFIRMED (BLOCKER/MAJOR, re-roll) when the second,
+    independent recogniser used in the TTS stage (tts_hyp: sentence id -> text) also lacks the word; one-recogniser doubts are listed as MINOR A2-UNCONFIRMED."""
+    from collections import Counter
+
     v = th["voice"]
     f, m = [], {}
-    ref_all, hyp_all = [], [norm_w for w, _, _ in words for norm_w in norm_words(w)]
-    for s in plan_sentences:
-        ref_all += norm_words(s["text"])
-    tot = align(ref_all, hyp_all)
-    m["wer"], m["words_ref"], m["words_hyp"] = round(tot["wer"], 4), tot["n_ref"], len(hyp_all)
+    refs = [norm_words(s["text"]) for s in plan_sentences]
+    own = [k for k, r in enumerate(refs) for _ in r]
+    ref_all = [w for r in refs for w in r]
+    hyp_all = [x for w, _, _ in words for x in norm_words(w)]
+    a = align(ref_all, hyp_all)
+    m["wer"], m["words_ref"], m["words_hyp"] = round(a["wer"], 4), a["n_ref"], len(hyp_all)
     end = max([s["end"] for s in plan_sentences] or [0.0])
-    if tot["wer"] > v["wer_max"]:
-        f.append(finding(th, "A2-WER", "voice_wer", 0, end, tot["wer"], v["wer_max"], f"word error rate {tot['wer']*100:.1f}% versus the script"))
-    per = sentence_windows(plan_sentences, words)
+    if a["wer"] > v["wer_max"]:
+        f.append(finding(th, "A2-WER", "voice_wer", 0, end, a["wer"], v["wer_max"], f"word error rate {a['wer']*100:.1f}% versus the script"))
+
+    def bag(k):
+        sid = plan_sentences[k]["id"]
+        return Counter(norm_words(tts_hyp[sid])) if tts_hyp and sid in tts_hyp else None
+
+    found = {}   # sentence index -> {"skip": [], "double": [], "changed": [], "weak": []}
+    for i, w in a["skipped"]:
+        k = own[i]
+        b = bag(k)
+        found.setdefault(k, {}).setdefault("skip" if (b is None or b[w] < Counter(refs[k])[w]) else "weak", []).append(w)
+    for i, rw, hw in a["subs"]:
+        k = own[i]
+        b = bag(k)
+        found.setdefault(k, {}).setdefault("changed" if (b is None or b[rw] < Counter(refs[k])[rw]) else "weak", []).append(f"{rw}->{hw}")
+    for j, w, rp in a["doubled"]:
+        k = own[max(0, min(rp, len(own)) - 1)] if own else 0
+        b = bag(k)
+        found.setdefault(k, {}).setdefault("double" if (b is None or b[w] > Counter(refs[k])[w]) else "weak", []).append(w)
     reroll = []
-    for s in plan_sentences:
-        ref = norm_words(s["text"])
-        hyp = [x for w in per[s["id"]] for x in norm_words(w)]
-        a = align(ref, hyp)
-        if a["skipped"]:
-            f.append(finding(th, "A2-SKIP", "voice_skip", s["start"], s["end"], len(a["skipped"]), 0, f"skipped words: {', '.join(w for _, w in a['skipped'][:4])}", sentence=s["id"]))
-        if a["doubled"]:
-            f.append(finding(th, "A2-DOUBLE", "voice_double", s["start"], s["end"], len(a["doubled"]), 0, f"doubled words: {', '.join(w for _, w in a['doubled'][:4])}", sentence=s["id"]))
-        if a["wer"] > v["sentence_wer_max"] or a["skipped"] or a["doubled"]:
+    for k, d in sorted(found.items()):
+        s = plan_sentences[k]
+        for key, code, sev in (("skip", "A2-SKIP", "voice_skip"), ("changed", "A2-CHANGED", "voice_skip"), ("double", "A2-DOUBLE", "voice_double")):
+            if d.get(key):
+                f.append(finding(th, code, sev, s["start"], s["end"], len(d[key]), 0, f"{key} words: {', '.join(d[key][:4])}", sentence=s["id"]))
+        if d.get("weak") and not any(d.get(x) for x in ("skip", "changed", "double")):
+            f.append({"code": "A2-UNCONFIRMED", "severity": "MINOR", "t0": s["start"], "t1": s["end"], "value": len(d["weak"]), "threshold": 0, "msg": f"only one recogniser doubts: {', '.join(d['weak'][:4])}", "sentence": s["id"]})
+        if any(d.get(x) for x in ("skip", "changed", "double")):
             reroll.append(s["id"])
     speaking = sum(s["end"] - s["start"] for s in plan_sentences)
-    words_n = sum(len(norm_words(s["text"])) for s in plan_sentences)
-    m["wpm"] = round(words_n / max(speaking, 1e-6) * 60, 1)
+    m["wpm"] = round(sum(len(r) for r in refs) / max(speaking, 1e-6) * 60, 1)
     lo, hi = v["wpm"]
     if not (lo <= m["wpm"] <= hi):
         f.append(finding(th, "A2-WPM", "voice_wpm", 0, end, m["wpm"], [lo, hi], f"speaking speed {m['wpm']} wpm outside {lo}-{hi}"))
@@ -178,7 +182,7 @@ def transcribe(voice_16k, model_name: str = "base.en") -> list:
     return [(w.word.strip(), float(w.start), float(w.end)) for s in segs for w in (s.words or [])]
 
 
-def run(asm: str, th: dict, model_name: str = "base.en", ref_path: str | None = None) -> dict:
+def run(asm: str, th: dict, model_name: str = "small.en", ref_path: str | None = None, tts_dir: str | None = None) -> dict:
     t0 = time.time()
     rep = {"stage": "voice", "status": "OK", "findings": [], "metrics": {}, "reroll": [], "model": model_name}
     try:
@@ -193,7 +197,13 @@ def run(asm: str, th: dict, model_name: str = "base.en", ref_path: str | None = 
         x = x if x.ndim == 1 else x.mean(axis=1)
         x16 = resample_poly(x, 16000, sr).astype("float32")
         words = transcribe(x16, model_name)
-        f, m, reroll = verify_text(sents, words, th)
+        tts_hyp = {}
+        for mp in glob.glob(os.path.join(tts_dir, "**", "meta_*.json"), recursive=True) if tts_dir else []:
+            for x in json.load(open(mp, encoding="utf-8")).get("sentences", []):
+                if x.get("hyp"):
+                    tts_hyp[x["id"]] = x["hyp"]
+        f, m, reroll = verify_text(sents, words, th, tts_hyp)
+        m["second_recogniser_sentences"] = len(tts_hyp)
         reference = json.load(open(ref_path)) if ref_path and os.path.exists(ref_path) else None
         f2, m2, med = fingerprint_check(x.astype("float64"), sr, sents, th, reference)
         rep.update({"findings": f + f2, "metrics": {**m, **m2}, "reroll": reroll, "narrator_fingerprint": med, "hypothesis": " ".join(w for w, _, _ in words)})
@@ -206,12 +216,13 @@ def run(asm: str, th: dict, model_name: str = "base.en", ref_path: str | None = 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--asm", required=True)
-    ap.add_argument("--model", default="base.en")
+    ap.add_argument("--model", default="small.en")
+    ap.add_argument("--tts", default=None)
     ap.add_argument("--reference", default=os.path.join(os.path.dirname(__file__), "..", "..", "library", "narrator_fingerprint.json"))
     a = ap.parse_args(argv)
     from .run import load_th
 
-    rep = run(a.asm, load_th(), a.model, a.reference)
+    rep = run(a.asm, load_th(), a.model, a.reference, a.tts)
     os.makedirs(os.path.join(a.asm, "doctor"), exist_ok=True)
     json.dump(rep, open(os.path.join(a.asm, "doctor", "VOICE_REPORT.json"), "w", encoding="utf-8"), indent=1)
     bad = [x["code"] for x in rep["findings"] if x["severity"] in ("BLOCKER", "MAJOR")]

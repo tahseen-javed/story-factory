@@ -16,7 +16,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 FREE_RUNNERS = {"ubuntu-latest", "ubuntu-24.04", "ubuntu-22.04", "windows-latest", "macos-latest"}
 PAID_HOSTS = re.compile(r"api\.(openai|anthropic|elevenlabs|replicate|stability|runwayml|assemblyai|deepgram)\.", re.I)
 PAID_SECRETS = re.compile(r"secrets\.(OPENAI|ANTHROPIC|ELEVENLABS|REPLICATE|STABILITY|RUNWAY|ASSEMBLYAI|DEEPGRAM)[A-Z_]*", re.I)
-DOCTOR_ALLOWED_IMPORTS = {"__future__", "argparse", "copy", "hashlib", "json", "os", "re", "subprocess", "sys", "time", "numpy", "scipy", "soundfile", "typing", "yaml", "PIL", "glob", "difflib", "faster_whisper"}
+DOCTOR_ALLOWED_IMPORTS = {"__future__", "argparse", "copy", "hashlib", "json", "os", "re", "subprocess", "sys", "time", "numpy", "scipy", "soundfile", "typing", "yaml", "PIL", "glob", "difflib", "collections", "faster_whisper"}
 PAID_LIBS = {"openai", "anthropic", "elevenlabs", "replicate", "boto3", "google", "azure"}
 
 
