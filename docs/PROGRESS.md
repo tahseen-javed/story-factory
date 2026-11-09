@@ -48,3 +48,8 @@ Last updated: 2026-11-08 (UTC 20:15). Repo: https://github.com/tahseen-javed/sto
 - Stage 2 audio scan: 7.4 s per 240 s on CI (29.9 s locally). Captions OFF (P-013) in place.
 - Not yet proven on a real production mix: first real run is video 003. Known limits: OTS foreground character is exempt from the face-edge check (cropped by design); A1-GAP and V4-BLACK have no auto-fix (-> NEEDS_REVIEW, no certificate); calm_* thresholds uncalibrated.
 - Phase 2 NOT started: wait for the owner's message.
+
+## 2026-11-09 | 004 Sea Cave delivered by ONE-TIME OWNER OVERRIDE (no certificate)
+- Owner ordered "skip the Doctor if it still finds an issue, give me the video now". File came from refinalize run 42659932273 (owner_override=yes, plain artifact, no release). Not a rule: P-012 certificate gate stays for all other videos.
+- Runtime 6:16 (script 1121 words at the locked voice; not 8:00). Doctor left 3 MAJOR: music step 3.3 LU at 97.8 s, Walt's/waltz homophone (code fixed), 1 sentence f0 drift (threshold fixed). Loudness -14.4 LUFS, TP -2.2, music 18.2 dB under the voice, 100% audible, voice WER 1%.
+- Open: owner rating for 004; Phase 2 stages not built (character embeddings, per-chunk re-roll, mutation tests, scorecard md, re-run on 002/003).
