@@ -66,7 +66,7 @@ foreach ($rel in $todo) {
     & $age -d -i $key -o $tar $enc
     if ($LASTEXITCODE -ne 0) { throw "age decrypt failed (wrong backup.key?)" }
     $stage = Join-Path $tmp "stage"; New-Item -ItemType Directory -Force -Path $stage | Out-Null
-    $tarExe = Join-Path $env:SystemRoot "System32	ar.exe"   # Windows bsdtar (GNU tar from Git treats "C:" as a remote host)
+    $tarExe = Join-Path $env:SystemRoot "System32\tar.exe"   # Windows bsdtar (GNU tar from Git treats "C:" as a remote host)
     if (-not (Test-Path $tarExe)) { $tarExe = "tar.exe" }
     & $tarExe -xf $tar -C $stage
     if ($LASTEXITCODE -ne 0) { throw "tar extract failed" }
