@@ -297,7 +297,7 @@ jobs:
           MUSIC_LIB_DIR: build/musiclib
         run: |
           python -m factory.doctor.run lint --asm build/assembled
-          python -m factory.doctor.run audio --asm build/assembled --voice build/assembled/voice --passes 3
+          python -m factory.doctor.run audio --asm build/assembled --voice build/assembled/voice --passes 5
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/huggingface
@@ -305,7 +305,7 @@ jobs:
       - name: Video Doctor voice stage (faster-whisper base.en versus the script, MIT)
         continue-on-error: true
         run: |
-          python -m pip install -q faster-whisper==1.0.3
+          python -m pip install -q faster-whisper==1.0.3 requests
           python -m factory.doctor.voice --asm build/assembled --model base.en
       - name: Video Doctor Stage 3 (background blotch/banding/style check with soft-grade repair)
         continue-on-error: true
@@ -473,13 +473,13 @@ jobs:
           python -m factory.finalize --chunks-dir build/chunks --assembled build/assembled --video-dir video --thumbs build/thumbs --out build/final --plan build/assembled/plan.json --sources $N
       - name: Video Doctor Stage 2 (fast scan of the FINAL mp4, certificate with its sha256)
         id: doc
-        if: steps.fin.outputs.status == 'ok'
+        if: always() && hashFiles('build/final/final.mp4') != ''
         run: |
           python -m factory.doctor.run final --mp4 build/final/final.mp4 --asm build/assembled --out build/final/doctor
           python -c "import json;print('status='+json.load(open('build/final/doctor/CERTIFICATE.json'))['status'])" >> "$GITHUB_OUTPUT"
       - name: Certificate gate (no certificate, modified mp4 or stale certificate means no delivery)
         id: gate
-        if: steps.fin.outputs.status == 'ok'
+        if: steps.doc.outcome == 'success'
         continue-on-error: true
         run: python -m factory.doctor.cert verify build/final/final.mp4 build/final/doctor/CERTIFICATE.json
       - name: PerTh watermark check on the final mp4 audio (records the result, never blocks)

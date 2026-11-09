@@ -134,6 +134,48 @@ def lint_timeline(timeline: dict, th: dict) -> list:
     return out
 
 
+def _clean(sh: dict, th: dict) -> bool:
+    return not [x for x in lint_shot(sh, th) if x["code"].startswith("V1")]
+
+
+def _search_overlay(sh: dict, th: dict) -> bool:
+    best = None
+    for dx in (0, -380, 380, -600, 600, -220, 220):
+        for dy in (0, -140, 140, -240, 240):
+            for sc in (1.0, 0.85, 0.7):
+                sh["ovShift"], sh["ovScale"] = [dx, dy], sc
+                gb = [g for g in graphics(sh) if g[0].startswith("overlay:")][0][1]
+                inside = gb[0] >= W * SAFE_MARGIN and gb[2] <= W * (1 - SAFE_MARGIN) and gb[1] >= H * SAFE_MARGIN and gb[3] <= H * (1 - SAFE_MARGIN)
+                cost = abs(dx) / 100 + abs(dy) / 100 + (1 - sc) * 10
+                if inside and _clean(sh, th) and (best is None or cost < best[0]):
+                    best = (cost, [dx, dy], sc)
+    if best:
+        sh["ovShift"], sh["ovScale"] = best[1], best[2]
+        return True
+    sh["ovShift"], sh["ovScale"] = None, None
+    return False
+
+
+def reframe(sh: dict, th: dict) -> bool:
+    """Last-resort auto-fix for a shot that still has a face problem: calmer framing, lower zoom, characters to the sides, HUD corner and overlay position searched again."""
+    n = len(sh["chars"])
+    xs = {1: [0.16], 2: [0.15, 0.85], 3: [0.12, 0.5, 0.88]}.get(n, [])
+    keep = copy.deepcopy(sh)
+    for frm, zmax in (("medium", 1.05), ("wide", 1.05), ("xwide", 1.0)):
+        for hud in (bool(keep.get("hudRight")), not keep.get("hudRight")):
+            sh["framing"], sh["hudRight"] = frm, hud
+            cam = sh.setdefault("camera", {})
+            cam["z0"], cam["z1"] = min(cam.get("z0", 1.0), zmax), min(cam.get("z1", 1.0), zmax)
+            for c, x in zip(sh["chars"], xs):
+                c["x"] = x
+            sh["ovShift"], sh["ovScale"] = None, None
+            if _clean(sh, th) or (sh.get("overlay") and _search_overlay(sh, th)):
+                return True
+    sh.clear()
+    sh.update(keep)
+    return False
+
+
 def fix_timeline(timeline: dict, th: dict, max_rounds: int = 3) -> tuple:
     """Auto-fix V1 findings on the scene data. Order: move the graphic to a safe zone, shrink it, shift the characters. Returns (timeline, findings_left, log)."""
     tl = copy.deepcopy(timeline)
@@ -180,5 +222,10 @@ def fix_timeline(timeline: dict, th: dict, max_rounds: int = 3) -> tuple:
                     if c["id"] == f["char"]:
                         c["x"] = min(0.8, max(0.2, c["x"]))
                 log.append(f"shot {f['shot']}: {f['char']} moved inside the frame")
+    for i in sorted({f["shot"] for f in lint_timeline(tl, th) if f["code"].startswith("V1")}):
+        sh = next(s for s in tl["shots"] if s["i"] == i)
+        was = sh.get("framing")
+        if reframe(sh, th):
+            log.append(f"shot {i}: reframed {was} -> {sh['framing']} (characters to the sides, zoom <= 1.05) so no graphic covers a face")
     left = [f for f in lint_timeline(tl, th) if f["code"].startswith("V1")]
     return tl, left, log

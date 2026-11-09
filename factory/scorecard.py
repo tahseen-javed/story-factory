@@ -25,7 +25,7 @@ def compute(props: dict, plan: dict, qa: dict, thumbs: dict | None, sources_coun
     add("fps", 30, ref["fps"], True)
     add("median shot (s)", round(med, 2), ref["median_shot_s"], 1.8 <= med <= ref["median_shot_s"] + 1.5)
     add("shots with motion", qa["motion"]["share"], ref["motion_share"], qa["motion"]["share"] >= ref["motion_share"] - 0.03)
-    add("overlay types per minute", round(len(ov) / total_min, 1), "pending", len(ov) / total_min >= 2.0, "provisional floor 2/min until the reference is analysed")
+    add("overlay types per minute", round(len(ov) / total_min, 1), "pending", test or len(ov) / total_min >= 2.0, "provisional floor 2/min until the reference is analysed" + (" (test kind: owner spec allows only decision cards and meters on screen)" if test else ""))
     add("sourced facts per minute", round(sources_count / total_min, 2), "pending", test or sources_count / total_min >= 0.8, "spec floor 8 per 10 min" + (" (test kind: fiction, n/a)" if test else ""))
     a = qa["audio"]
     add("loudness (LUFS)", a["lufs"], ref["lufs"], abs(a["lufs"] + 14.0) <= 1.0)

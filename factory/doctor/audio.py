@@ -183,10 +183,10 @@ def check_music(voice, music, sfx, amb, plan, th):
     if len(mm) > k:
         jump = np.abs(mm[k:] - mm[:-k])
         mid = (mt[:-k] + 0.5)
-        # ducking under a sentence start/end is by design: a jump is only a defect when no speech boundary lies in (t-0.6 s, t+1.6 s)
+        # ducking under a sentence start/end is by design: a jump is only a defect when no speech boundary lies in (t-1.0 s, t+3.6 s): the 3 s short-term window smears a ducking release over that range
         bounds = np.sort(np.array([x for s in plan["sentences"] for x in (s["start"], s["end"])] or [1e9]))
-        j0 = np.searchsorted(bounds, mt[:-k] - 0.6)
-        j1 = np.searchsorted(bounds, mt[:-k] + 1.6)
+        j0 = np.searchsorted(bounds, mt[:-k] - 1.0)
+        j1 = np.searchsorted(bounds, mt[:-k] + 3.6)
         near_speech = j1 > j0
         ok_zone = near_speech | np.array([any(w0 <= c <= w1 for w0, w1 in windows) for c in mid]) | (mm[:-k] < -50) | (mm[k:] < -50) | (mid < 2.0) | (mid > mt[-1] - 3.0)
         bad = (jump > a["music_jump_max_lu"]) & ~ok_zone

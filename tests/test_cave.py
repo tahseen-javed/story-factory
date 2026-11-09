@@ -37,5 +37,14 @@ class TestSeaCave(unittest.TestCase):
         self.assertEqual(tech.check_story(tl, plan, TH), [])
 
 
+    def test_cards_over_two_big_faces_are_reframed_clean(self):
+        from factory.doctor import visual
+        ch = lambda i, x: {"id": i, "pose": "stand", "x": x, "params": {"headScale": 1.5}}
+        tl = {"shots": [{"i": 0, "start": 0, "dur": 150, "framing": "ots", "floorY": 0.9, "chars": [ch("hero", 0.18), ch("walt", 0.7)], "camera": {"z0": 1.05, "z1": 1.2, "fx": 0.5, "fy": 0.55},
+                         "overlay": {"name": "option_cards", "args": ["A", "B", "C"], "inFrame": 4, "outFrame": 140}, "track": {"lamp": "5h", "tide": "ANKLES"}}]}
+        fixed, left, log = visual.fix_timeline(tl, TH)
+        self.assertEqual(left, [], log)
+
+
 if __name__ == "__main__":
     unittest.main()
