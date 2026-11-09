@@ -5,6 +5,10 @@ on:
       run_id:
         description: produce run id whose artifacts are re-finalized (audio re-mixed)
         required: true
+      owner_override:
+        description: yes = also upload the mp4 WITHOUT a certificate (one-time owner override, never creates a release)
+        required: false
+        default: 'no'
 permissions:
   contents: read
 env:
@@ -166,5 +170,29 @@ jobs:
       with:
         name: qa-report
         path: build/qa
+        mode: pilot
+        recipient: ${{ env.AGE_RECIPIENT }}
+    - name: 'Owner override (one-time): uncertified copy as a plain artifact, no release, fetch still refuses it'
+      if: always() && inputs.owner_override == 'yes' && hashFiles('build/final/final.mp4') != ''
+      run: 'B="004 Sea Cave $(printf ''%02d'' ${{ steps.fin.outputs.minutes }})min"
+
+        mkdir -p build/ovr
+
+        cp build/final/final.mp4 "build/ovr/$B.mp4"
+
+        cp build/thumbs/thumb1.jpg "build/ovr/$B - Thumbnail 1.jpg"
+
+        cp build/thumbs/thumb2.jpg "build/ovr/$B - Thumbnail 2.jpg"
+
+        cp build/final/info.txt "build/ovr/$B - YouTube Info.txt" || true
+
+        cp build/final/doctor/FAST_REPORT.json build/ovr/ || true
+
+        '
+    - uses: ./.github/actions/pack
+      if: always() && inputs.owner_override == 'yes' && hashFiles('build/final/final.mp4') != ''
+      with:
+        name: uncertified-delivery
+        path: build/ovr
         mode: pilot
         recipient: ${{ env.AGE_RECIPIENT }}
