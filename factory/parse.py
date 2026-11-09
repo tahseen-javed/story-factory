@@ -53,6 +53,8 @@ class Shot:
     raw_fields: list = field(default_factory=list)
     act: str = ""
     silence: bool = False
+    hold: float = 0.0                 # decision hold (seconds) that follows the PREVIOUS shot's last sentence
+    fr: list = field(default_factory=list)   # optional framing hint per beat (e.g. ots, wide)
 
     @property
     def words(self) -> int:
@@ -244,7 +246,7 @@ def parse(text: str) -> Script:
     shot: Optional[Shot] = None
     gidx = 0
     buf: list = []
-    cur_act, pend_silence = "", False
+    cur_act, pend_silence, pend_hold = "", False, 0.0
 
     def flush():
         nonlocal buf, shot
@@ -272,10 +274,15 @@ def parse(text: str) -> Script:
                 raise ScriptError("shot before first chapter", lineno)
             shot = _parse_shot(s[1:], gidx, ch.n, lineno)
             shot.act, shot.silence, pend_silence = cur_act, pend_silence, False
+            shot.hold, pend_hold = pend_hold, 0.0
             gidx += 1
             ch.shots.append(shot)
             continue
         if s.startswith("//"):
+            mh = re.match(r"^//\s*HOLD\s+decision\s+([0-9.]+)", s)
+            if mh:
+                pend_hold = float(mh.group(1))
+                continue
             ma = re.match(r"^//\s*(ACT|SILENCE)\s*(\w*)", s)
             if ma and ma.group(1) == "ACT":
                 cur_act = ma.group(2)
@@ -337,6 +344,8 @@ def _parse_shot(body: str, idx: int, chapter: int, line: int) -> Shot:
             shot.banner = parse_value(val) if val[:1] in "\"“" else val
         elif key == "cta":
             shot.cta = val
+        elif key == "fr":
+            shot.fr = [x.strip() for x in val.split(",") if x.strip()]
         else:  # character: pose/expr[@x]
             cm = re.fullmatch(r"([a-z_]+)\s*/\s*([a-z_]+)(?:\s*@\s*(left|center|right|[0-9.]+))?", val)
             if not cm:

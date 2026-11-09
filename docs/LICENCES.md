@@ -31,10 +31,14 @@ Every audio asset of every video must appear here or delivery fails (factory/lic
 | sfx:impact | generated in repo (factory/synth.py sfx()) | own work, dedicated CC0 1.0 | no | docs/licences/OWN-WORK-CC0.txt |
 | sfx:glitch | generated in repo (factory/synth.py sfx()) | own work, dedicated CC0 1.0 | no | docs/licences/OWN-WORK-CC0.txt |
 | sfx:text_pop | generated in repo (factory/synth.py sfx()) | own work, dedicated CC0 1.0 | no | docs/licences/OWN-WORK-CC0.txt |
+| sfx:ding | generated in repo (factory/synth.py sfx()) | own work, dedicated CC0 1.0 | no | docs/licences/OWN-WORK-CC0.txt |
 | ambience:room | generated in repo (factory/synth.py ambience()) | own work, dedicated CC0 1.0 | no | docs/licences/OWN-WORK-CC0.txt |
 | ambience:city | generated in repo (factory/synth.py ambience()) | own work, dedicated CC0 1.0 | no | docs/licences/OWN-WORK-CC0.txt |
 | ambience:wind | generated in repo (factory/synth.py ambience()) | own work, dedicated CC0 1.0 | no | docs/licences/OWN-WORK-CC0.txt |
 | ambience:hum_dark | generated in repo (factory/synth.py ambience()) | own work, dedicated CC0 1.0 | no | docs/licences/OWN-WORK-CC0.txt |
+| ambience:sea | generated in repo (factory/synth.py ambience()) | own work, dedicated CC0 1.0 | no | docs/licences/OWN-WORK-CC0.txt |
+| ambience:engine | generated in repo (factory/synth.py ambience()) | own work, dedicated CC0 1.0 | no | docs/licences/OWN-WORK-CC0.txt |
+| ambience:crowd | generated in repo (factory/synth.py ambience()) | own work, dedicated CC0 1.0 | no | docs/licences/OWN-WORK-CC0.txt |
 | music:tense | generated in repo (factory/synth.py render_music(), factory/musiclib.py) | own work, dedicated CC0 1.0 | no | docs/licences/OWN-WORK-CC0.txt |
 | music:dread | generated in repo (factory/synth.py render_music(), factory/musiclib.py) | own work, dedicated CC0 1.0 | no | docs/licences/OWN-WORK-CC0.txt |
 | music:urgent | generated in repo (factory/synth.py render_music(), factory/musiclib.py) | own work, dedicated CC0 1.0 | no | docs/licences/OWN-WORK-CC0.txt |
@@ -48,6 +52,6 @@ Every audio asset of every video must appear here or delivery fails (factory/lic
 
 Notes:
 - Music, ambience and SFX are synthesised by our own code from noise and oscillators; no third-party recording, sample or loop is used, so no Content ID match is possible.
-- Voice: Chatterbox (MIT). The Perth watermark is applied at generation and never disabled; re-detected 2026-11-08 (score 1.0) on 8 raw TTS sentences, the voice-only master and the final AAC track after voice chain, reverb, mix, loudnorm and AAC (qa/licence_report.json).
+- Voice: Chatterbox (MIT). The Perth watermark is applied at generation and never disabled; it was NOT re-detected after our voice chain, reverb, loudnorm and AAC encode.
 - The ASR model (Moonshine via sherpa-onnx) only checks the voice and is not part of the video audio.
 - If a future asset needs attribution, `attribution_text` in qa/licence_report.json is appended to the YouTube description file in the repo.

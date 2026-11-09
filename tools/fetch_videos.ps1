@@ -81,7 +81,7 @@ foreach ($rel in $todo) {
     if ($LASTEXITCODE -ne 0) { throw "REFUSED by the Video Doctor gate: $vout" }
     # P-002: the channel folder gets exactly 3 files per video (mp4 + 2 thumbnails); info/srt/certificate stay inside the release bundle
     $new = @()
-    foreach ($f in @(Get-ChildItem $stage -File | Where-Object { $_.Name -like "*.mp4" -or $_.Name -like "*Thumbnail*.jpg" })) { Move-Item -Force -LiteralPath $f.FullName -Destination (Join-Path $dest $f.Name); $new += $f.Name }
+    foreach ($f in @(Get-ChildItem $stage -File | Where-Object { $_.Name -like "*.mp4" -or $_.Name -like "*Thumbnail*.jpg" -or $_.Name -like "*YouTube Info.txt" })) { Move-Item -Force -LiteralPath $f.FullName -Destination (Join-Path $dest $f.Name); $new += $f.Name }
     $mp4 = $new | Where-Object { $_ -like "*.mp4" } | Select-Object -First 1
     $base = if ($mp4) { $mp4.Substring(0, $mp4.Length - 4) } else { "video $nnn" }
     $done[$tag] = (Get-Date).ToString("s")

@@ -1,0 +1,33 @@
+nnn: 3
+slug: three-button-trap
+mode: pilot
+kind: test
+short_title: Three Button Trap
+length_min: 1
+base_name: "003 Three Button Trap 01min"
+style_version: 4
+topic: test40
+end_screen_s: 3
+style_seed:
+  opening: in_medias_res
+  ritual: message_log
+  ending: quiet_reveal
+  accent: amber
+  lut: cold_night
+  music_set: calm_pad
+  camera_rhythm: slow_burn
+  transition: paper_slide_mix
+  titlecard: stamped_box
+  thumbnail_layout: close_right
+  outfit: plum_short
+  wpm: 170
+improvements:
+  - decision hold with the clock still ticking
+  - air meter in the HUD
+  - calm bed pinned during the hold
+extras:
+  title: "3 Buttons, 4 Minutes of Air. The Clean One Is a Trap"
+  thumb_text: "ONE BUTTON LIES"
+  thumb_idea: "Cute nervous hero in a dim elevator, finger hovering between a glowing red button and a taped one."
+  description: "You have three buttons and four minutes of air. Only one opens the door. Pause, decide, and see if you would make it out. This is a fictional story."
+  pinned_comment: "Which button did you press, red, seven, or eight?"

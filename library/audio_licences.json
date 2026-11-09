@@ -161,6 +161,12 @@
   "attribution_required": false,
   "proof": "docs/licences/OWN-WORK-CC0.txt"
  },
+ "sfx:ding": {
+  "source": "generated in repo (factory/synth.py sfx())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
  "ambience:room": {
   "source": "generated in repo (factory/synth.py ambience())",
   "licence": "own work, dedicated CC0 1.0",
@@ -180,6 +186,24 @@
   "proof": "docs/licences/OWN-WORK-CC0.txt"
  },
  "ambience:hum_dark": {
+  "source": "generated in repo (factory/synth.py ambience())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "ambience:sea": {
+  "source": "generated in repo (factory/synth.py ambience())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "ambience:engine": {
+  "source": "generated in repo (factory/synth.py ambience())",
+  "licence": "own work, dedicated CC0 1.0",
+  "attribution_required": false,
+  "proof": "docs/licences/OWN-WORK-CC0.txt"
+ },
+ "ambience:crowd": {
   "source": "generated in repo (factory/synth.py ambience())",
   "licence": "own work, dedicated CC0 1.0",
   "attribution_required": false,

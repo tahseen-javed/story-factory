@@ -95,16 +95,30 @@ const Crowd: React.FC<{ frame: number }> = ({ frame }) => (
   </g>
 );
 
-const Hud: React.FC<{ track: Record<string, any>; prev: Record<string, any>; frame: number; right?: boolean }> = ({ track, prev, frame, right }) => {
+const mmss = (v: any): number => {
+  const m = String(v).match(/^(\d+):(\d{2})$/);
+  return m ? parseInt(m[1], 10) * 60 + parseInt(m[2], 10) : NaN;
+};
+const fmtAir = (sec: number): string => `${Math.floor(Math.max(0, sec) / 60)}:${String(Math.max(0, Math.floor(sec)) % 60).padStart(2, "0")}`;
+
+const Hud: React.FC<{ track: Record<string, any>; prev: Record<string, any>; frame: number; right?: boolean; tick?: boolean }> = ({ track, prev, frame, right, tick }) => {
   const items: Array<{ k: string; label: string; v: string }> = [];
   if (track.hours !== undefined && Number(track.hours) > 0) items.push({ k: "hours", label: "HOURS LEFT", v: String(track.hours) });
   if (track.phone !== undefined) items.push({ k: "phone", label: "BATTERY", v: String(track.phone) });
+  if (track.air !== undefined) {   // air meter: sweeps from the previous value, and keeps ticking down during a decision hold
+    const cur = mmss(track.air);
+    const was = prev.air !== undefined ? mmss(prev.air) : cur;
+    let sec = cur;
+    if (Number.isFinite(cur) && Number.isFinite(was) && was !== cur) sec = was + (cur - was) * easeOut(clamp(frame / 24, 0, 1));
+    if (tick && Number.isFinite(cur)) sec = cur - frame / 30;
+    items.push({ k: "air", label: "AIR LEFT", v: Number.isFinite(sec) ? fmtAir(sec) : String(track.air) });
+  }
   if (!items.length) return null;
   return (
     <div style={{ position: "absolute", ...(right ? { right: "4%" } : { left: "4%" }), top: "5%", display: "flex", gap: 14 }}>
       {items.map((it) => {
-        const changed = prev[it.k] !== undefined && prev[it.k] !== track[it.k] && frame < 36;
-        const low = it.k === "phone" && parseInt(it.v, 10) <= 10;
+        const changed = prev[it.k] !== undefined && prev[it.k] !== track[it.k] && frame < 36 && !tick;
+        const low = (it.k === "phone" && parseInt(it.v, 10) <= 10) || (it.k === "air" && parseInt(it.v, 10) < 1);
         return (
           <div key={it.k} style={{ background: "rgba(20,18,26,0.72)", border: `3px solid ${low || changed ? "#ff4d4d" : "#f2e8d2"}`, borderRadius: 12, padding: "6px 14px", transform: `scale(${changed ? 1 + 0.12 * Math.sin(frame * 0.5) : 1})` }}>
             <div style={{ fontFamily: FONT.ui, fontWeight: 700, fontSize: 15, letterSpacing: 2, color: "#f2e8d2", opacity: 0.8 }}>{it.label}</div>
@@ -204,7 +218,7 @@ export const ShotView: React.FC<{ shot: Shot; tl: Timeline }> = ({ shot, tl }) =
       <Vignette strength={mood.vignette} />
       <Grain />
       <TransFx trans={trans} frame={frame} />
-      <Hud track={shot.track} prev={shot.prevTrack} frame={frame} right={!!shot.hudRight} />
+      <Hud track={shot.track} prev={shot.prevTrack} frame={frame} right={!!shot.hudRight} tick={!!shot.airTick} />
       {ovOn && Ov ? (
         <AbsoluteFill style={shot.ovShift || shot.ovScale ? { transform: `translate(${(shot.ovShift || [0, 0])[0]}px, ${(shot.ovShift || [0, 0])[1]}px) scale(${shot.ovScale || 1})` } : undefined}>
           <Ov args={ov!.args} frame={frame - ov!.inFrame} total={ov!.outFrame - ov!.inFrame} accent={tl.style.accent} fps={fps} track={shot.track} prevTrack={shot.prevTrack} />

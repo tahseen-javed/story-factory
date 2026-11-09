@@ -66,11 +66,16 @@ def validate_dir(job_dir: str, cfg=None, prefs=None):
     except ScriptError as e:
         return [Issue("error", "parse", str(e))], None
     mode = job_mode(job_dir)
-    _v4 = False
+    _v4, _test = False, False
     if os.path.exists(os.path.join(job_dir, "job.yaml")):
-        _v4 = int((miniyaml.load_file(os.path.join(job_dir, "job.yaml")) or {}).get("style_version", 1)) >= 4
+        _jy = miniyaml.load_file(os.path.join(job_dir, "job.yaml")) or {}
+        _v4 = int(_jy.get("style_version", 1)) >= 4
+        _test = str(_jy.get("kind", "")) == "test"   # owner-approved test exception (short video): format-length rules are skipped, vocabulary and safety rules stay
+    if _test:
+        mode = "test"
     issues += validate_script(sc, raw, cfg, prefs, mode, _v4)
-    issues += validate_facts(job_dir, sc, cfg)
+    if not _test:
+        issues += validate_facts(job_dir, sc, cfg)
     return issues, sc
 
 
@@ -84,6 +89,7 @@ def _warn(issues, code, msg, line=0):
 
 def validate_script(sc, raw: str, cfg: dict, prefs: dict, mode: str = "job", v4: bool = False) -> list:
     I: list = []
+    test = mode == "test"
     sconf, cam, shotsc = cfg["script"], cfg["camera"], cfg["shots"]
     wpm = float(sconf["wpm"])
 
@@ -91,7 +97,7 @@ def validate_script(sc, raw: str, cfg: dict, prefs: dict, mode: str = "job", v4:
     if not sc.title:
         _err(I, "header", "TITLE missing")
     min_len = sconf["min_len_min"]   # P-011: the 4-minute format is the channel format
-    if not (min_len <= sc.length_min <= sconf["max_len_min"]):
+    if not test and not (min_len <= sc.length_min <= sconf["max_len_min"]):
         _err(I, "length", f"LENGTH_MIN {sc.length_min} outside {min_len}-{sconf['max_len_min']}")
     if sc.voice not in ("default", "me"):
         _err(I, "voice", f"VOICE must be default or me, got '{sc.voice}'")
@@ -187,6 +193,12 @@ def validate_script(sc, raw: str, cfg: dict, prefs: dict, mode: str = "job", v4:
             dur = estimate_seconds(s.text, wpm)
             est_durations.append(dur)
             inner = bool(s.overlays) or (s.camera and s.camera.preset in ("hold", "parallax_drift", "rack_focus")) or bool(s.chars)
+            for fh_ in s.fr:
+                if fh_ not in vocab.FRAMINGS:
+                    _err(I, "framing", f"fr '{fh_}'.{vocab.suggest(fh_, vocab.FRAMINGS)}", L)
+            if test:
+                cum += s.words
+                continue
             if dur > shotsc["max_s"] and not inner:
                 _err(I, "shot-long", f"shot ~{dur:.1f}s > {shotsc['max_s']}s without inner animation", L)
             elif dur > shotsc["max_s"] + 2.5:
@@ -194,6 +206,9 @@ def validate_script(sc, raw: str, cfg: dict, prefs: dict, mode: str = "job", v4:
             if dur < shotsc["min_s"]:
                 _err(I, "shot-short", f"shot ~{dur:.1f}s < {shotsc['min_s']}s", L)
             cum += s.words
+
+    if test:
+        return I
 
     # ---------- word budget ----------
     target = wpm * sc.length_min

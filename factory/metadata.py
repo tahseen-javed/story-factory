@@ -62,21 +62,25 @@ def tags_for(plan: dict) -> list:
 
 
 def build_info(plan: dict, chapters: dict, sources: list, base_name: str, settings: dict) -> str:
-    titles = title_options(plan)
+    ex = plan.get("extras") or {}
+    titles = ([ex["title"]] if ex.get("title") else []) + title_options(plan)
+    titles = titles[:3]
     q = first_question(plan) or ""
-    hook = plan["sentences"][0]["text"] + (" " + q if q else "")
+    hook = ex.get("description") or (plan["sentences"][0]["text"] + (" " + q if q else ""))
     lines = ["TITLE OPTIONS", *[f"{i}. {t}" for i, t in enumerate(titles, 1)], "", "DESCRIPTION", hook, ""]
-    lines.append("In this story you are the main character. Follow the countdown and make it to the end.")
-    lines += ["", "CHAPTERS"]
-    first = True
-    for c in chapters["chapters"]:
-        lines.append(f"{ts(0 if first else c['start'])} {c['title'].title()}")
-        first = False
+    if not ex.get("description"):
+        lines.append("In this story you are the main character. Follow the countdown and make it to the end.")
+    if plan.get("kind") != "test":
+        lines += ["", "CHAPTERS"]
+        first = True
+        for c in chapters["chapters"]:
+            lines.append(f"{ts(0 if first else c['start'])} {c['title'].title()}")
+            first = False
     lines += ["", "SOURCES (survival facts mentioned in this story)"]
     lines += [f"- {f} {u}" for f, u in sources] or ["- (none)"]
     lines += ["", "This is a fictional story with original illustrations and an AI-generated narration voice. Survival facts come from the official sources above; always follow guidance from your local authorities.", ""]
     lines += ["TAGS", ", ".join(tags_for(plan)), "", "PINNED COMMENT (suggestion)",
-              "Which of the survival rules from this story would you have forgotten? Tell me below, and subscribe for the next story.", "",
+              ex.get("pinned_comment") or "Which of the survival rules from this story would you have forgotten? Tell me below, and subscribe for the next story.", "",
               "UPLOAD SETTINGS", *[f"- {k}: {v}" for k, v in settings.items()], f"- base name: {base_name}"]
     return "\n".join(lines) + "\n"
 

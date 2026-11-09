@@ -1,16 +1,16 @@
 {
- "job": "pilot/solar-storm-blackout",
- "ok": false,
+ "job": "pilot/three-button-trap",
+ "ok": true,
  "checks": {
   "1_time_estimate": {
    "ok": true,
-   "eta_min": 55,
-   "budget_min": 60
+   "eta_min": 20.0,
+   "budget_min": 35.0
   },
   "2_licence_gate": {
    "ok": true,
    "missing": [],
-   "assets": 32
+   "assets": 16
   },
   "3_monetization": {
    "ok": true,
@@ -22,28 +22,32 @@
     "no_real_person_or_brand": true,
     "facts_sourced": true
    },
-   "closest": null
+   "closest": "solar-storm-blackout"
   },
   "4_cast_voices": {
    "ok": true,
-   "cute": false,
-   "cute_enforced": false,
+   "cute": true,
+   "cute_enforced": true,
    "unique": true,
    "voices_locked_distinct": true,
    "problems": []
   },
   "5_captions_and_blotch": {
    "ok": true,
-   "captions": "P-006: none burned in",
+   "captions": "P-013: captions are OFF",
    "blotch": "not measured (no images manifest yet; measured in the images job)"
   },
   "6_previous_rating": {
-   "ok": false,
+   "ok": true,
    "previous": "001 Solar Storm Blackout v2.1",
    "previous_owner_rating": 7.9,
    "target": 8.5,
-   "improvements": [],
-   "note": "add 'improvements:' list to job.yaml"
+   "improvements": [
+    "decision hold with the clock still ticking",
+    "air meter in the HUD",
+    "calm bed pinned during the hold"
+   ],
+   "note": ""
   }
  }
 }

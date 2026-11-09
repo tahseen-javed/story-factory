@@ -376,6 +376,9 @@ def sfx(name: str, seed: int = 0) -> np.ndarray:
     if name == "text_pop":
         t = t_axis(0.12)
         return np.sin(2 * np.pi * 900 * t) * np.exp(-t * 40) * 0.7
+    if name == "ding":
+        t = t_axis(1.1)
+        return (np.sin(2 * np.pi * 1175 * t) + 0.5 * np.sin(2 * np.pi * 1760 * t)) * np.exp(-t * 4.5) * 0.5
     # unknown name: tiny click so the mix never fails
     return sfx("click", seed)
 
@@ -384,7 +387,7 @@ def sfx(name: str, seed: int = 0) -> np.ndarray:
 SFX_GAIN = {"alert_siren": -9, "phone_buzz": -8, "door_knock": -6, "door_creak": -10, "footsteps": -9, "whoosh": -8, "paper_slide": -10,
             "stinger_chapter": -5, "heartbeat": -7, "power_down": -5, "radio_static": -12, "glass_crack": -8, "water_pour": -13,
             "car_engine": -15, "crowd_murmur": -17, "thunder": -9, "click": -12, "beep": -13, "typing": -15, "rustle": -17,
-            "ticking_clock": -15, "spark": -11, "wind": -19, "riser": -9, "impact": -6, "glitch": -12, "text_pop": -13}
+            "ticking_clock": -15, "spark": -11, "wind": -19, "riser": -9, "impact": -6, "glitch": -12, "text_pop": -13, "ding": -10}
 
 
 def ambience(kind: str, sec: float, seed: int = 0) -> np.ndarray:

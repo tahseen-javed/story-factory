@@ -165,6 +165,16 @@ def run(audio_plan_path: str, voice_dir: str, out_dir: str, cfg_audio: dict, luf
             sil[i0 - ramp:i0] = np.linspace(1, fl_, ramp)
         if i1 + ramp <= total:
             sil[i1:i1 + ramp] = np.linspace(fl_, 1, ramp)
+    hold_g = np.ones(total, dtype="float32")   # decision hold: the bed stays pinned (no rise, no swell) while the room tone and heartbeat carry the scene
+    hg = 10 ** (-float(cfg_audio.get("hold_music_db", 6.0)) / 20.0)
+    r2 = int(0.35 * SR)
+    for w_ in ap.get("holds", []):
+        i0, i1 = int(w_[0] * SR), min(total, int(w_[1] * SR))
+        hold_g[i0:i1] = hg
+        if i0 - r2 >= 0:
+            hold_g[i0 - r2:i0] = np.linspace(1, hg, r2)
+        if i1 + r2 <= total:
+            hold_g[i1:i1 + r2] = np.linspace(hg, 1, r2)
     amb = np.zeros(total, dtype="float32")
     for k, seg in enumerate(ap.get("ambience", [])):
         i0, i1 = int(seg["start"] * SR), min(total, int(seg["end"] * SR) + int(0.5 * SR))
@@ -190,7 +200,7 @@ def run(audio_plan_path: str, voice_dir: str, out_dir: str, cfg_audio: dict, luf
     gain = 10 ** (-(duck_db) * venv / 20.0)
     if "music_floor_db" in mp:   # fix for unplanned music dropouts: never duck deeper than this
         gain = np.maximum(gain, 10 ** (float(mp["music_floor_db"]) / 20.0) * np.where(sil > 0.5, 1.0, 0.0) + 0.0)   # unducked bed sits at -20 dBFS RMS, ducked bed 18 dB lower
-    music = music * gain[None, :] * fade[None, :] * sil[None, :]
+    music = music * gain[None, :] * fade[None, :] * sil[None, :] * hold_g[None, :]
     from .doctor import audio as _da, lufs as _lu
 
     if float(mp.get("music_lowpass_hz", 0) or 0) > 0:   # calmer music: remove harsh highs

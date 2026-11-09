@@ -219,7 +219,7 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
         t = s["end"] + s["pause_after_s"]
     last_pause = 1.0
     audio_end = plan["sentences"][-1]["end"] + last_pause
-    end_s = float(cfg.get("end_screen_s", 20))
+    end_s = float(plan.get("end_screen_s") or cfg.get("end_screen_s", 20))
     total_s = audio_end + end_s
     total_frames = int(round(total_s * FPS))
     by_id = {s["id"]: s for s in plan["sentences"]}
@@ -274,7 +274,7 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
             if sid != sh["sentences"][0]:
                 cands.append((sn["start"], 1.0))
             cands += B.clause_cuts(sn["text"], sn["start"], sn["end"])
-        parts = B.split_beats(s_start / FPS, s_end / FPS, cands, pc)
+        parts = [(s_start / FPS, s_end / FPS)] if sh.get("hold_after") else B.split_beats(s_start / FPS, s_end / FPS, cands, pc)   # a decision hold is one beat
         edges = [s_start]
         for a, _ in parts[1:]:
             fr = int(round(a * FPS))
@@ -298,12 +298,14 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
         if bg is None and sh["location"] != "insert":
             notes.append({"shot": k, "fix": "backdrop_fallback", "key": key})
         desc = plan["locations"].get(sh["location"], "").lower()
-        indoor = any(w in desc for w in ("apartment", "kitchen", "corridor", "stairwell", "shop", "room"))
+        indoor = any(w in desc for w in ("apartment", "kitchen", "corridor", "stairwell", "shop", "room", "elevator", "lobby", "hallway"))
         amb = "room" if indoor else "city"
         if any(w in desc for w in ("sea", "pier", "harbour", "harbor", "dock", "shore", "waves", "ferry", "lighthouse")):
             amb = "sea"
         if any(w in desc for w in ("wheelhouse", "engine", "car deck", "outboard")):
             amb = "engine"
+        if "elevator" in desc:
+            amb = "hum_dark"   # low machinery hum = room tone of the cabin
         if sh["variant"] == "blackout":
             amb = "hum_dark" if indoor else "wind"
         if sh["location"] == "insert":
@@ -317,7 +319,8 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
             dur_s = dur / FPS
             first = j == 0
             has_ov = bool(sh["overlay"]) and first
-            frm = B.choose_framing(len(sh["chars"]), has_ov, tension, prev_frm, last_frms, rng)
+            fr_h = sh.get("fr") or []
+            frm = fr_h[min(j, len(fr_h) - 1)] if fr_h else B.choose_framing(len(sh["chars"]), has_ov, tension, prev_frm, last_frms, rng)
             view = B.view_for(frm, beat_no, prev_views)
             cam = fix_camera(B.choose_camera(tension, frm, dur_s, prev_cam, rng), dur_s, cfg, notes, beat_no)
             prev_cam = cam["preset"]
@@ -353,6 +356,7 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
                 "text": btext, "framing": frm, "trans": tr, "grade": grade_map.get(act, "warm"), "act": act, "crowd": bool(crowd),
                 "tension": tension,
                 "angle": "b" if (j % 2 == 1 and bg_b) else "a",
+                "hold": bool(sh.get("hold_after")), "airTick": bool(sh.get("hold_after")),
             }
             timeline_shots.append(tl_shot)
             t0 = f0 / FPS
@@ -392,6 +396,22 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
                 silences.append([round(a, 3), round(b, 3), -90.0] if s.get("silence_big") else [round(a, 3), round(b, 3)])
                 sfx_events.append({"t": round(max(0.1, a - 1.3), 3), "name": "riser", "gain": -4.0})
                 sfx_events.append({"t": round(s["start"], 3), "name": "impact", "gain": -3.0})
+    # decision holds: quiet room tone (cabin hum), soft heartbeat and a ticking clock; no music swell (the mixer pins the bed)
+    holds = []
+    for s in plan["sentences"]:
+        if s.get("hold_before"):
+            prev = plan["sentences"][s["idx"] - 1]
+            a, b = prev["end"] + 0.15, s["start"] - 0.1
+            if b - a >= 1.0:
+                holds.append([round(a, 3), round(b, 3)])
+                tt = a + 0.05
+                while tt < b - 0.5:
+                    sfx_events.append({"t": round(tt, 3), "name": "heartbeat", "gain": -2.0})
+                    tt += 3.4
+                tk = a + 0.2
+                while tk < b - 0.5:
+                    sfx_events.append({"t": round(tk, 3), "name": "ticking_clock", "gain": 0.0})
+                    tk += 3.0
     # keyword sfx
     for s in plan["sentences"]:
         for pat, name in KEYWORD_SFX:
@@ -407,7 +427,7 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
         t = a
         while b - t > gap_max:
             t += gap_max * 0.85
-            if not any(w_[0] <= t <= w_[1] for w_ in silences):
+            if not any(w_[0] <= t <= w_[1] for w_ in silences + holds):
                 sfx_events.append({"t": round(t, 3), "name": fill[n_fill % 4], "gain": -5.0})
                 n_fill += 1
 
@@ -415,7 +435,7 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
         "fps": FPS, "width": 1920, "height": 1080, "durationInFrames": total_frames,
         "style": {"accent": plan["style"].get("accent", "amber"), "lut": plan["style"].get("lut", "cold_night"),
                   "titlecard": plan["style"].get("titlecard", "clock_strip"), "transition": plan["style"].get("transition", "hard_cuts")},
-        "shots": timeline_shots, "endScreenFrames": int(end_s * FPS), "fadeOut": 30,
+        "shots": timeline_shots, "endScreenFrames": int(end_s * FPS), "fadeOut": 30, "kind": plan.get("kind", "video"),
         "captions": build_captions(plan["sentences"], B, int(cfg.get("captions", {}).get("max_words", 0) or 0)) if cfg.get("captions", {}).get("burned_in", True) else [],
         "voiceEnv": voice_env_q,
     }
@@ -443,7 +463,7 @@ def run(plan_path: str, tts_dir: str, img_dir: str, out_dir: str, public_dir: st
         "music": [{"act": r["act"], "start": r["start"], "end": r["end"] if i + 1 < len(music_runs) else round(total_s, 3),
                    "mood": acfg["music_mood"].get(r["act"], "tense"), "db": float(acfg["intensity_db"].get(r["act"], 0.0))}
                   for i, r in enumerate(music_runs)],
-        "ambience": ambience, "silence": silences, "chapters": chapters_out,
+        "ambience": ambience, "silence": silences, "holds": holds, "chapters": chapters_out,
         "sfx": sorted(sfx_events, key=lambda e: e["t"]), "style": plan["style"],
     }
     json.dump(audio_plan, open(os.path.join(out_dir, "audio_plan.json"), "w", encoding="utf-8"), indent=1)

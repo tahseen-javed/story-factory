@@ -63,7 +63,7 @@ def audio_plan_for_checks(asm: str) -> dict:
             words[s.get("id")] = len(str(s.get("text", "")).split())
     sents = [{"id": v["id"], "idx": i, "start": float(v["start"]), "end": float(v["end"]), "words": words.get(v["id"], max(1, int((v["end"] - v["start"]) * 2.4))), "text": "", "parallel": bool(v.get("parallel"))}
              for i, v in enumerate(ap["voice"])]
-    return {"sentences": sents, "silence": [list(w) for w in ap.get("silence", [])], "total_s": ap.get("total_s")}
+    return {"sentences": sents, "silence": [list(w) for w in ap.get("silence", [])], "holds": [list(h) for h in ap.get("holds", [])], "total_s": ap.get("total_s")}
 
 
 def read_stems(asm: str) -> dict:

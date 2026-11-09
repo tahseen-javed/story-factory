@@ -77,7 +77,7 @@ def run(plan: dict, timeline: dict, job_dir: str, cfg: dict) -> dict:
         "no_reused_long_segment": worst_run * avg_shot_s < max_run_s,
         "no_third_party_clips": not clips,
         "no_real_person_or_brand": not people,
-        "facts_sourced": len(plan.get("sources", [])) >= 1,
+        "facts_sourced": plan.get("kind") == "test" or len(plan.get("sources", [])) >= 1,   # test kind: pure fiction, no practical claims
     }
     return {"ok": all(checks.values()), "checks": checks, "compared_with": [n for n, _ in others], "closest_video": vs,
             "script_overlap": round(worst_text, 3), "shot_list_overlap": round(worst_shots, 3), "longest_reuse_s": round(worst_run * avg_shot_s, 1),

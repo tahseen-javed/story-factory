@@ -529,7 +529,106 @@ export const Meter: React.FC<OvProps> = ({ args, frame, total }) => {
   );
 };
 
+/* ---------------- OptionCards (decision hold): three sticky notes that stay on screen while the clock keeps ticking ---------------- */
+export const OptionCards: React.FC<OvProps> = ({ args, frame, total }) => {
+  const colors = ["#ff8a8a", NOTE_YELLOW, "#8fd3ff"];
+  const rots = [-5, 2, -3];
+  return (
+    <OverlayFrame frame={frame} total={total} rot={0}>
+      <div style={{ display: "flex", gap: 36, alignItems: "center" }}>
+        {[0, 1, 2].map((i) => {
+          const p = easeOut(prog(frame, 4 + i * 6, 12));
+          const sway = Math.sin((frame + i * 11) * 0.12) * 1.6;
+          const beat = 1 + 0.018 * Math.max(0, Math.sin(frame * 0.2 + i));
+          return (
+            <div key={i} style={{ transform: `translateY(${(1 - p) * 40}px) rotate(${rots[i] + sway}deg) scale(${beat})`, opacity: p }}>
+              <Paper w={330} h={360} color={colors[i]} radius={4}>
+                <div style={{ padding: "34px 14px", textAlign: "center", fontFamily: FONT.note, fontWeight: 700, color: INK }}>
+                  <div style={{ fontSize: 96, lineHeight: 1 }}>{i + 1}</div>
+                  <div style={{ fontSize: String(args[i]).length > 5 ? 84 : 112, marginTop: 22, lineHeight: 1.05, textTransform: "uppercase" }}>{String(args[i])}</div>
+                </div>
+              </Paper>
+            </div>
+          );
+        })}
+      </div>
+    </OverlayFrame>
+  );
+};
+
+/* ---------------- ElevatorPanel: red = glossy and spotless, seven = worn smooth, eight = hidden under fresh tape ---------------- */
+export const ElevatorPanel: React.FC<OvProps> = ({ args, frame, total }) => {
+  const focus = String(args[0] || "all");
+  const glow = (k: string) => (focus === k ? 0.55 + 0.45 * Math.abs(Math.sin(frame * 0.18)) : 0);
+  const pressed = (k: string) => focus === k && args[1] === "pressed";
+  const cx = [-300, 0, 300];
+  return (
+    <OverlayFrame frame={frame} total={total} rot={-1.5}>
+      <svg width={1000} height={560} viewBox="-500 -280 1000 560" style={{ overflow: "visible" }}>
+        <rect x={-480} y={-260} width={960} height={520} rx={36} fill="#8e949c" stroke={INK} strokeWidth={10} />
+        <rect x={-452} y={-232} width={904} height={464} rx={24} fill="#aeb4bb" stroke={INK} strokeWidth={4} opacity={0.9} />
+        {[-210, -170, 190, 220].map((y, i) => <line key={i} x1={-440} y1={y} x2={440} y2={y} stroke="#ffffff" strokeWidth={2} opacity={0.12} />)}
+        {[[-440, -222], [440, -222], [-440, 222], [440, 222]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r={9} fill="#6b7078" stroke={INK} strokeWidth={3} />)}
+        {/* RED: glossy, spotless */}
+        <g transform={`translate(${cx[0]} ${pressed("red") ? 8 : 0})`}>
+          <circle r={128} fill={`rgba(255,80,80,${glow("red") * 0.5})`} />
+          <circle r={112} fill="#6d1219" stroke={INK} strokeWidth={9} />
+          <circle r={94} fill="#e0303a" stroke={INK} strokeWidth={5} />
+          <ellipse cx={-26} cy={-38} rx={42} ry={22} fill="#ffffff" opacity={0.7} transform="rotate(-24 -26 -38)" />
+          <ellipse cx={34} cy={42} rx={26} ry={9} fill="#ffffff" opacity={0.25} transform="rotate(-24 34 42)" />
+        </g>
+        {/* SEVEN: worn smooth */}
+        <g transform={`translate(${cx[1]} ${pressed("seven") ? 8 : 0})`}>
+          <circle r={128} fill={`rgba(120,255,160,${glow("seven") * 0.5})`} />
+          <circle r={112} fill="#5d626a" stroke={INK} strokeWidth={9} />
+          <circle r={94} fill="#c9ccd0" stroke={INK} strokeWidth={5} />
+          <path d="M-70,-30 Q0,-70 70,-20 M-60,50 Q10,70 64,38 M-30,10 L40,-6" stroke="#9aa0a6" strokeWidth={5} fill="none" opacity={0.8} />
+          <text y={36} textAnchor="middle" fontFamily="Anton, Impact, sans-serif" fontSize={112} fill="#8d9298" opacity={0.78}>7</text>
+        </g>
+        {/* EIGHT: under fresh tape */}
+        <g transform={`translate(${cx[2]} ${pressed("eight") ? 8 : 0})`}>
+          <circle r={128} fill={`rgba(255,220,120,${glow("eight") * 0.5})`} />
+          <circle r={112} fill="#5d626a" stroke={INK} strokeWidth={9} />
+          <circle r={94} fill="#c9ccd0" stroke={INK} strokeWidth={5} />
+          <rect x={-100} y={-70} width={200} height={140} rx={6} fill="#efe6c8" stroke={INK} strokeWidth={5} transform="rotate(-4)" />
+          <text y={34} textAnchor="middle" fontFamily="'Caveat', 'Patrick Hand', cursive" fontWeight={700} fontSize={104} fill={INK} transform="rotate(-4)">8</text>
+          <rect x={-120} y={-92} width={110} height={34} fill="rgba(240,224,150,0.9)" transform="rotate(-24 -60 -76)" />
+          <rect x={20} y={54} width={116} height={34} fill="rgba(240,224,150,0.9)" transform="rotate(-24 78 70)" />
+        </g>
+      </svg>
+    </OverlayFrame>
+  );
+};
+
+/* ---------------- LooseCable: the back of the red button, a cable that goes nowhere ---------------- */
+export const LooseCable: React.FC<OvProps> = ({ args, frame, total }) => {
+  const sw = Math.sin(frame * 0.14) * 14;
+  const label = String(args[1] || "NOT CONNECTED");
+  const cable = `M-170,108 C-170,170 ${-60 + sw},190 ${40 + sw * 1.4},${150 + sw * 0.6} S ${140 + sw * 2},${60 + sw} ${180 + sw * 2},${96 + sw}`;
+  return (
+    <OverlayFrame frame={frame} total={total} rot={2}>
+      <div style={{ width: 880, textAlign: "center" }}>
+        <svg width={880} height={520} viewBox="-440 -260 880 520" style={{ overflow: "visible" }}>
+          <rect x={-420} y={-250} width={840} height={500} rx={30} fill="#8e949c" stroke={INK} strokeWidth={10} />
+          <circle cx={-170} cy={-30} r={112} fill="#55202a" stroke={INK} strokeWidth={9} />
+          <circle cx={-170} cy={-30} r={78} fill="#7a2a33" stroke={INK} strokeWidth={5} />
+          <rect x={-206} y={74} width={72} height={34} rx={8} fill="#c9a24a" stroke={INK} strokeWidth={5} />
+          <path d={cable} stroke={INK} strokeWidth={26} fill="none" strokeLinecap="round" />
+          <path d={cable} stroke="#3b4a5a" strokeWidth={16} fill="none" strokeLinecap="round" />
+          {[-14, 0, 14].map((o, i) => <line key={i} x1={180 + sw * 2} y1={96 + sw} x2={212 + sw * 2.2 + o} y2={72 + sw + o * 1.4} stroke="#e0883a" strokeWidth={6} strokeLinecap="round" />)}
+          <circle cx={180 + sw * 2} cy={96 + sw} r={10} fill="#e0883a" stroke={INK} strokeWidth={4} />
+        </svg>
+        <div style={{ marginTop: -10, fontFamily: FONT.marker, fontSize: 70, color: "#ff6b6b", WebkitTextStroke: `6px ${INK}`, paintOrder: "stroke fill", transform: "rotate(-3deg)" }}>{label}</div>
+      </div>
+    </OverlayFrame>
+  );
+};
+
+
 export const OVERLAYS: Record<string, React.FC<any>> = {
+  option_cards: OptionCards,
+  elevator_panel: ElevatorPanel,
+  loose_cable: LooseCable,
   meter: Meter,
   notepad_tracker: NotepadTracker,
   calendar_countdown: CalendarCountdown,

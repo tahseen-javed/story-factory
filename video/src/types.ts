@@ -53,6 +53,8 @@ export type Shot = {
   ovScale?: number | null;
   hudRight?: boolean;
   bannerDy?: number;
+  hold?: boolean; // planned decision hold (cards stay, clock ticks)
+  airTick?: boolean;
   trans?: string;
   grade?: string;
   crowd?: boolean;

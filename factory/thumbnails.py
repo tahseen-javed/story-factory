@@ -54,6 +54,9 @@ def hook_words(plan):
             num = f"{p[0]} HOURS"
         elif len(p) >= 2 and p[-2] or (len(p) == 3 and p[1]):
             num = f"{p[-2]} MINUTES"
+    own = str(((plan.get("extras") or {}).get("thumb_text")) or "").strip().upper()
+    if own:   # owner-supplied thumbnail text (max 3-4 words) wins for every candidate
+        return {"q": own, "pair": own, "last": own, "num": own}
     return {"q": qhook, "pair": pair, "last": last, "num": num or "COUNTDOWN"}
 
 

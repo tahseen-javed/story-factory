@@ -92,10 +92,21 @@ def check_voice(voice, plan, th):
     sentences = plan["sentences"]
     last_end = max(s["end"] for s in sentences)
     windows = [(w[0] - 0.15, w[1] + 0.15) for w in plan.get("silence", [])]
+    holds = [(h[0] - 0.4, h[1] + 0.4) for h in plan.get("holds", [])]
+    total_s = float(plan.get("total_s") or (last_end + 5.0))
+    hold_ok = int(max(1, total_s // float(a.get("decision_hold_per_s", 40))))
+    m["decision_holds"] = len(holds)
+    if len(holds) > hold_ok:
+        f.append(finding(th, "A1-HOLD-COUNT", "hold_count", 0, last_end, len(holds), hold_ok, "too many decision holds"))
+    for h in plan.get("holds", []):
+        if h[1] - h[0] > float(a.get("decision_hold_max_s", 5.0)) + 0.8:
+            f.append(finding(th, "A1-HOLD-LONG", "hold_long", h[0], h[1], h[1] - h[0], a.get("decision_hold_max_s", 5.0), "decision hold is too long"))
     beats, bad = 0, []
     for g0, g1 in gaps:
         if g0 < 0.3 or g1 > last_end + 0.5:
             continue                                      # lead-in and tail are not gaps
+        if any(h0 <= g0 + 0.3 and g1 - 0.3 <= h1 for h0, h1 in holds):
+            continue                                       # marked decision hold (see decision_hold_* limits)
         planned = any(w0 <= g0 + 0.05 and g1 - 0.05 <= w1 + 1.0 for w0, w1 in windows)
         if planned:
             beats += 1
@@ -140,7 +151,7 @@ def check_music(voice, music, sfx, amb, plan, th):
     sp = speech_fraction([s for s in plan["sentences"] if not s.get("parallel")], centers)
     speaking = sp >= 0.6
     quiet_t = sp <= 0.15
-    windows = [(w[0] - 1.6, w[1] + 1.6) for w in plan.get("silence", [])]
+    windows = [(w[0] - 1.6, w[1] + 1.6) for w in plan.get("silence", [])] + [(h[0] - 1.0, h[1] + 1.6) for h in plan.get("holds", [])]
     in_win = np.array([any(w0 <= c <= w1 for w0, w1 in windows) for c in centers])
     if speaking.sum() >= 3:
         m["voice_st_median"] = float(np.median(vs[speaking]))

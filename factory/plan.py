@@ -81,8 +81,13 @@ def build_plan(job_dir: str, cfg=None) -> dict:
                     sentences[-1]["silence_before"] = True
                     sentences[-1]["silence_big"] = big
                     sentences[-2]["pause_after_s"] = max(sentences[-2]["pause_after_s"], 1.9 if big else float(audio_cfg.get("silence_beat_s", 0.9)))
+                if getattr(s, "hold", 0) and k == 0 and len(sentences) >= 2:   # decision hold: planned pause (cards stay on screen, clock keeps ticking)
+                    sentences[-1]["hold_before"] = float(s.hold)
+                    sentences[-2]["pause_after_s"] = max(sentences[-2]["pause_after_s"], float(s.hold) + 0.3)
                 ids.append(f"s{sidx:04d}")
                 sidx += 1
+            if getattr(s, "hold", 0) and shots:
+                shots[-1]["hold_after"] = float(s.hold)
             shots.append({
                 "i": s.idx, "chapter": ch.n, "location": s.location, "variant": s.variant,
                 "chars": [{"id": c.id, "pose": c.pose, "expr": c.expr, "x": c.x} for c in s.chars],
@@ -90,6 +95,7 @@ def build_plan(job_dir: str, cfg=None) -> dict:
                 "camera": ({"preset": s.camera.preset, "z0": s.camera.z0, "z1": s.camera.z1, "param": s.camera.param} if s.camera else {"preset": "push", "z0": 1.0, "z1": 1.1, "param": None}),
                 "fx": s.fx, "sfx": s.sfx, "banner": s.banner, "cta": bool(s.cta),
                 "track": dict(state), "prev_track": prev, "sentences": ids, "text": s.text, "act": s.act, "silence": s.silence,
+                "hold": float(getattr(s, "hold", 0)), "fr": list(getattr(s, "fr", [])),
             })
 
     # locations needing images: one base per location (first variant used), others via img2img of the base
@@ -127,6 +133,7 @@ def build_plan(job_dir: str, cfg=None) -> dict:
         "style": dict(job.get("style_seed") or {}), "style_version": job.get("style_version", cfg.get("style_version", 1)),
         "wpm": wpm, "total_words": total_words, "est_narration_s": round(sum(s["expected_s"] + s["pause_after_s"] for s in sentences), 1),
         "characters": sc.characters, "locations": sc.locations, "chapters": chapters, "shots": shots, "sentences": sentences,
+        "kind": job.get("kind", "video"), "extras": job.get("extras") or {}, "end_screen_s": job.get("end_screen_s"),
         "image_groups": image_groups, "sources": [{"fact": f, "url": u} for f, u in read_sources(job_dir)],
         "tts_shards": int(cfg["tts"]["matrix"]), "image_shards": int(img["matrix"]),
     }

@@ -15,6 +15,8 @@ audio:
   gap_max_s: 0.9
   beat_max_count: 2
   beat_max_s: 2.0
+  decision_hold_max_s: 5.0      # a planned 'decision_hold' (cards on screen, clock ticking, room tone + heartbeat) may be this long
+  decision_hold_per_s: 40       # ... at most one per this many seconds of video
   sentence_loudness_std_max_lu: 2.0
   wpm_overall: [125.0, 165.0]
   sfx_margin_db: 2.0
@@ -51,6 +53,8 @@ severity:
   music_dropout: MAJOR
   music_calm: MINOR
   gap: MAJOR
+  hold_long: MAJOR
+  hold_count: MAJOR
   beats: MAJOR
   sentence_std: MINOR
   wpm: MINOR

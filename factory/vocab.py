@@ -42,7 +42,11 @@ OVERLAYS = {
     "hand_pen": (1, 2),
     "end_screen": (1, 1),
     "meter": (2, 3),
+    "option_cards": (3, 3),       # three sticky-note options (decision hold)
+    "elevator_panel": (1, 2),     # three big buttons: glossy red, worn seven, taped eight
+    "loose_cable": (1, 2),        # back of a button with a loose, unwired cable
 }
+FRAMINGS = ("medium", "closeup", "insert", "wide", "xwide", "low", "back", "ots", "silhouette", "profile")
 
 CAMERA = (
     "push", "pull", "pan_l", "pan_r", "tilt_up", "tilt_down",
@@ -57,12 +61,12 @@ SFX = (
     "alert_siren", "phone_buzz", "door_knock", "door_creak", "footsteps", "whoosh", "paper_slide",
     "stinger_chapter", "heartbeat", "power_down", "radio_static", "glass_crack", "water_pour",
     "car_engine", "crowd_murmur", "thunder", "click", "beep", "typing", "rustle", "ticking_clock",
-    "spark", "wind", "riser", "impact", "glitch", "text_pop",
+    "spark", "wind", "riser", "impact", "glitch", "text_pop", "ding",
 )
 
 MUSIC_MOODS = ("tense", "dread", "urgent", "hopeful", "sorrow", "climax", "calm", "mystery")
 
-FIELD_KEYS = ("ov", "cam", "fx", "sfx", "track", "banner", "cta")
+FIELD_KEYS = ("ov", "cam", "fx", "sfx", "track", "banner", "cta", "fr")
 
 CTA_VALUES = ("subscribe",)
 
