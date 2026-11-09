@@ -16,7 +16,7 @@ import subprocess
 import sys
 import time
 
-from . import VERSION, cert
+from . import VERSION, cert, tech
 
 
 def load_th() -> dict:
@@ -92,8 +92,9 @@ def scan_audio(asm: str, th: dict, master=None) -> tuple:
     m1, f1 = A.check_master(master, th)
     m2, f2 = A.check_voice(st["voice"], plan, th)
     m3, f3 = A.check_music(st["voice"], st["music"], st["sfx"], st["amb"], plan, th)
-    metrics = {**m1, **m2, **m3}
-    return f1 + f2 + f3, metrics, round(time.time() - t0, 1)
+    m4, f4 = A.check_music_present(st["voice"], st["music"], plan, th)
+    metrics = {**m1, **m2, **m3, **m4}
+    return f1 + f2 + f3 + f4, metrics, round(time.time() - t0, 1)
 
 
 # ---- Stage 1: audio Doctor + fix loop -----------------------------------------------------------------------------------------
@@ -196,10 +197,36 @@ def cmd_final(mp4: str, asm: str, out: str, th: dict, expect: tuple = (1920, 108
         metrics, findings = A.check_master(master, th)
         findings.append({"code": "A3-NO-STEMS", "severity": "MAJOR", "t0": 0, "t1": 0, "value": None, "threshold": None, "msg": "stems missing: music level cannot be proven"})
     audio_scan_s = round(time.time() - stage_a, 1)
+    tl = json.load(open(os.path.join(asm, "props.json"), encoding="utf-8"))["timeline"]
+    # Phase 2 stage 4: technical checks on decoded frames (black / frozen / duplicate / flicker / cuts / static poses / pacing), black-frame auto-fix
+    fix_notes = []
+    tf = tech.run_file(mp4, th, tl)
+    if any(x["code"] == "V4-BLACK" for x in tf["findings"]):
+        fixed_path = os.path.join(out, "black_fixed.mp4")
+        if tech.fix_black(mp4, tf["findings"], fixed_path):
+            os.replace(fixed_path, mp4)
+            fix_notes.append(f"black frames held over by the previous good frame: {[(x['t0'], x['t1']) for x in tf['findings'] if x['code'] == 'V4-BLACK']}")
+            tf = tech.run_file(mp4, th, tl)
+    findings += tf["findings"]
+    metrics.update({"tech_" + k: v for k, v in tf["metrics"].items()})
     vf, vm = video_checks(mp4, th, expect)
     findings += vf
     metrics.update(vm)
-    tl = json.load(open(os.path.join(asm, "props.json"), encoding="utf-8"))["timeline"]
+    # reports of the other Phase 2 stages (they run earlier in the pipeline; a stage that could not run is listed, never silent)
+    stage_reports = {}
+    for nm in ("VOICE", "CHAR", "LOOK"):
+        rp = os.path.join(asm, "doctor", f"{nm}_REPORT.json")
+        if os.path.exists(rp):
+            r = json.load(open(rp, encoding="utf-8"))
+            stage_reports[nm] = {"status": r.get("status"), "seconds": r.get("seconds"), "error": r.get("error")}
+            if r.get("status") == "OK":
+                findings += r.get("findings", [])
+                metrics.update({f"{nm.lower()}_{k}": v for k, v in (r.get("metrics") or {}).items()})
+            else:
+                findings.append({"code": f"{nm}-SKIPPED", "severity": "MINOR", "t0": 0, "t1": 0, "value": None, "threshold": None, "msg": f"{nm.lower()} stage did not run: {r.get('error')}"})
+        else:
+            stage_reports[nm] = {"status": "NOT_RUN"}
+    metrics["stages"] = stage_reports
     lint = visual.lint_timeline(tl, th)
     findings += lint
     metrics["face_overlap_findings"] = len([x for x in lint if x["code"] == "V1-FACE-OVERLAP"])
@@ -207,7 +234,10 @@ def cmd_final(mp4: str, asm: str, out: str, th: dict, expect: tuple = (1920, 108
     metrics["final_scan_s"] = round(time.time() - t0, 1)
     bad = _bad(findings)
     fl = os.path.join(asm, "doctor", "FIX_LOG.md")
-    fixed_any = os.path.exists(fl) and any(ln.startswith("- ") for ln in open(fl, encoding="utf-8").read().splitlines())
+    fixed_any = bool(fix_notes) or (os.path.exists(fl) and any(ln.startswith("- ") for ln in open(fl, encoding="utf-8").read().splitlines()))
+    if fix_notes:
+        os.makedirs(os.path.dirname(fl), exist_ok=True)
+        open(fl, "a", encoding="utf-8").write("## Stage 2 final\n" + "\n".join(f"- {x}" for x in fix_notes) + "\n")
     status = "NEEDS_REVIEW" if bad else ("FIXED" if fixed_any else "PASS")
     checks = {}
     for code in sorted({f["code"] for f in findings} | {"A1-GAP", "A3-MUSIC-LOUD", "A3-MUSIC-DROPOUT", "V1-FACE-OVERLAP", "V4-BLACK"}):

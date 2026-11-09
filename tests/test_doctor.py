@@ -149,9 +149,11 @@ class TestFixtures(unittest.TestCase):
         mp4 = os.path.join(d, "black.mp4")
         encode(wav, mp4, black=(10.0, 10.4))
         rep = run.cmd_final(mp4, d, os.path.join(d, "out"), TH, expect=(854, 480))
-        self.assertIn("V4-BLACK", {x["code"] for x in rep["findings"]})
-        self.assertEqual(rep["status"], "NEEDS_REVIEW")
-        self.assertFalse(cert.verify(mp4, os.path.join(d, "out", "CERTIFICATE.json"))[0])
+        # Phase 2: the black frame is repaired automatically (previous good frame held), the repaired file is re-scanned and certified as FIXED
+        self.assertEqual(rep["status"], "FIXED", rep["findings"])
+        self.assertNotIn("V4-BLACK", {x["code"] for x in rep["findings"]})
+        self.assertTrue(cert.verify(mp4, os.path.join(d, "out", "CERTIFICATE.json"))[0])
+        self.assertIn("black frames", open(os.path.join(d, "doctor", "FIX_LOG.md"), encoding="utf-8").read())
 
 
 class TestFixLoopParams(unittest.TestCase):

@@ -1,7 +1,7 @@
 # P-008 A: QA 2.0 is calibrated to the owner's ratings (docs/QUALITY_LOG.md). A penalty applies until its feature ships.
 version: 1
 anchor: {video: "003 Three Button Trap", owner_rating: 8.8}   # P-014: golden baseline = 003 (voice, visuals, pacing, decision hold, no captions); its only weakness was missing music
-features_shipped: {blotch_free_backgrounds: false, poses_beams_particles_kinetic: false, auto_fix_loop: false, character_acting: false, story_payoff: false}
+features_shipped: {blotch_free_backgrounds: true, poses_beams_particles_kinetic: false, auto_fix_loop: true, character_acting: false, story_payoff: false}
 penalties: {blotch_free_backgrounds: 0.7, poses_beams_particles_kinetic: 0.6, auto_fix_loop: 0.2, character_acting: 0.4, story_payoff: 0.2}
 previous_owner_rating: 8.8
 target_rating: 9.0

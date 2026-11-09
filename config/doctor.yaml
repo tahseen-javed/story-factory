@@ -6,7 +6,7 @@ audio:
   true_peak_max_db: -1.5
   lra: [4.0, 8.0]
   voice_short_term_lufs: [-16.5, -13.0]     # median while speaking (spec -16..-14)
-  music_below_voice_db: [17.0, 23.0]        # median gap voice minus music while speaking (spec 18-22)
+  music_below_voice_db: [15.0, 21.0]        # median gap voice minus music while speaking (spec 18-22)
   music_local_min_gap_db: 12.0              # anywhere while speaking: music louder than this is a BLOCKER
   music_rise_max_db: 6.5                    # music may rise at most this much in non-speech moments
   music_jump_max_lu: 3.0                    # change over 1 s
@@ -42,7 +42,7 @@ visual:
   scene_changes_per_min_min: 20.0           # P-011 target; MINOR until the pacing redesign lands
 look:                                       # Phase 2 stage 3 (factory/doctor/look.py), thresholds calibrated on the first real backgrounds
   blotch_max: 0.04
-  banding_max: 0.35
+  banding_max: 0.2
   style_edge_ratio_min: 0.35
   style_noise_ratio_max: 2.5
   style_saturation_delta: 45
@@ -70,7 +70,14 @@ voice:                                      # Phase 2 stage 1 (factory/doctor/vo
   drift_f0_hz: 40
   narrator_mel_db: 5.0
   narrator_f0_hz: 45
+music_present:                              # P-014 / A3b MUSIC PRESENT
+  audible_fraction_min: 0.90                # share of the video (planned beats excluded) where the music bed is audible
+  audible_floor_lufs_below_voice: 30        # bed counts as audible when it is within this many dB of the voice short-term level
+  below_voice_db: [15, 21]                  # while speaking (target 16-20)
+  max_rise_db: 6.0
 severity:
+  music_missing: BLOCKER
+  music_quiet: MAJOR
   stem_clip: MINOR                 # stems are pre-limiter; the master (sample peak / true peak) is what must not clip
   blotch: MAJOR
   banding: MINOR

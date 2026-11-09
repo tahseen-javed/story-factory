@@ -94,6 +94,8 @@ def mutate(fx, kind):
         st["music"] *= 10 ** (24 / 20)
     elif kind == "clipping":
         st["voice"] = np.clip(st["voice"] * 40, -1, 1)
+    elif kind == "music_missing":
+        st["music"] *= 0.0
     elif kind == "hot_start":
         pass
     master = np.vstack([sum(st.values()), sum(st.values())])
@@ -112,5 +114,6 @@ EXPECTED = {
     "music_above_voice": "A3-MUSIC-ABOVE",
     "clipping": "A4-CLIP",
     "hot_start": "A4-HOTSTART",
+    "music_missing": "A3B-MUSIC-MISSING",
     "dc_offset": "A4-DC",
 }

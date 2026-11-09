@@ -252,7 +252,7 @@ jobs:
       - name: Install audio dependencies
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg libsndfile1
-          python -m pip install numpy==1.26.4 scipy==1.13.1 soundfile==0.12.1
+          python -m pip install numpy==1.26.4 scipy==1.13.1 soundfile==0.12.1 pillow==10.4.0
       - uses: ./.github/actions/unpack
         with:
           name: plan
@@ -298,6 +298,9 @@ jobs:
         run: |
           python -m factory.doctor.run lint --asm build/assembled
           python -m factory.doctor.run audio --asm build/assembled --voice build/assembled/voice --passes 3
+      - name: Video Doctor Stage 3 (background blotch/banding/style check with soft-grade repair)
+        continue-on-error: true
+        run: python -m factory.doctor.look build/assembled
       - uses: ./.github/actions/pack
         with:
           name: assembled

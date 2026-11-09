@@ -27,6 +27,9 @@ def adjust_mix_params(params: dict, findings: list, metrics: dict, th: dict) -> 
         # a negative music_trim_db makes the music quieter (the mixer scales the bed so that gap = target - trim)
         p["music_trim_db"] = round(p.get("music_trim_db", 0.0) - step, 2)
         log.append(f"music_trim_db {params.get('music_trim_db', 0.0)} -> {p['music_trim_db']} (gap was {gap and round(gap, 1)} dB, target {target})")
+    if codes & {"A3B-MUSIC-MISSING", "A3B-MUSIC-QUIET"}:   # P-014: raise the bed (the mixer always builds it from the music library / synth)
+        p["music_trim_db"] = round(min(8.0, p.get("music_trim_db", 0.0) + 4.0), 2)
+        log.append(f"music_trim_db -> {p['music_trim_db']} (music not audible enough)")
     if "A3-MUSIC-RISE" in codes:
         p["duck_db"] = max(3.0, round(float(p.get("duck_db", th.get('mix_duck_db', 6.0))) - 2.0, 1))
         log.append(f"duck_db -> {p['duck_db']}")

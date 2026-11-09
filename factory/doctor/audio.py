@@ -247,3 +247,28 @@ def check_sync(timeline, plan, th, video_s=None, audio_s=None):
         if drift > s["drift_ms"]:
             f.append(finding(th, "A5-DRIFT", "drift", video_s - 1, video_s, drift, s["drift_ms"], "audio/video length drift"))
     return m, f
+
+
+def check_music_present(voice, music, plan, th):
+    """A3b MUSIC PRESENT (P-014): music audible for >= 90 % of the video (planned beats excluded) and not buried under the voice."""
+    a = th["music_present"]
+    f, m = [], {}
+    vs, tt = lufs.short_term(voice, 0.5)
+    ms, _ = lufs.short_term(music, 0.5)
+    n = min(len(vs), len(ms))
+    vs, ms, c = vs[:n], ms[:n], tt[:n] + 1.5
+    win = [(w[0], w[1]) for w in plan.get("silence", [])] + [(h[0], h[1]) for h in plan.get("holds", [])]
+    use = ~np.array([any(w0 <= x <= w1 for w0, w1 in win) for x in c])
+    live = vs > -60
+    vref = float(np.median(vs[live])) if live.any() else -20.0
+    frac = float((ms > vref - a["audible_floor_lufs_below_voice"])[use].mean()) if use.any() else 1.0
+    m["music_audible_fraction"] = round(frac, 3)
+    if frac < a["audible_fraction_min"]:
+        f.append(finding(th, "A3B-MUSIC-MISSING", "music_missing", 0, len(music) / SR, frac, a["audible_fraction_min"], "background music is not audible for most of the video"))
+    sp = speech_fraction([s for s in plan["sentences"] if not s.get("parallel")], c) >= 0.6
+    if sp.sum() >= 3:
+        gap = float(np.median(vs[sp]) - np.median(ms[sp]))
+        m["music_gap_db"] = round(gap, 1)
+        if gap > a["below_voice_db"][1]:
+            f.append(finding(th, "A3B-MUSIC-QUIET", "music_quiet", 0, len(music) / SR, gap, a["below_voice_db"], "music is too quiet to be noticed"))
+    return m, f
