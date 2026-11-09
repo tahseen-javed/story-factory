@@ -1,6 +1,7 @@
 # Sound design v2: 4 layers (voice, music, ambience, sfx), dynamic range, silence beats.
 version: 2
-duck_db: 12
+duck_db: 6           # the bed may rise at most 6 dB when nobody speaks (P-012 A3)
+music_below_voice_db: 20   # music bed sits 20 dB under the voice while speaking (P-012 A3: 18-22)
 lra_min: 4.0
 lra_target: 5.0
 silence_beat_s: 0.9
@@ -11,13 +12,13 @@ music_bed_db: -26
 # loudness offset per story act (dB, applied to the whole mix before the final loudnorm)
 intensity_db:
   hook: 1.0
-  act1: -2.0
+  act1: -1.5
   act2a: 0.0
   midpoint: 1.5
-  act2b: 1.5
-  sacrifice: -5.5
-  climax: 3.0
-  resolution: -4.0
+  act2b: 1.0
+  sacrifice: -3.0
+  climax: 2.0
+  resolution: -2.5
 music_mood:
   hook: tense
   act1: calm

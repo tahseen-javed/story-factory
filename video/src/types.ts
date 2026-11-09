@@ -48,6 +48,11 @@ export type Shot = {
   prevTrack: Record<string, any>;
   text: string;
   framing?: string;
+  // Video Doctor face-overlap fixes (P-012): graphic placement overrides written by factory/doctor/visual.py
+  ovShift?: [number, number] | null;
+  ovScale?: number | null;
+  hudRight?: boolean;
+  bannerDy?: number;
   trans?: string;
   grade?: string;
   crowd?: boolean;

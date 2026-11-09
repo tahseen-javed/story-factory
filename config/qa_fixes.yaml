@@ -1,0 +1,16 @@
+# P-012 fix map: failure code -> automatic action -> re-run scope. Implemented in factory/doctor/fixes.py (audio) and factory/doctor/visual.py (scene data).
+# Max 3 passes per video; then NEEDS_REVIEW and the video stays out of the owner's folder (no certificate).
+A3-MUSIC-LOUD:     {action: "music_trim_db down (music = voice - 20 dB)", rerun: "factory.mix (mixer only)"}
+A3-MUSIC-MEDIAN:   {action: "music_trim_db toward the middle of 17..23 dB", rerun: "factory.mix (mixer only)"}
+A3-MUSIC-ABOVE:    {action: "music_trim_db down", rerun: "factory.mix (mixer only)"}
+A3-MUSIC-RISE:     {action: "duck_db reduced (bed rises less in gaps)", rerun: "factory.mix (mixer only)"}
+A3-MUSIC-JUMP:     {action: "ducking envelope smoothed (venv_smooth_s)", rerun: "factory.mix (mixer only)"}
+A3-MUSIC-DROPOUT:  {action: "music_floor_db -24 (no unplanned dropouts)", rerun: "factory.mix (mixer only)"}
+A3-MUSIC-CALM:     {action: "music lowpass 6 kHz", rerun: "factory.mix (mixer only)"}
+A3-TRUEPEAK:       {action: "limiter_scale x0.92", rerun: "factory.mix (mixer only)"}
+A4-CLIP:           {action: "limiter_scale x0.92", rerun: "factory.mix (mixer only)"}
+A1-GAP:            {action: "none automatic: needs a re-timed script or TTS (rejected with the timestamp)", rerun: "tts shard"}
+A1-BEATS:          {action: "none automatic: too many planned beats", rerun: "script"}
+V1-FACE-OVERLAP:   {action: "move graphic to a safe zone, shrink it, flip the HUD corner, move the banner, spread characters", rerun: "render chunks of the affected shots"}
+V1-FACE-EDGE:      {action: "move the character inside the frame", rerun: "render chunks of the affected shots"}
+V4-BLACK:          {action: "none automatic in Phase 1: reported with the timestamp", rerun: "render chunk"}

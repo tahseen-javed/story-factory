@@ -1,0 +1,73 @@
+# Video Doctor thresholds (P-012). Every check is numeric; severity: BLOCKER / MAJOR / MINOR. Zero BLOCKER and MAJOR at delivery.
+version: 1
+doctor_version: "1.0.0"
+audio:
+  integrated_lufs: [-15.0, -13.0]
+  true_peak_max_db: -1.5
+  lra: [4.0, 8.0]
+  voice_short_term_lufs: [-16.5, -13.0]     # median while speaking (spec -16..-14)
+  music_below_voice_db: [17.0, 23.0]        # median gap voice minus music while speaking (spec 18-22)
+  music_local_min_gap_db: 12.0              # anywhere while speaking: music louder than this is a BLOCKER
+  music_rise_max_db: 6.5                    # music may rise at most this much in non-speech moments
+  music_jump_max_lu: 3.0                    # change over 1 s
+  music_dropout_lufs: -55.0
+  music_dropout_s: 1.0
+  gap_max_s: 0.9
+  beat_max_count: 2
+  beat_max_s: 2.0
+  sentence_loudness_std_max_lu: 2.0
+  wpm_overall: [125.0, 165.0]
+  sfx_margin_db: 2.0
+  hot_start_dbfs: -30.0
+  tail_max_dbfs: -45.0
+  dc_offset_max: 0.002
+  mono_compat_drop_max_db: 3.0
+  calm_flux_p99_max: null                   # calibrated from the music identity (set after the first measured run)
+  calm_centroid_std_max_hz: null
+  calm_hf_ratio_max_db: null
+sync:
+  caption_start_ms: 80
+  drift_ms: 40
+visual:
+  face_overlap_max_ratio: 0.05
+  face_overlap_min_frames: 2
+  edge_cut_max_ratio: 0.02
+  max_cps: 17.0
+  caption_words: [1, 4]
+  caption_min_height_ratio: 0.05
+  contrast_min: 4.5
+  max_static_s: 3.0
+  scene_changes_per_min_min: 20.0           # P-011 target; MINOR until the pacing redesign lands
+severity:
+  integrated: MAJOR
+  true_peak: MAJOR
+  lra: MINOR
+  voice_level: MAJOR
+  music_median: MAJOR
+  music_local: BLOCKER
+  music_above_voice: BLOCKER
+  music_rise: MAJOR
+  music_jump: MAJOR
+  music_dropout: MAJOR
+  music_calm: MINOR
+  gap: MAJOR
+  beats: MAJOR
+  sentence_std: MINOR
+  wpm: MINOR
+  sfx_loud: MAJOR
+  clipping: BLOCKER
+  dc: MINOR
+  hot_start: MAJOR
+  tail: MINOR
+  mono: MINOR
+  caption_sync: MAJOR
+  drift: MAJOR
+  face_overlap: BLOCKER
+  face_edge: MAJOR
+  reading_speed: MAJOR
+  caption_words: MINOR
+  spelling: BLOCKER
+  black: BLOCKER
+  freeze: BLOCKER
+  resolution: BLOCKER
+  pacing_rate: MINOR

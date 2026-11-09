@@ -102,10 +102,10 @@ def ffmpeg_measure(path):
     return json.loads(m.group(0))
 
 
-def loudnorm_two_pass(src, dst, I=-14.0, TP=-2.2, LRA=7.0):
+def loudnorm_two_pass(src, dst, I=-14.0, TP=-2.4, LRA=7.0):
     m = ffmpeg_measure(src)
     flt = (f"loudnorm=I={I}:TP={TP}:LRA={LRA}:measured_I={m['input_i']}:measured_TP={m['input_tp']}:measured_LRA={m['input_lra']}:"
-           f"measured_thresh={m['input_thresh']}:offset={m['target_offset']}:linear=true:print_format=summary,alimiter=limit=0.776:level=disabled")
+           f"measured_thresh={m['input_thresh']}:offset={m['target_offset']}:linear=true:print_format=summary,alimiter=limit=0.74:level=disabled")
     subprocess.run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-i", src, "-af", flt, "-ar", "48000", "-c:a", "pcm_s24le", dst], check=True)
     return m
 
@@ -113,6 +113,11 @@ def loudnorm_two_pass(src, dst, I=-14.0, TP=-2.2, LRA=7.0):
 def run(audio_plan_path: str, voice_dir: str, out_dir: str, cfg_audio: dict, lufs: float = -14.0, music_dir: str | None = None):
     ap = json.load(open(audio_plan_path, encoding="utf-8"))
     os.makedirs(out_dir, exist_ok=True)
+    mp = {}
+    mpp = os.path.join(out_dir, "mix_params.json")
+    if os.path.exists(mpp):   # P-012: parameters tuned by the Video Doctor fix loop
+        mp = json.load(open(mpp, encoding="utf-8"))
+    cfg_audio = {**cfg_audio, **{k: v for k, v in mp.items() if k in cfg_audio or k in ("duck_db",)}}
     total = int(ap["total_s"] * SR) + SR
     voice = np.zeros(total, dtype="float32")
     for seg in ap["voice"]:
@@ -175,9 +180,30 @@ def run(audio_plan_path: str, voice_dir: str, out_dir: str, cfg_audio: dict, luf
     k_sm = int(3.0 * SR)
     cs = np.cumsum(np.pad(music_gain_db, (k_sm // 2, k_sm // 2), mode="edge"))
     intensity_db = ((cs[k_sm:] - cs[:-k_sm]) / k_sm)[:total].astype("float32")
-    duck_db = float(cfg_audio.get("duck_db", 18))
-    gain = 10 ** (-(duck_db) * venv / 20.0)   # unducked bed sits at -20 dBFS RMS, ducked bed 18 dB lower
+    duck_db = float(cfg_audio.get("duck_db", 6))
+    smooth_s = float(mp.get("venv_smooth_s", 0.0))
+    if smooth_s > 0:   # extra smoothing of the ducking envelope (fix for pumping / jumps)
+        k_ = max(1, int(smooth_s * SR))
+        from scipy.ndimage import uniform_filter1d
+
+        venv = uniform_filter1d(venv, size=k_, mode="nearest")
+    gain = 10 ** (-(duck_db) * venv / 20.0)
+    if "music_floor_db" in mp:   # fix for unplanned music dropouts: never duck deeper than this
+        gain = np.maximum(gain, 10 ** (float(mp["music_floor_db"]) / 20.0) * np.where(sil > 0.5, 1.0, 0.0) + 0.0)   # unducked bed sits at -20 dBFS RMS, ducked bed 18 dB lower
     music = music * gain[None, :] * fade[None, :] * sil[None, :]
+    from .doctor import audio as _da, lufs as _lu
+
+    if float(mp.get("music_lowpass_hz", 0) or 0) > 0:   # calmer music: remove harsh highs
+        b_, a_ = signal.butter(2, float(mp["music_lowpass_hz"]) / (SR / 2), "low")
+        music = signal.lfilter(b_, a_, music, axis=1)
+    vst, tt_ = _lu.short_term(voice, 0.5)
+    mst, _ = _lu.short_term(music.mean(axis=0), 0.5)
+    n_ = min(len(vst), len(mst))
+    spk = _da.speech_fraction([{"start": s_["start"], "end": s_["end"]} for s_ in ap["voice"]], tt_[:n_] + 1.5) >= 0.6
+    music_trim_db = float(mp.get("music_trim_db", 0.0))
+    if spk.sum() >= 3:
+        gap_db = float(np.median(vst[:n_][spk]) - np.median(mst[:n_][spk]))
+        music = music * 10 ** ((gap_db - float(cfg_audio.get("music_below_voice_db", 20.0)) + music_trim_db) / 20.0)
 
     # ---- sfx ----
     sfx_bus = np.zeros((2, total), dtype="float32")
@@ -209,9 +235,16 @@ def run(audio_plan_path: str, voice_dir: str, out_dir: str, cfg_audio: dict, luf
     mix = mix * np.clip(g, 0.05, 1.5)[None, :]
     mix = mix * (10 ** (intensity_db / 20.0))[None, :]
     mix = mix[:, : int(ap["total_s"] * SR)]
+    fi_ = int(0.3 * SR)
+    mix[:, :fi_] *= np.linspace(0, 1, fi_)   # clean fade-in (no hot start)
+    ntot = mix.shape[1]
+    gt = (np.clip(g, 0.05, 1.5) * (10 ** (intensity_db / 20.0)))[:ntot]
+    gt[:fi_] *= np.linspace(0, 1, fi_)
     pk = float(np.max(np.abs(mix)) + 1e-9)
+    pk_scale = 1.0
     if pk > 0.98:
-        mix = mix * (0.98 / pk)
+        pk_scale = 0.98 / pk
+        mix = mix * pk_scale
     pre = os.path.join(out_dir, "premaster.wav")
     import soundfile as sf
 
@@ -220,8 +253,12 @@ def run(audio_plan_path: str, voice_dir: str, out_dir: str, cfg_audio: dict, luf
     master = os.path.join(out_dir, "master.wav")
     m = loudnorm_two_pass(pre, master, I=lufs)
     final = ffmpeg_measure(master)
+    # stems in final-mix scale for the Video Doctor (mono 48 kHz PCM16): same time-varying gains as the master
+    fg = 10 ** ((float(final["input_i"]) - float(m["input_i"])) / 20.0) * pk_scale
+    for nm_, st_ in (("voice", voice[:ntot]), ("music", music.mean(axis=0)[:ntot]), ("sfx", sfx_bus.mean(axis=0)[:ntot]), ("amb", (amb * sil)[:ntot])):
+        sf.write(os.path.join(out_dir, f"stem_{nm_}.wav"), np.clip(st_ * gt * fg, -1, 1).astype("float32"), SR, subtype="PCM_16")
     rep = {"premaster": {k: m[k] for k in ("input_i", "input_tp", "input_lra")}, "master": {k: final[k] for k in ("input_i", "input_tp", "input_lra")},
-           "duration_s": ap["total_s"], "sfx_used": sorted(cache.keys()), "duck_db": duck_db, "silence_beats": len(ap.get("silence", []))}
+           "duration_s": ap["total_s"], "sfx_used": sorted(cache.keys()), "duck_db": duck_db, "silence_beats": len(ap.get("silence", [])), "params": mp}
     json.dump(rep, open(os.path.join(out_dir, "mix_report.json"), "w"), indent=1)
     os.remove(pre)
     print(json.dumps(rep))

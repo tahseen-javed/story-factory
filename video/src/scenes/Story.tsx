@@ -95,13 +95,13 @@ const Crowd: React.FC<{ frame: number }> = ({ frame }) => (
   </g>
 );
 
-const Hud: React.FC<{ track: Record<string, any>; prev: Record<string, any>; frame: number }> = ({ track, prev, frame }) => {
+const Hud: React.FC<{ track: Record<string, any>; prev: Record<string, any>; frame: number; right?: boolean }> = ({ track, prev, frame, right }) => {
   const items: Array<{ k: string; label: string; v: string }> = [];
   if (track.hours !== undefined && Number(track.hours) > 0) items.push({ k: "hours", label: "HOURS LEFT", v: String(track.hours) });
   if (track.phone !== undefined) items.push({ k: "phone", label: "BATTERY", v: String(track.phone) });
   if (!items.length) return null;
   return (
-    <div style={{ position: "absolute", left: "4%", top: "5%", display: "flex", gap: 14 }}>
+    <div style={{ position: "absolute", ...(right ? { right: "4%" } : { left: "4%" }), top: "5%", display: "flex", gap: 14 }}>
       {items.map((it) => {
         const changed = prev[it.k] !== undefined && prev[it.k] !== track[it.k] && frame < 36;
         const low = it.k === "phone" && parseInt(it.v, 10) <= 10;
@@ -204,11 +204,17 @@ export const ShotView: React.FC<{ shot: Shot; tl: Timeline }> = ({ shot, tl }) =
       <Vignette strength={mood.vignette} />
       <Grain />
       <TransFx trans={trans} frame={frame} />
-      <Hud track={shot.track} prev={shot.prevTrack} frame={frame} />
+      <Hud track={shot.track} prev={shot.prevTrack} frame={frame} right={!!shot.hudRight} />
       {ovOn && Ov ? (
-        <Ov args={ov!.args} frame={frame - ov!.inFrame} total={ov!.outFrame - ov!.inFrame} accent={tl.style.accent} fps={fps} track={shot.track} prevTrack={shot.prevTrack} />
+        <AbsoluteFill style={shot.ovShift || shot.ovScale ? { transform: `translate(${(shot.ovShift || [0, 0])[0]}px, ${(shot.ovShift || [0, 0])[1]}px) scale(${shot.ovScale || 1})` } : undefined}>
+          <Ov args={ov!.args} frame={frame - ov!.inFrame} total={ov!.outFrame - ov!.inFrame} accent={tl.style.accent} fps={fps} track={shot.track} prevTrack={shot.prevTrack} />
+        </AbsoluteFill>
       ) : null}
-      {shot.banner && frame < 96 ? <FlashForwardBanner text={shot.banner} frame={frame} total={Math.min(96, shot.dur)} /> : null}
+      {shot.banner && frame < 96 ? (
+        <AbsoluteFill style={shot.bannerDy ? { transform: `translateY(${shot.bannerDy}px)` } : undefined}>
+          <FlashForwardBanner text={shot.banner} frame={frame} total={Math.min(96, shot.dur)} />
+        </AbsoluteFill>
+      ) : null}
       {shot.timeCard && frame < shot.timeCard.frames ? <TimeCard text={shot.timeCard.text} frame={frame} total={shot.timeCard.frames} design={tl.style.titlecard} accent={tl.style.accent} /> : null}
       {shot.cta && frame >= 6 ? <SubscribeSticker frame={frame - 6} total={Math.max(24, Math.min(90, shot.dur - 10))} /> : null}
     </AbsoluteFill>

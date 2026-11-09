@@ -35,6 +35,35 @@ jobs:
         run: |
           for d in pilot/*/; do python -m factory.validate "$d"; done
 
+  doctor:
+    # P-012 Phase 1: five deliberate defects + the clean fixture + anti-bypass tests, generated here (480p, nothing large committed)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.11"
+      - name: Audio dependencies
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg libsndfile1
+          python -m pip install numpy==1.26.4 scipy==1.13.1 soundfile==0.12.1
+      - name: Doctor fixtures (graphic over face, 3 s gap, music +8 dB, music dropout, black frame, clean) and anti-bypass
+        run: python -m unittest discover -s tests -p "test_doctor*.py" -v
+      - name: Stage 2 audio scan time on a 4-minute mix
+        run: python tools/doctor_timing.py
+
+  cost-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.11"
+      - name: Zero-cost audit
+        run: python tools/cost_audit.py
+
   smoke:
     # 20 s smoke render of the Remotion project (rig, overlays, camera presets, FX) on every code change
     runs-on: ubuntu-latest

@@ -15,6 +15,8 @@ My standing preferences (always loaded, always obeyed):
 - B: all characters cute (big round heads, large friendly eyes, soft shapes, warm colours, never scary); a new, clearly different cast per video, logged in library/history.json; fail on high similarity.
 - C: locked, distinct voices per character + narrator in config/characters.yaml (Chatterbox variants, Kokoro-82M, or owner recordings only; never clone anyone).
 - P-011: FORMAT LOCK = 4-minute (3:45-4:20) second-person countdown survival video, one locked narrator voice, visible clock + survival meter, same graphic language and music identity, premium captions; new videos change story/topic/cast details, never the format; topics from library/topics.yaml (unused-first); baseline 001 v2.1 = 7.9, target 8.5+; docs/V1_REFERENCE.md has the measured facts.
+- P-012: VIDEO DOCTOR: a video is delivered only with a valid qa/<id>/CERTIFICATE.json (sha256 of the exact mp4); every check is numeric with evidence; face overlap, music levels (calm, 18-22 dB under the voice), voice gaps, sync, text and character consistency are checked on the final mp4 and auto-fixed (max 3 passes, else NEEDS_REVIEW); no QA bypass; every owner-named defect becomes a new check + fixture test.
+- P-013: CAPTIONS ARE OFF (config captions.enabled=false): never draw captions/subtitles until the owner says otherwise; caption code stays disabled; the Video Doctor skips caption checks; other graphics are still checked for covering faces.
 - D: run factory/preflight.py before every video (time, licence gate, monetization, cast+voices, captions P-006 + blotch check, previous rating); auto-fix, never ask.
 
 ## 1. Mission

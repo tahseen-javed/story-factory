@@ -27,6 +27,11 @@ def base_name(nnn: int, short_title: str, minutes: int) -> str:
 
 
 def run(args):
+    from .doctor import cert as _cert
+
+    ok, why = _cert.verify(args.video, args.certificate)   # P-012: no certificate, no bundle
+    if not ok:
+        raise SystemExit(f"bundle refused: {why}")
     base = base_name(args.nnn, args.short_title, args.minutes)
     work = os.path.join(args.out, "stage")
     os.makedirs(work, exist_ok=True)
@@ -36,6 +41,7 @@ def run(args):
         args.thumb2: f"{base} - Thumbnail 2.jpg",
         args.info: f"{base} - YouTube Info.txt",
         args.srt: f"{base}.srt",
+        args.certificate: f"{base}.CERTIFICATE.json",
     }
     for src, dst in names.items():
         shutil.copy(src, os.path.join(work, dst))
@@ -88,6 +94,7 @@ def main(argv=None):
     ap.add_argument("--srt", required=True)
     ap.add_argument("--recipient", required=True)
     ap.add_argument("--part-gb", default="1.9")
+    ap.add_argument("--certificate", required=True)
     ap.add_argument("--out", required=True)
     return run(ap.parse_args(argv))
 

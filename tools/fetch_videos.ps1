@@ -65,15 +65,23 @@ foreach ($rel in $todo) {
     $tar = Join-Path $tmp "bundle.tar"
     & $age -d -i $key -o $tar $enc
     if ($LASTEXITCODE -ne 0) { throw "age decrypt failed (wrong backup.key?)" }
-    $before = @(Get-ChildItem $dest -File | Select-Object -ExpandProperty Name)
-    $tarExe = Join-Path $env:SystemRoot "System32\tar.exe"   # Windows bsdtar (GNU tar from Git treats "C:" as a remote host)
+    $stage = Join-Path $tmp "stage"; New-Item -ItemType Directory -Force -Path $stage | Out-Null
+    $tarExe = Join-Path $env:SystemRoot "System32	ar.exe"   # Windows bsdtar (GNU tar from Git treats "C:" as a remote host)
     if (-not (Test-Path $tarExe)) { $tarExe = "tar.exe" }
-    & $tarExe -xf $tar -C $dest
+    & $tarExe -xf $tar -C $stage
     if ($LASTEXITCODE -ne 0) { throw "tar extract failed" }
-    $new = @(Get-ChildItem $dest -File | Where-Object { $before -notcontains $_.Name } | Select-Object -ExpandProperty Name)
-    # P-002: the channel folder gets exactly 3 files per video (mp4 + 2 thumbnails); info/srt stay inside the release bundle
-    foreach ($f in @($new | Where-Object { $_ -notlike "*.mp4" -and $_ -notlike "*Thumbnail*.jpg" })) { Remove-Item -LiteralPath (Join-Path $dest $f) -Force }
-    $new = @($new | Where-Object { $_ -like "*.mp4" -or $_ -like "*Thumbnail*.jpg" })
+    # P-012: nothing reaches the channel folder without a valid Video Doctor certificate for this exact mp4
+    $mp4f = Get-ChildItem $stage -File | Where-Object { $_.Name -like "*.mp4" } | Select-Object -First 1
+    $certf = Get-ChildItem $stage -File | Where-Object { $_.Name -like "*.CERTIFICATE.json" } | Select-Object -First 1
+    $repo = Split-Path -Parent $PSScriptRoot
+    $py = (Get-Command python -ErrorAction SilentlyContinue)
+    if (-not $py) { throw "REFUSED: python is needed to verify the certificate" }
+    $cp = if ($certf) { $certf.FullName } else { "" }
+    $vout = & python -I -c "import sys; sys.path.insert(0, r'$repo'); from factory.doctor import cert; ok, why = cert.verify(sys.argv[1], sys.argv[2]); print(why); sys.exit(0 if ok else 1)" $mp4f.FullName $cp
+    if ($LASTEXITCODE -ne 0) { throw "REFUSED by the Video Doctor gate: $vout" }
+    # P-002: the channel folder gets exactly 3 files per video (mp4 + 2 thumbnails); info/srt/certificate stay inside the release bundle
+    $new = @()
+    foreach ($f in @(Get-ChildItem $stage -File | Where-Object { $_.Name -like "*.mp4" -or $_.Name -like "*Thumbnail*.jpg" })) { Move-Item -Force -LiteralPath $f.FullName -Destination (Join-Path $dest $f.Name); $new += $f.Name }
     $mp4 = $new | Where-Object { $_ -like "*.mp4" } | Select-Object -First 1
     $base = if ($mp4) { $mp4.Substring(0, $mp4.Length - 4) } else { "video $nnn" }
     $done[$tag] = (Get-Date).ToString("s")

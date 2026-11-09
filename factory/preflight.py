@@ -50,7 +50,7 @@ def run(job_dir: str, eta_min: float, budget_min: float | None, out_path: str | 
     checks["4_cast_voices"] = {"ok": (cute["ok"] or not enforce) and uniq["ok"] and vo["ok"], "cute": cute["ok"], "cute_enforced": enforce, "unique": uniq["ok"], "voices_locked_distinct": vo["ok"], "problems": vo["problems"]}
     manifests = [os.path.join(dp, f) for dp, _, fs in os.walk(os.path.join(ROOT, "build")) for f in fs if re.fullmatch(r"images_\d+\.json", f)] if os.path.isdir(os.path.join(ROOT, "build")) else []
     blotch = "not measured (no images manifest yet; measured in the images job)" if not manifests else "manifest present"
-    checks["5_captions_and_blotch"] = {"ok": cfg.get("captions", {}).get("burned_in") is True and 2 <= int(cfg.get("captions", {}).get("max_words", 0) or 0) <= 4, "captions": "P-006: 2-4 words, lower third, never over faces", "blotch": blotch}
+    checks["5_captions_and_blotch"] = {"ok": cfg.get("captions", {}).get("enabled") is False, "captions": "P-013: captions are OFF", "blotch": blotch}
     prev, rating = last_owner_rating()
     improvements = job.get("improvements") or []
     checks["6_previous_rating"] = {"ok": rating > 0 and bool(improvements), "previous": prev, "previous_owner_rating": rating, "target": cfg["qa_calibration"]["target_rating"], "improvements": improvements,
