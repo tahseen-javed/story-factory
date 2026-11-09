@@ -141,6 +141,7 @@ def run(audio_plan_path: str, voice_dir: str, out_dir: str, cfg_audio: dict, luf
         seg = musiclib.segment(os.environ.get("MUSIC_LIB_DIR", ""), ch["mood"], (s1 - s0) / SR, ci)
         if seg is None:
             seg = synth.render_music(ch["mood"], (s1 - s0) / SR, seed=ci)
+        seg = seg * (0.1 / (float(np.sqrt(np.mean(seg.astype('float64') ** 2))) + 1e-9))   # same loudness for every mood, so the crossfade has no level step
         n = seg.shape[1]
         if ci > 0:
             seg[:, :xf] *= np.linspace(0, 1, xf)

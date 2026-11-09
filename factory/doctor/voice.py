@@ -199,9 +199,9 @@ def run(asm: str, th: dict, model_name: str = "small.en", ref_path: str | None =
         words = transcribe(x16, model_name)
         tts_hyp = {}
         for mp in glob.glob(os.path.join(tts_dir, "**", "meta_*.json"), recursive=True) if tts_dir else []:
-            for x in json.load(open(mp, encoding="utf-8")).get("sentences", []):
-                if x.get("hyp"):
-                    tts_hyp[x["id"]] = x["hyp"]
+            for ent in json.load(open(mp, encoding="utf-8")).get("sentences", []):
+                if ent.get("hyp"):
+                    tts_hyp[ent["id"]] = ent["hyp"]
         f, m, reroll = verify_text(sents, words, th, tts_hyp)
         m["second_recogniser_sentences"] = len(tts_hyp)
         reference = json.load(open(ref_path)) if ref_path and os.path.exists(ref_path) else None

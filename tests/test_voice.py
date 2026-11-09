@@ -63,5 +63,30 @@ class TestVoiceLogic(unittest.TestCase):
         self.assertEqual(voice.norm_words("Mrs. Hale, 3 minutes, 50%"), ["missus", "hale", "three", "minutes", "fifty", "percent"])
 
 
+class TestVoiceRun(unittest.TestCase):
+    def test_run_end_to_end_with_fake_recogniser(self):
+        import json
+        import tempfile
+
+        import numpy as np
+        import soundfile as sf
+
+        d = tempfile.mkdtemp()
+        sr = 48000
+        sf.write(os.path.join(d, "stem_voice.wav"), (np.random.default_rng(1).normal(0, 0.05, sr * 10)).astype("float32"), sr)
+        json.dump({"voice": [{"id": s["id"], "start": s["start"], "end": s["end"]} for s in SENTS]}, open(os.path.join(d, "audio_plan.json"), "w"))
+        json.dump({"sentences": [{"id": s["id"], "text": s["text"]} for s in SENTS]}, open(os.path.join(d, "plan.json"), "w"))
+        os.makedirs(os.path.join(d, "tts"))
+        json.dump({"sentences": [{"id": s["id"], "hyp": s["text"]} for s in SENTS]}, open(os.path.join(d, "tts", "meta_0.json"), "w"))
+        words = [w for s in SENTS for w in words_for(s["text"], s["start"], s["end"])]
+        orig, voice.transcribe = voice.transcribe, lambda x16, name="small.en": words
+        try:
+            rep = voice.run(d, TH, "small.en", None, os.path.join(d, "tts"))
+        finally:
+            voice.transcribe = orig
+        self.assertEqual(rep["status"], "OK", rep.get("error"))
+        self.assertEqual(rep["reroll"], [])
+
+
 if __name__ == "__main__":
     unittest.main()

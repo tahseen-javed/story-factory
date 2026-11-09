@@ -58,7 +58,13 @@ jobs:
 
         MUSIC_LIB_DIR=build/musiclib python -m factory.mix --plan build/assembled/audio_plan.json --voice build/assembled/voice --out build/assembled
 
-        MUSIC_LIB_DIR=build/musiclib python -m factory.doctor.run audio --asm build/assembled --voice build/assembled/voice --passes 3
+        MUSIC_LIB_DIR=build/musiclib python -m factory.doctor.run audio --asm build/assembled --voice build/assembled/voice --passes 5
+
+        gh run download $R -p ''tts-*'' -D build/tts || true
+
+        pip install -q faster-whisper==1.0.3 requests
+
+        python -m factory.doctor.voice --asm build/assembled --tts build/tts --model small.en || true
 
         '
     - name: Concat, mux, QA, auto-fix loop (max 2 rounds), scorecard
@@ -74,7 +80,7 @@ jobs:
         '
     - name: Video Doctor Stage 2 (fast scan of the FINAL mp4, certificate with its sha256)
       id: doc
-      if: steps.fin.outputs.status == 'ok'
+      if: always() && hashFiles('build/final/final.mp4') != ''
       run: 'python -m factory.doctor.run final --mp4 build/final/final.mp4 --asm build/assembled --out build/final/doctor
 
         python -c "import json;print(''status=''+json.load(open(''build/final/doctor/CERTIFICATE.json''))[''status''])" >> "$GITHUB_OUTPUT"
@@ -82,7 +88,7 @@ jobs:
         '
     - name: Certificate gate (no certificate, modified mp4 or stale certificate means no delivery)
       id: gate
-      if: steps.fin.outputs.status == 'ok'
+      if: steps.doc.outcome == 'success'
       continue-on-error: true
       run: python -m factory.doctor.cert verify build/final/final.mp4 build/final/doctor/CERTIFICATE.json
     - name: PerTh watermark check on the final mp4 audio (records the result, never blocks)
