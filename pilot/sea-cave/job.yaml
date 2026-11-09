@@ -1,0 +1,45 @@
+nnn: 4
+slug: sea-cave
+mode: pilot
+kind: test
+short_title: Sea Cave
+length_min: 8
+base_name: "004 Sea Cave 08min"
+style_version: 4
+topic: sea_cave
+end_screen_s: 3
+style_seed:
+  opening: in_medias_res
+  ritual: message_log
+  ending: quiet_reveal
+  accent: teal
+  lut: cold_night
+  music_set: calm_pad
+  camera_rhythm: slow_burn
+  transition: paper_slide_mix
+  titlecard: stamped_box
+  thumbnail_layout: close_left
+  outfit: cobalt_cap
+  wpm: 170
+improvements:
+  - golden 003 format at 8 minutes with four decision holds
+  - calm audible background music 17 dB under the voice (P-014)
+  - lamp and water-level meters that follow the narration
+expect:
+  - "the battery reads five hours|lamp|5h"
+  - "ankles now|tide|ANKLES"
+  - "four and a half hours|lamp|4h30"
+  - "water is at your knees|tide|KNEES"
+  - "blinks back on|lamp|4h"
+  - "water is at your waist|tide|WAIST"
+  - "three hours and forty minutes|lamp|3h40"
+  - "darkness. real darkness|lamp|OFF"
+  - "the water touches the white line|tide|SALT LINE"
+  - "begins to fall|tide|DRAINING"
+  - "it reads two hours|lamp|2h"
+extras:
+  titles: "The Water You Fear Is The Only Way Out|Trapped in a Sea Cave: Which Tunnel Would You Pick?|5 Hours of Light, 3 Tunnels, Rising Water"
+  thumb_text: "FOLLOW THE WATER"
+  description: "Five hours of lamp light, three tunnels, and water rising behind you. At every freeze, pause the video and decide before the narrator reveals the answer. This is a fictional story."
+  tags: "sea cave story, survival story, animated story, what would you do, choose your path, cave escape, tide, interactive story, 2d animation"
+  pinned_comment: "At the last freeze, did you climb toward the stars, or follow the water?"

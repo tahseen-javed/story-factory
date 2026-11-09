@@ -101,6 +101,21 @@ const mmss = (v: any): number => {
 };
 const fmtAir = (sec: number): string => `${Math.floor(Math.max(0, sec) / 60)}:${String(Math.max(0, Math.floor(sec)) % 60).padStart(2, "0")}`;
 
+const TIDE: Record<string, number> = { SHALLOW: 0.05, ANKLES: 0.1, KNEES: 0.28, WAIST: 0.5, "SALT LINE": 0.68, DRAINING: 0.14 };
+const Tide: React.FC<{ cur: string; prev: string; frame: number; y: number; sc: number }> = ({ cur, prev, frame, y, sc }) => {
+  const a = TIDE[prev] ?? 0;
+  const b = TIDE[cur] ?? 0;
+  const lvl = a + (b - a) * easeOut(clamp(frame / 60, 0, 1));
+  const top = y - lvl * 420 * sc;
+  const wave = Array.from({ length: 33 }, (_, i) => `L${i * 60},${top + Math.sin(i * 0.9 + frame * 0.12) * 7}`).join(" ");
+  return (
+    <g>
+      <path d={`M0,${H + 40} ${wave} L${W},${H + 40} Z`} fill="rgba(70,150,180,0.34)" />
+      <path d={`M0,${top} ${wave}`} stroke="rgba(190,235,245,0.7)" strokeWidth={4} fill="none" />
+    </g>
+  );
+};
+
 const Hud: React.FC<{ track: Record<string, any>; prev: Record<string, any>; frame: number; right?: boolean; tick?: boolean }> = ({ track, prev, frame, right, tick }) => {
   const items: Array<{ k: string; label: string; v: string }> = [];
   if (track.hours !== undefined && Number(track.hours) > 0) items.push({ k: "hours", label: "HOURS LEFT", v: String(track.hours) });
@@ -113,6 +128,8 @@ const Hud: React.FC<{ track: Record<string, any>; prev: Record<string, any>; fra
     if (tick && Number.isFinite(cur)) sec = cur - frame / 30;
     items.push({ k: "air", label: "AIR LEFT", v: Number.isFinite(sec) ? fmtAir(sec) : String(track.air) });
   }
+  if (track.lamp !== undefined) items.push({ k: "lamp", label: "LAMP LIGHT", v: String(track.lamp) });
+  if (track.tide !== undefined) items.push({ k: "tide", label: "WATER LEVEL", v: String(track.tide) });
   if (!items.length) return null;
   return (
     <div style={{ position: "absolute", ...(right ? { right: "4%" } : { left: "4%" }), top: "5%", display: "flex", gap: 14 }}>
@@ -190,6 +207,8 @@ export const ShotView: React.FC<{ shot: Shot; tl: Timeline }> = ({ shot, tl }) =
   const angleB = (shot as any).angle === "b";
   const worldFilter = `url(#poster) ${mood.filter}${grade ? " " + grade.filter : ""}${angleB ? " hue-rotate(-14deg) saturate(1.12) brightness(0.94)" : ""}`;
 
+  const beamOn = (shot.fx || []).includes("beam");
+  const p0 = shot.chars.length ? placeChar(shot, 0, n, charScale) : { sc: 1.28, y: 0.9 * H };
   return (
     <AbsoluteFill style={{ overflow: "hidden", background: "#000" }}>
       <div style={{ position: "absolute", inset: 0, transform: `translateX(${wrapX}px) scale(${punch})`, filter: blur > 0.2 ? `blur(${blur.toFixed(2)}px)` : "none" }}>
@@ -205,10 +224,20 @@ export const ShotView: React.FC<{ shot: Shot; tl: Timeline }> = ({ shot, tl }) =
               const mouth = c.speaks && env !== undefined ? env : undefined;
               return (
                 <g key={c.id + i} style={c.silhouette ? { filter: "brightness(0)" } : undefined}>
+                  {beamOn && c.id === "hero" ? (
+                    <g>
+                      <defs>
+                        <linearGradient id="beamR" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stopColor="#ffe2a0" stopOpacity="0.5" /><stop offset="1" stopColor="#ffe2a0" stopOpacity="0" /></linearGradient>
+                        <linearGradient id="beamL" x1="1" x2="0" y1="0" y2="0"><stop offset="0" stopColor="#ffe2a0" stopOpacity="0.5" /><stop offset="1" stopColor="#ffe2a0" stopOpacity="0" /></linearGradient>
+                      </defs>
+                      <polygon points={`${c.x * W + c.facing * 40},${y - 330 * sc} ${c.x * W + c.facing * 1000},${y - 330 * sc - 300} ${c.x * W + c.facing * 1000},${y - 330 * sc + 360}`} fill={c.facing >= 0 ? "url(#beamR)" : "url(#beamL)"} style={{ mixBlendMode: "screen" }} />
+                    </g>
+                  ) : null}
                   <Rig params={c.params} pose={c.pose} expr={c.expr} frame={frame} fps={fps} seed={(c.id.charCodeAt(0) || 1) + i * 7} x={c.x * W} y={y} scale={sc} facing={c.facing} progress={progress} prop={(c as any).prop || null} mouth={mouth} view={c.view || "front"} />
                 </g>
               );
             })}
+            {shot.track && shot.track.tide !== undefined ? <Tide cur={String(shot.track.tide)} prev={String((shot.prevTrack || {}).tide ?? shot.track.tide)} frame={frame} y={p0.y} sc={p0.sc} /> : null}
           </svg>
         </div>
         <MoodTint variant={isInsert ? "day" : shot.variant} />

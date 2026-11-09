@@ -133,7 +133,7 @@ def build_plan(job_dir: str, cfg=None) -> dict:
         "style": dict(job.get("style_seed") or {}), "style_version": job.get("style_version", cfg.get("style_version", 1)),
         "wpm": wpm, "total_words": total_words, "est_narration_s": round(sum(s["expected_s"] + s["pause_after_s"] for s in sentences), 1),
         "characters": sc.characters, "locations": sc.locations, "chapters": chapters, "shots": shots, "sentences": sentences,
-        "kind": job.get("kind", "video"), "extras": job.get("extras") or {}, "end_screen_s": job.get("end_screen_s"),
+        "kind": job.get("kind", "video"), "expect": job.get("expect") or [], "extras": job.get("extras") or {}, "end_screen_s": job.get("end_screen_s"),
         "image_groups": image_groups, "sources": [{"fact": f, "url": u} for f, u in read_sources(job_dir)],
         "tts_shards": int(cfg["tts"]["matrix"]), "image_shards": int(img["matrix"]),
     }

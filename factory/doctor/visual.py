@@ -13,7 +13,7 @@ ROOT_Y = {"sit": 88, "sit_bed": 88, "hide": 104, "fight": 14, "crouch": 92}
 OVERLAY_BOX = {  # (w, h) centred at (960, 540); approximations of video/src/overlays (generous, see QA_RULES)
     "timer": (640, 300), "phone_alert": (560, 820), "phone_web": (560, 820), "phone_video": (560, 820), "phone_call": (560, 820), "phone_search": (560, 820),
     "sticky_note": (560, 560), "receipt": (600, 760), "paper_diagram": (1100, 620), "numbered_circle": (620, 640), "notepad_tracker": (900, 720),
-    "meter": (760, 600), "option_cards": (1100, 440), "elevator_panel": (1000, 560), "loose_cable": (900, 620), "arrow_callout": (900, 320), "glitch_text": (1100, 300), "hand_pen": (900, 300), "calendar_countdown": (720, 620),
+    "meter": (760, 600), "option_cards": (1100, 520), "elevator_panel": (1000, 560), "loose_cable": (900, 620), "arrow_callout": (900, 320), "glitch_text": (1100, 300), "hand_pen": (900, 300), "calendar_countdown": (720, 620),
     "tv_news": (1100, 700), "dashed_path": (1200, 600), "paper_bar_chart": (1000, 660), "label_tag": (900, 260), "end_screen": (1500, 800),
 }
 SAFE_MARGIN = 0.05
@@ -71,9 +71,11 @@ def graphics(shot: dict) -> list:
         s = float(shot.get("ovScale") or 1.0)
         g.append((f"overlay:{ov['name']}", (960 + dx - w * s / 2, 540 + dy - h * s / 2, 960 + dx + w * s / 2, 540 + dy + h * s / 2), max(0, ov["inFrame"]), min(dur, ov["outFrame"])))
     tr = shot.get("track") or {}
-    if any(k in tr for k in ("hours", "phone", "air")):
+    nh = sum(1 for k in ("hours", "phone", "air", "lamp", "tide") if k in tr)
+    if nh:
         left = not shot.get("hudRight")
-        g.append(("hud", (77, 54, 440, 150) if left else (W - 440, 54, W - 77, 150), 0, dur))
+        wd = 70 + nh * 215
+        g.append(("hud", (77, 54, 77 + wd, 150) if left else (W - 77 - wd, 54, W - 77, 150), 0, dur))
     if shot.get("banner"):
         by = float(shot.get("bannerDy") or 0)
         g.append(("banner", (0, 130 + by, W, 330 + by), 0, min(dur, 96)))

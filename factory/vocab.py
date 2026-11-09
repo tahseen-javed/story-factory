@@ -42,7 +42,7 @@ OVERLAYS = {
     "hand_pen": (1, 2),
     "end_screen": (1, 1),
     "meter": (2, 3),
-    "option_cards": (3, 3),       # three sticky-note options (decision hold)
+    "option_cards": (3, 5),       # three sticky-note options (decision hold)
     "elevator_panel": (1, 2),     # three big buttons: glossy red, worn seven, taped eight
     "loose_cable": (1, 2),        # back of a button with a loose, unwired cable
 }
@@ -55,7 +55,7 @@ CAMERA = (
 # presets that are allowed to have (near) zero zoom speed because they move another way / have inner motion
 CAMERA_NONZOOM = {"pan_l", "pan_r", "tilt_up", "tilt_down", "parallax_drift", "shake_light", "shake_medium", "hold", "rack_focus"}
 
-FX = ("flicker", "smoke", "embers", "rain", "alarm_pulse", "dust", "glitch", "snow", "crowd")
+FX = ("flicker", "smoke", "embers", "rain", "alarm_pulse", "dust", "glitch", "snow", "crowd", "beam")
 
 SFX = (
     "alert_siren", "phone_buzz", "door_knock", "door_creak", "footsteps", "whoosh", "paper_slide",

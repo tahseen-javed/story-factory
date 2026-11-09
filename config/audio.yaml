@@ -19,14 +19,14 @@ intensity_db:
   sacrifice: -3.0
   climax: 2.0
   resolution: -2.5
-music_mood:
-  hook: tense
+music_mood:   # P-014: calm, simple, never irritating; a little tension in the middle, warm release at the end
+  hook: calm
   act1: calm
-  act2a: tense
-  midpoint: urgent
-  act2b: urgent
+  act2a: mystery
+  midpoint: mystery
+  act2b: mystery
   sacrifice: sorrow
-  climax: climax
+  climax: tense
   resolution: hopeful
 # per expression: [exaggeration, cfg_weight, speed]
 emotion:

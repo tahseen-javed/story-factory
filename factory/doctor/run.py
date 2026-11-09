@@ -228,6 +228,8 @@ def cmd_final(mp4: str, asm: str, out: str, th: dict, expect: tuple = (1920, 108
             stage_reports[nm] = {"status": "NOT_RUN"}
     metrics["stages"] = stage_reports
     lint = visual.lint_timeline(tl, th)
+    plan_p = os.path.join(asm, "plan.json")
+    findings += tech.check_story(tl, json.load(open(plan_p, encoding="utf-8")) if os.path.exists(plan_p) else {}, th)
     findings += lint
     metrics["face_overlap_findings"] = len([x for x in lint if x["code"] == "V1-FACE-OVERLAP"])
     metrics["audio_scan_s"] = audio_scan_s

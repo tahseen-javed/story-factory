@@ -179,6 +179,8 @@ def check_v2(path, timeline, audio_plan, srt, cfg, rep):
     for i in range(0, max(1, len(d) - win - 10), 5):
         if d[i:i + win].mean() < pc["dead_window_diff"]:
             dead.append(round(i / 10.0, 1))
+    hr = [(s_["start"] / 30.0, (s_["start"] + s_["dur"]) / 30.0) for s_ in shots if s_.get("hold")]
+    dead = [t_ for t_ in dead if not any(a_ - 0.5 <= t_ <= b_ for a_, b_ in hr)]   # planned decision holds are not dead windows
     holds = 0
     last = None
     for t in dead:

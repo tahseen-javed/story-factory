@@ -56,6 +56,9 @@ def title_options(plan: dict) -> list:
 
 
 def tags_for(plan: dict) -> list:
+    ex = plan.get("extras") or {}
+    if ex.get("tags"):
+        return [t.strip() for t in str(ex["tags"]).split(",") if t.strip()][:15]
     words = re.findall(r"[A-Za-z]{4,}", plan["title"])
     base = ["animated story", "survival story", "2d animation", "what would you do", "emergency preparedness", "storytelling", "thriller", "second person story"]
     return list(dict.fromkeys([w.lower() for w in words] + [plan["title"].lower()] + base))[:15]
@@ -63,8 +66,7 @@ def tags_for(plan: dict) -> list:
 
 def build_info(plan: dict, chapters: dict, sources: list, base_name: str, settings: dict) -> str:
     ex = plan.get("extras") or {}
-    titles = ([ex["title"]] if ex.get("title") else []) + title_options(plan)
-    titles = titles[:3]
+    titles = ([t.strip() for t in str(ex["titles"]).split("|")] if ex.get("titles") else ([ex["title"]] if ex.get("title") else []) + title_options(plan))[:3]
     q = first_question(plan) or ""
     hook = ex.get("description") or (plan["sentences"][0]["text"] + (" " + q if q else ""))
     lines = ["TITLE OPTIONS", *[f"{i}. {t}" for i, t in enumerate(titles, 1)], "", "DESCRIPTION", hook, ""]

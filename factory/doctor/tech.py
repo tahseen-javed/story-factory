@@ -70,9 +70,12 @@ def check_frames(g: np.ndarray, th: dict, timeline: dict | None = None, fps: flo
     m["frames"] = n
     # black
     black = (luma < t["black_luma"]) & (g.reshape(n, -1).std(axis=1) < t["black_std"])
+    dark = [(s["start"] / fps, (s["start"] + s["dur"]) / fps) for s in (timeline or {}).get("shots", []) if s.get("variant") == "blackout"]
     for a, b in runs(black, 2):
         if a == 0 or b >= n:   # fade-in / fade-out ends are deliberate
             continue
+        if any(d0 <= a / fps and b / fps <= d1 for d0, d1 in dark) and float(luma[a:b].max()) >= 3.0:
+            continue   # planned dark scene (lamp off) with a faint picture
         f.append(finding(th, "V4-BLACK", "black", a / fps + t_offset, b / fps + t_offset, (b - a) / fps, 0.05, "black frames inside the video", frames=[a, b]))
     # frozen / duplicate (identical consecutive frames)
     same = (dmax <= t["dup_diff"]) & (dmean <= t["dup_mean"])
@@ -187,3 +190,35 @@ if __name__ == "__main__":
 
     tl = json.load(open(sys.argv[2], encoding="utf-8"))["timeline"] if len(sys.argv) > 2 else None
     print(json.dumps(run_file(sys.argv[1], load_th(), tl), indent=1)[:3000])
+
+
+def check_story(timeline: dict, plan: dict, th: dict) -> list:
+    """Manual-equivalent story checks: no captions, one look per character, cute proportions, hold cards on screen for the whole hold, meters match the narration anchors (job.yaml expect)."""
+    f = []
+    shots = timeline["shots"]
+    if timeline.get("captions"):
+        f.append(finding(th, "S1-CAPTIONS", "spelling", 0, 0, len(timeline["captions"]), 0, "captions are OFF (P-013) but the timeline contains captions"))
+    seen = {}
+    for s in shots:
+        for c in s["chars"]:
+            p = c.get("params") or {}
+            key = json.dumps([c.get("rig"), {k: p.get(k) for k in ("outfit", "hat", "hair", "skin", "age", "headScale", "eyeScale")}], sort_keys=True)
+            seen.setdefault(c["id"], set()).add(key)
+            if float(p.get("headScale", 1.5) or 1.5) < 1.35 or float(p.get("eyeScale", 1.25) or 1.25) < 1.15:
+                f.append(finding(th, "V2-NOT-CUTE", "spelling", s["start"] / 30.0, (s["start"] + s["dur"]) / 30.0, p.get("headScale"), 1.35, f"{c['id']} proportions are not cute (head/eye scale)"))
+    for cid, ks in seen.items():
+        if len(ks) > 1:
+            f.append(finding(th, "V2-CAST-INCONSISTENT", "spelling", 0, 0, len(ks), 1, f"{cid} has {len(ks)} different looks across shots"))
+    for s in shots:
+        if s.get("hold"):
+            ov = s.get("overlay")
+            if not ov or (ov["outFrame"] - ov["inFrame"]) < s["dur"] - 12:
+                f.append(finding(th, "S1-HOLD-CARDS", "spelling", s["start"] / 30.0, (s["start"] + s["dur"]) / 30.0, None, None, "decision cards are not on screen for the full hold"))
+    for a in plan.get("expect") or []:
+        phrase, key, val = [x.strip() for x in str(a).split("|")]
+        hit = next((s for s in shots if phrase.lower() in s["text"].lower()), None)
+        if hit is None:
+            f.append(finding(th, "S1-ANCHOR-MISSING", "spelling", 0, 0, None, phrase, f"narration phrase not found in any scene: {phrase}"))
+        elif str(hit["track"].get(key)) != val:
+            f.append(finding(th, "S1-METER", "spelling", hit["start"] / 30.0, (hit["start"] + hit["dur"]) / 30.0, None, val, f"meter {key} shows {hit['track'].get(key)} while the narration says '{phrase}' ({val})"))
+    return f

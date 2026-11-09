@@ -625,8 +625,68 @@ export const LooseCable: React.FC<OvProps> = ({ args, frame, total }) => {
 };
 
 
+
+const Glyph: React.FC<{ k: string }> = ({ k }) => {
+  const st = { fill: "none", strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+  switch (k) {
+    case "chalk": return <path d="M-48,0 H30 M8,-26 L40,0 L8,26" stroke="#ffffff" strokeWidth={11} {...st} />;
+    case "draught": return <path d="M-50,-24 q12,-14 25,0 t25,0 t25,0 M-50,0 q12,-14 25,0 t25,0 t25,0 M-50,24 q12,-14 25,0 t25,0 t25,0" stroke="#4fb8e0" strokeWidth={8} {...st} />;
+    case "wind": return <path d="M-50,-16 H18 a14,14 0 1 0 -12,-18 M-50,14 H34 a16,16 0 1 1 -14,22" stroke="#7fa6c9" strokeWidth={8} {...st} />;
+    case "battery": return <g><rect x={-44} y={-26} width={80} height={52} rx={8} fill="#3d4a5c" stroke={INK} strokeWidth={5} /><rect x={36} y={-12} width={12} height={24} rx={3} fill={INK} /><path d="M-6,-18 L-18,4 H-2 L-8,20 L14,-6 H0 Z" fill="#ffd23f" /></g>;
+    case "rope": return <g {...st} stroke="#c8a165" strokeWidth={9}><ellipse cx={0} cy={0} rx={44} ry={30} /><ellipse cx={0} cy={0} rx={28} ry={18} /><path d="M20,10 Q50,30 52,46" /></g>;
+    case "bottle": return <g><rect x={-14} y={-48} width={28} height={16} rx={4} fill="#d8d8d8" stroke={INK} strokeWidth={4} /><path d="M-14,-32 L-26,-14 V40 Q-26,50 -16,50 H16 Q26,50 26,40 V-14 L14,-32 Z" fill="#63b8e8" stroke={INK} strokeWidth={5} /></g>;
+    case "glow": return <g><circle r={50} fill="#6fe39a" opacity={0.3} /><circle r={30} fill="#9af0b8" opacity={0.6} /><circle r={14} fill="#eafff1" /></g>;
+    case "chimney": return <g><rect x={-14} y={-46} width={28} height={92} rx={6} fill="#4a4f5a" stroke={INK} strokeWidth={5} /><path d="M0,-58 l5,10 l11,1 l-8,8 l3,11 l-11,-6 l-11,6 l3,-11 l-8,-8 l11,-1 z" fill="#ffe27a" transform="scale(0.55) translate(0,-30)" /></g>;
+    case "ledge": return <path d="M-50,44 H-10 V6 H50 V-26" stroke="#d9c9a3" strokeWidth={10} {...st} />;
+    case "star": return <g><path d="M0,-50 l7,16 l17,2 l-13,11 l4,17 l-15,-9 l-15,9 l4,-17 l-13,-11 l17,-2 z" fill="#ffe27a" transform="scale(0.8) translate(0,-8)" /><path d="M-8,50 L0,20 L8,50" stroke="#bfc7d4" strokeWidth={6} {...st} /></g>;
+    case "arch": return <g><path d="M-46,44 V-4 a46,46 0 0 1 92,0 V44" stroke="#9ad7ff" strokeWidth={9} {...st} /><path d="M-14,-10 V30 M-24,18 L-14,32 L-4,18 M14,-10 V30 M4,18 L14,32 L24,18" stroke="#4fb8e0" strokeWidth={6} {...st} /></g>;
+    case "gap": return <g fill="#7b8794" stroke={INK} strokeWidth={4}><path d="M-52,44 L-42,-34 L-12,-44 L-10,44 Z" /><path d="M12,44 L14,-44 L44,-34 L54,44 Z" /></g>;
+    default: return <circle r={20} fill="#fff" />;
+  }
+};
+
+/* ---------------- OptionCards2: three clean option cards + planted clue icon + calm countdown ring (decision hold) ---------------- */
+export const OptionCards2: React.FC<OvProps> = ({ args, frame, total }) => {
+  const colors = ["#ff9b8a", NOTE_YELLOW, "#8fd3ff"];
+  const rots = [-4, 2, -3];
+  const focus = parseInt(String(args[3] ?? "0"), 10) || 0;
+  const icons = String(args[4] ?? "").split(",").map((s) => s.trim());
+  const ring = clamp(frame / Math.max(1, total - 10), 0, 1);
+  const R = 52;
+  return (
+    <OverlayFrame frame={frame} total={total} rot={0}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
+        <div style={{ display: "flex", gap: 34, alignItems: "center" }}>
+          {[0, 1, 2].map((i) => {
+            const p = easeOut(prog(frame, 4 + i * 6, 12));
+            const on = focus === 0 || focus === i + 1;
+            const sway = Math.sin((frame + i * 11) * 0.12) * 1.4;
+            const pulse = focus === i + 1 ? 1.07 + 0.02 * Math.sin(frame * 0.25) : 1;
+            const label = String(args[i]);
+            return (
+              <div key={i} style={{ transform: `translateY(${(1 - p) * 40}px) rotate(${rots[i] + sway}deg) scale(${pulse})`, opacity: p * (on ? 1 : 0.62) }}>
+                <Paper w={330} h={360} color={colors[i]} radius={4}>
+                  <div style={{ padding: "22px 12px", textAlign: "center", fontFamily: FONT.note, fontWeight: 700, color: INK }}>
+                    <div style={{ fontSize: 84, lineHeight: 1 }}>{i + 1}</div>
+                    <svg width={130} height={120} viewBox="-60 -60 120 120" style={{ display: "block", margin: "4px auto 0" }}><Glyph k={icons[i] || ""} /></svg>
+                    <div style={{ fontSize: label.length > 9 ? 54 : 66, marginTop: 6, lineHeight: 1, textTransform: "uppercase" }}>{label}</div>
+                  </div>
+                </Paper>
+              </div>
+            );
+          })}
+        </div>
+        <svg width={130} height={130} viewBox="-65 -65 130 130">
+          <circle r={R} fill="rgba(20,18,26,0.55)" stroke="#f2e8d2" strokeWidth={5} opacity={0.5} />
+          <circle r={R} fill="none" stroke="#7be08a" strokeWidth={10} strokeLinecap="round" strokeDasharray={`${2 * Math.PI * R * (1 - ring)} ${2 * Math.PI * R}`} transform="rotate(-90)" />
+        </svg>
+      </div>
+    </OverlayFrame>
+  );
+};
+
 export const OVERLAYS: Record<string, React.FC<any>> = {
-  option_cards: OptionCards,
+  option_cards: OptionCards2,
   elevator_panel: ElevatorPanel,
   loose_cable: LooseCable,
   meter: Meter,

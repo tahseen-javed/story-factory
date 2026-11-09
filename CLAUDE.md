@@ -19,6 +19,7 @@ My standing preferences (always loaded, always obeyed):
 - P-013: CAPTIONS ARE OFF (config captions.enabled=false): never draw captions/subtitles until the owner says otherwise; caption code stays disabled; the Video Doctor skips caption checks; other graphics are still checked for covering faces.
 - P-014: MUSIC IS MANDATORY: every video has audible, calm, simple background music (16-20 dB under the voice, +6 dB max in gaps, smooth ducking, never masks the voice); no audible music = BLOCKER; original generated or CC0/public-domain with a recorded licence, library assets/music/ (6-8 tracks); Doctor check A3b MUSIC PRESENT (>= 90 percent of the video) + fixture "music missing" must FAIL, auto-fix = generate and mix; baseline = video 003 (owner 8.8, never touched again, format locked); each next video must beat 8.8.
 - P-015: TOKEN ECONOMY FOREVER: minimal Claude tokens (one total-time line, progress lines, 5-line report, batch tool calls, small patches, no sub-agents, no questions); work runs on CI; quality is never traded for tokens.
+- P-016: ZERO COMPROMISE: owner script word for word (sliced, never retyped), captions OFF, format = golden 003 scaled to length, Doctor loop (re-run after every fix, cap 5) until zero BLOCKER/MAJOR, Whisper vs script, no bypass of the certificate, score card to docs/, log the owner's rating, target above 8.8.
 - D: run factory/preflight.py before every video (time, licence gate, monetization, cast+voices, captions P-006 + blotch check, previous rating); auto-fix, never ask.
 
 ## 1. Mission
