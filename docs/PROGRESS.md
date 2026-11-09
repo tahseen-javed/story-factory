@@ -42,3 +42,9 @@ Last updated: 2026-11-08 (UTC 20:15). Repo: https://github.com/tahseen-javed/sto
 - NOT done (needs its own ~30+ min job each; v2 files stay delivered): SDXL img2img restyle library (0.35-0.45) + palette-histogram QA; ASR >= 97% re-synthesis loop for the 4 flagged sentences (voice is already Chatterbox, default voice); licence-safe music library; extra poses, light beams, kinetic text; auto-fix loop on rating < 8.5 (rating is already 10.0).
 : DONE (tests/test_faults.py: black, freeze, static motion, flash, resolution, quiet and clipped audio + loudnorm re-master fixer; CI green).
 ## Phase 0a / 5 / 6: waiting for owner secrets (docs/USER_CHECKLIST.md); then analyze_reference.yml, first encrypted jobs/ video, /batch of 5.
+
+## 2026-11-09 | P-012 Phase 1 DONE (CI run 42581159381 green: unit, doctor, cost-audit, smoke, risk-check)
+- Built: certificate gate (sha256, anti-bypass, bundle + fetch verify), audio Doctor on final mix + fix loop (max 3), face-overlap lint + auto-fix (props.json, Remotion honors ovShift/ovScale/hudRight/bannerDy), 5 fixtures + clean (tests/test_doctor.py), zero-cost audit, wired into produce.yml (assemble: Stage 0+1, finalize: Stage 2 + gate) and refinalize.yml.
+- Stage 2 audio scan: 7.4 s per 240 s on CI (29.9 s locally). Captions OFF (P-013) in place.
+- Not yet proven on a real production mix: first real run is video 003. Known limits: OTS foreground character is exempt from the face-edge check (cropped by design); A1-GAP and V4-BLACK have no auto-fix (-> NEEDS_REVIEW, no certificate); calm_* thresholds uncalibrated.
+- Phase 2 NOT started: wait for the owner's message.
