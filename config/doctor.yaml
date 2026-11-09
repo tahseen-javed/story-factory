@@ -67,7 +67,7 @@ voice:                                      # Phase 2 stage 1 (factory/doctor/vo
   sentence_wer_max: 0.15
   wpm: [130, 160]
   drift_mel_db: 9.0          # coarse outlier detector: same-voice sentences measured up to 6 dB apart on 004; a different speaker is far beyond
-  drift_f0_hz: 70
+  drift_f0_hz: 100
   narrator_mel_db: 9.0
   narrator_f0_hz: 70
 music_present:                              # P-014 / A3b MUSIC PRESENT
