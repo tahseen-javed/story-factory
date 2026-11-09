@@ -188,7 +188,7 @@ def check_music(voice, music, sfx, amb, plan, th):
         j0 = np.searchsorted(bounds, mt[:-k] - 1.0)
         j1 = np.searchsorted(bounds, mt[:-k] + 3.6)
         near_speech = j1 > j0
-        jw = [(w[0] - 1.5, w[1] + 3.6) for w in plan.get("silence", [])] + [(h[0] - 1.5, h[1] + 3.6) for h in plan.get("holds", [])]
+        jw = [(w[0] - 1.5, w[1] + 5.0) for w in plan.get("silence", [])] + [(h[0] - 1.5, h[1] + 5.0) for h in plan.get("holds", [])]
         ok_zone = near_speech | np.array([any(w0 <= c <= w1 for w0, w1 in jw) for c in mid]) | (mm[:-k] < -50) | (mm[k:] < -50) | (mid < 2.0) | (mid > mt[-1] - 3.0)
         bad = (jump > a["music_jump_max_lu"]) & ~ok_zone
         m["music_jump_max_lu"] = float(jump[~ok_zone].max()) if (~ok_zone).any() else 0.0

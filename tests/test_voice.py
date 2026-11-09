@@ -59,6 +59,11 @@ class TestVoiceLogic(unittest.TestCase):
         self.assertLess(m["wpm"], 130)
         self.assertIn("A2-WPM", {x["code"] for x in f})
 
+    def test_compound_word_is_not_a_defect(self):
+        s = [{"id": "s0", "start": 0.0, "end": 3.0, "text": "A retired map maker with a slow smile."}]
+        f, m, rr = voice.verify_text(s, words_for("A retired mapmaker with a slow smile.", 0.0, 3.0), TH, None)
+        self.assertEqual([x["code"] for x in f if x["severity"] in ("BLOCKER", "MAJOR")], [])
+
     def test_normalisation(self):
         self.assertEqual(voice.norm_words("Mrs. Hale, 3 minutes, 50%"), ["missus", "hale", "three", "minutes", "fifty", "percent"])
 

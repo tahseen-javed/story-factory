@@ -96,9 +96,24 @@ def verify_text(plan_sentences: list, words: list, th: dict, tts_hyp: dict | Non
     v = th["voice"]
     f, m = [], {}
     refs = [norm_words(s["text"]) for s in plan_sentences]
+    hyp_all = [x for w, _, _ in words for x in norm_words(w)]
+
+    def merge(tokens, others):   # 'map maker' (script) versus 'mapmaker' (recogniser), and the other way round, are the same word
+        out, i = [], 0
+        while i < len(tokens):
+            if i + 1 < len(tokens) and tokens[i] + tokens[i + 1] in others:
+                out.append(tokens[i] + tokens[i + 1])
+                i += 2
+            else:
+                out.append(tokens[i])
+                i += 1
+        return out
+
+    hs = set(hyp_all)
+    refs = [merge(r, hs) for r in refs]
+    hyp_all = merge(hyp_all, {w for r in refs for w in r})
     own = [k for k, r in enumerate(refs) for _ in r]
     ref_all = [w for r in refs for w in r]
-    hyp_all = [x for w, _, _ in words for x in norm_words(w)]
     a = align(ref_all, hyp_all)
     m["wer"], m["words_ref"], m["words_hyp"] = round(a["wer"], 4), a["n_ref"], len(hyp_all)
     end = max([s["end"] for s in plan_sentences] or [0.0])

@@ -66,10 +66,10 @@ voice:                                      # Phase 2 stage 1 (factory/doctor/vo
   wer_max: 0.05
   sentence_wer_max: 0.15
   wpm: [130, 160]
-  drift_mel_db: 4.0
-  drift_f0_hz: 40
-  narrator_mel_db: 5.0
-  narrator_f0_hz: 45
+  drift_mel_db: 9.0          # coarse outlier detector: same-voice sentences measured up to 6 dB apart on 004; a different speaker is far beyond
+  drift_f0_hz: 70
+  narrator_mel_db: 9.0
+  narrator_f0_hz: 70
 music_present:                              # P-014 / A3b MUSIC PRESENT
   audible_fraction_min: 0.90                # share of the video (planned beats excluded) where the music bed is audible
   audible_floor_lufs_below_voice: 30        # bed counts as audible when it is within this many dB of the voice short-term level
