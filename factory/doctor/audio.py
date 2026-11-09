@@ -58,7 +58,7 @@ def check_master(x, th):
     if not (lo <= m["lra"] <= hi):
         f.append(finding(th, "A3-LRA", "lra", 0, len(x[0]) / SR, m["lra"], [lo, hi], "loudness range out of range"))
     n = x.shape[1]
-    head = x[:, : int(0.1 * SR)]
+    head = x[:, : int(0.03 * SR)]   # the first 30 ms: a fade-in ramp is fine, a click or a full-level start is not
     m["start_rms_dbfs"] = 10 * np.log10(max(float((head ** 2).mean()), 1e-14))
     if m["start_rms_dbfs"] > a["hot_start_dbfs"]:
         f.append(finding(th, "A4-HOTSTART", "hot_start", 0, 0.1, m["start_rms_dbfs"], a["hot_start_dbfs"], "audio starts hot (no fade-in)"))
@@ -135,7 +135,7 @@ def check_voice(voice, plan, th):
     if not (lo <= m["wpm"] <= hi):
         f.append(finding(th, "A2-WPM", "wpm", 0, last_end, m["wpm"], [lo, hi], "speaking pace out of range"))
     if float(np.abs(voice).max()) >= 0.999:
-        f.append(finding(th, "A2-CLIP", "clipping", 0, last_end, float(np.abs(voice).max()), 0.999, "voice stem clips"))
+        f.append(finding(th, "A2-CLIP", "stem_clip", 0, last_end, float(np.abs(voice).max()), 0.999, "voice stem clips"))
     return m, f
 
 
@@ -218,7 +218,7 @@ def check_music(voice, music, sfx, amb, plan, th):
             f.append(finding(th, "A4-SFX-LOUD", "sfx_loud", t0, t1 + 2.5, float((ss[:k2] - vs[:k2])[(tt[:k2] >= t0) & (tt[:k2] <= t1)].max()), -a["sfx_margin_db"], "sfx louder than the voice"))
     for name, st in (("voice", voice), ("music", music), ("sfx", sfx), ("ambience", amb)):
         if len(st) and float(np.abs(st).max()) >= 0.999:
-            f.append(finding(th, "A4-STEM-CLIP", "clipping", 0, len(st) / SR, float(np.abs(st).max()), 0.999, f"{name} stem clips"))
+            f.append(finding(th, "A4-STEM-CLIP", "stem_clip", 0, len(st) / SR, float(np.abs(st).max()), 0.999, f"{name} stem clips"))
     return m, f
 
 

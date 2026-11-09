@@ -40,7 +40,50 @@ visual:
   contrast_min: 4.5
   max_static_s: 3.0
   scene_changes_per_min_min: 20.0           # P-011 target; MINOR until the pacing redesign lands
+look:                                       # Phase 2 stage 3 (factory/doctor/look.py), thresholds calibrated on the first real backgrounds
+  blotch_max: 0.04
+  banding_max: 0.35
+  style_edge_ratio_min: 0.35
+  style_noise_ratio_max: 2.5
+  style_saturation_delta: 45
+tech:                                       # Phase 2 stage 4 (factory/doctor/tech.py)
+  black_luma: 10
+  black_std: 6
+  dup_diff: 8                               # max pixel difference that still counts as an identical frame (gray 0-255, lossy-coded stills carry noise)
+  dup_mean: 0.1
+  dup_run_frames: 6
+  freeze_s: 1.2
+  flicker_luma_jump: 9
+  flicker_max_per_s: 4
+  cut_diff: 22                              # mean abs difference that counts as a hard cut
+  cut_min_gap_s: 0.5
+  unplanned_cut_s: 0.25
+  unplanned_cut_diff: 40
+  max_shot_s: 5.2
+  shots_per_min_min: 14
+  static_pose_s: 3.0
+voice:                                      # Phase 2 stage 1 (factory/doctor/voice.py): faster-whisper versus the script
+  wer_max: 0.05
+  sentence_wer_max: 0.15
+  wpm: [130, 160]
+  drift_mel_db: 4.0
+  drift_f0_hz: 40
+  narrator_mel_db: 5.0
+  narrator_f0_hz: 45
 severity:
+  stem_clip: MINOR                 # stems are pre-limiter; the master (sample peak / true peak) is what must not clip
+  blotch: MAJOR
+  banding: MINOR
+  style: MINOR
+  dup: MINOR
+  flicker: MINOR
+  cut: MINOR
+  static: MINOR
+  voice_wer: MAJOR
+  voice_skip: MAJOR
+  voice_double: MAJOR
+  voice_wpm: MINOR
+  voice_drift: MAJOR
   integrated: MAJOR
   true_peak: MAJOR
   lra: MINOR

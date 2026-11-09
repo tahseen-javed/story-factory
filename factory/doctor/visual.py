@@ -80,7 +80,7 @@ def graphics(shot: dict) -> list:
     if shot.get("timeCard"):
         g.append(("timecard", (0, 40, 780, 190), 0, min(dur, shot["timeCard"]["frames"])))
     if shot.get("cta"):
-        g.append(("cta-sticker", (80, 640, 820, 900), 6, min(dur, 96)))
+        g.append(("cta-sticker", (80, 830, 800, 975), 6, min(dur, 96)))   # bottom-left pill: left 90, bottom 110, about 710 x 130 px
     return g
 
 
