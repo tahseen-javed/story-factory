@@ -56,3 +56,7 @@ Last updated: 2026-11-08 (UTC 20:15). Repo: https://github.com/tahseen-javed/sto
 
 ## 2026-11-10 005 Night Train
 Delivered by owner override (emergency, no certificate): Documents\Animated Long Video 1st Channel Night Train 07min.*. Round 1 fix pushed (6548fae). Round 2 fixes (uncommitted before this commit): ducking smoothing default 3 s, 1 s block-mean jump measure, local-loud needs speech fraction >= 0.8, berth/birth homophone, Pen-hale TTS respelling + reroll 3. NOT yet verified end to end: a clean 005 v2 needs one produce run (~55 min) + Doctor pass. Next: owner rating into docs/QUALITY_LOG.md.
+
+## 2026-11-11 005 final delivered (owner rating 8.5)
+Delivered v2 via remix.yml (run 42879519006): same 17 chunks, ducking smoothing 4 s, s0152 swapped (Pen-hale respelling; TTS-stage ASR still doubtful, the name may sound like Pin-hale), alimiter, -14.4 LUFS, peak -1.7 dBFS, 6:50. No certificate (owner override). Doctor music check clean (jump 2.88 LU).
+Next (P-019): TTS shard cache key must be per sentence (tts_hash covers the whole script, so one changed sentence re-synthesised all 162 sentences = 25 min). Then run the Doctor on 005 v2 when time allows.
