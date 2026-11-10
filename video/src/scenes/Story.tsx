@@ -132,7 +132,7 @@ const Hud: React.FC<{ track: Record<string, any>; prev: Record<string, any>; fra
   if (track.tide !== undefined) items.push({ k: "tide", label: "WATER LEVEL", v: String(track.tide) });
   if (!items.length) return null;
   return (
-    <div style={{ position: "absolute", ...(right ? { right: "4%" } : { left: "4%" }), top: "5%", display: "flex", gap: 14 }}>
+    <div style={{ position: "absolute", ...(right ? { right: "4%", transformOrigin: "top right" } : { left: "4%", transformOrigin: "top left" }), top: "4%", display: "flex", gap: 14, transform: "scale(2)" }}>
       {items.map((it) => {
         const changed = prev[it.k] !== undefined && prev[it.k] !== track[it.k] && frame < 36 && !tick;
         const low = (it.k === "phone" && parseInt(it.v, 10) <= 10) || (it.k === "air" && parseInt(it.v, 10) < 1);

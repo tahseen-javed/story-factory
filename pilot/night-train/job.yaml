@@ -1,0 +1,41 @@
+nnn: 5
+slug: night-train
+mode: pilot
+kind: test
+short_title: Night Train
+length_min: 8
+base_name: "005 Night Train 08min"
+style_version: 4
+topic: night_train
+end_screen_s: 3
+style_seed:
+  opening: in_medias_res
+  ritual: message_log
+  ending: quiet_reveal
+  accent: amber
+  lut: cold_night
+  music_set: calm_pad
+  camera_rhythm: slow_burn
+  transition: paper_slide_mix
+  titlecard: stamped_box
+  thumbnail_layout: close_right
+  outfit: red_curly
+  wpm: 170
+improvements:
+  - P-018 shot sizes, poses and expressions rotate every beat
+  - meters at 2x size
+  - dangerous 4-shot hook montage in the first 8 seconds
+expect:
+  - "battery at sixty percent|phone|60%"
+  - "battery at fifty-one percent|phone|51%"
+  - "four hours left|hours|4"
+  - "battery at forty-four percent|phone|44%"
+  - "battery holding at forty-one percent|phone|41%"
+  - "flashing twenty percent|phone|20%"
+  - "battery at nine percent|phone|9%"
+extras:
+  titles: "The Ticket That Should Not Exist|Stuck on a Night Train: Which Choice Would You Make?|5 Hours, 3 Passengers, 1 Impossible Ticket"
+  thumb_text: "IMPOSSIBLE TICKET"
+  description: "Three passengers, five hours until sunrise, and one ticket that should not exist. At every freeze, pause the video and decide before the narrator reveals the answer. This is a fictional story."
+  tags: "night train story, survival story, animated story, what would you do, choose your path, snowed in, train mystery, interactive story, 2d animation"
+  pinned_comment: "At nine percent, could you have waited for the engine?"

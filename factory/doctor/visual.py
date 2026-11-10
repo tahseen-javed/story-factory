@@ -75,7 +75,7 @@ def graphics(shot: dict) -> list:
     if nh:
         left = not shot.get("hudRight")
         wd = 70 + nh * 215
-        g.append(("hud", (77, 54, 77 + wd, 150) if left else (W - 77 - wd, 54, W - 77, 150), 0, dur))
+        g.append(("hud", (77, 43, 77 + wd * 2 * 0.62, 43 + 96 * 2) if left else (W - 77 - wd * 2 * 0.62, 43, W - 77, 43 + 96 * 2), 0, dur))   # P-018: meters at 2x
     if shot.get("banner"):
         by = float(shot.get("bannerDy") or 0)
         g.append(("banner", (0, 130 + by, W, 330 + by), 0, min(dur, 96)))
