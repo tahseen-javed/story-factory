@@ -71,7 +71,7 @@ class TestRound2(unittest.TestCase):
     def test_penhale_respelled_for_tts_only(self):
         from factory.plan import tts_text
         self.assertIn("Pen-hale", tts_text("was Penhale."))
-        self.assertIn("berth bee", tts_text("Coach four, berth B, Rosa reads."))
+        self.assertEqual(tts_text("Rosa Penhale, nineteen"), "Rosa Penhale, nineteen")
 
 
 class TestMusicMeasures(unittest.TestCase):

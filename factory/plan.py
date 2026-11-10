@@ -30,8 +30,7 @@ TTS_REPLACE = [
     (r"%", " percent"),
     (r"\s+—\s+", ", "),
     (r"\bthree B\b", "three bee"),
-    (r"\bberth B\b", "berth bee"),
-    (r"\bPenhale\b", "Pen-hale"),
+    (r"\bwas Penhale\b", "was Pen-hale"),   # only the final-name sentence: the engine drops the last syllable at a sentence end
     (r"\bOK\b", "okay"),
 ]
 
