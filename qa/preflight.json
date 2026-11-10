@@ -1,16 +1,16 @@
 {
- "job": "pilot/three-button-trap",
+ "job": "pilot/night-train",
  "ok": true,
  "checks": {
   "1_time_estimate": {
    "ok": true,
-   "eta_min": 20.0,
-   "budget_min": 35.0
+   "eta_min": 55.0,
+   "budget_min": 60
   },
   "2_licence_gate": {
    "ok": true,
    "missing": [],
-   "assets": 16
+   "assets": 13
   },
   "3_monetization": {
    "ok": true,
@@ -22,7 +22,7 @@
     "no_real_person_or_brand": true,
     "facts_sourced": true
    },
-   "closest": "solar-storm-blackout"
+   "closest": "three-button-trap"
   },
   "4_cast_voices": {
    "ok": true,
@@ -41,11 +41,11 @@
    "ok": true,
    "previous": "001 Solar Storm Blackout v2.1",
    "previous_owner_rating": 7.9,
-   "target": 8.5,
+   "target": 9.0,
    "improvements": [
-    "decision hold with the clock still ticking",
-    "air meter in the HUD",
-    "calm bed pinned during the hold"
+    "P-018 shot sizes, poses and expressions rotate every beat",
+    "meters at 2x size",
+    "dangerous 4-shot hook montage in the first 8 seconds"
    ],
    "note": ""
   }

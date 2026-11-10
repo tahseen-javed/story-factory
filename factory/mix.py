@@ -20,6 +20,12 @@ from . import musiclib, synth
 from .synth import SR
 
 
+def xfade_ramps(n: int):
+    """Equal-power crossfade ramps: fin**2 + fout**2 == 1, so two uncorrelated beds keep one level through the change (a linear fade dips 3 dB)."""
+    x = np.linspace(0.0, np.pi / 2, n)
+    return np.sin(x).astype("float32"), np.cos(x).astype("float32")
+
+
 def read_wav(path: str):
     with wave.open(path, "rb") as w:
         n, ch, sw, fr = w.getnframes(), w.getnchannels(), w.getsampwidth(), w.getframerate()
@@ -134,7 +140,8 @@ def run(audio_plan_path: str, voice_dir: str, out_dir: str, cfg_audio: dict, luf
 
     # ---- music per chapter, crossfaded ----
     music = np.zeros((2, total), dtype="float32")
-    xf = int(1.5 * SR)
+    xf = int(float(cfg_audio.get("music_xfade_s", 4.0)) * SR)
+    fin, fout = xfade_ramps(xf)
     for ci, ch in enumerate(ap["music"]):
         s0 = int(ch["start"] * SR)
         s1 = min(total, int(ch["end"] * SR) + xf)
@@ -144,9 +151,9 @@ def run(audio_plan_path: str, voice_dir: str, out_dir: str, cfg_audio: dict, luf
         seg = seg * (0.1 / (float(np.sqrt(np.mean(seg.astype('float64') ** 2))) + 1e-9))   # same loudness for every mood, so the crossfade has no level step
         n = seg.shape[1]
         if ci > 0:
-            seg[:, :xf] *= np.linspace(0, 1, xf)
+            seg[:, :xf] *= fin
         if ci < len(ap["music"]) - 1:
-            seg[:, -xf:] *= np.linspace(1, 0, xf)
+            seg[:, -xf:] *= fout
         music[:, s0:s0 + n] += seg[:, : total - s0]
     tail = int(6 * SR)
     end_p = int(ap["audio_end_s"] * SR)

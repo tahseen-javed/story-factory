@@ -13,5 +13,8 @@
 | Test-kind videos failing format-length scorecard rows | test kind exemptions in scorecard.py |
 | Doctor skipped when legacy QA holds the video | Doctor runs whenever final.mp4 exists; the gate decides delivery |
 | Sentence with a real voice defect | per-sentence reroll counter in job.yaml (seed offset, 4 extra attempts) |
+| A3-MUSIC-JUMP 3.3-3.6 LU at chapter changes (005, run 42834012559) | linear 1.5 s crossfade of two uncorrelated beds dips 3 dB; now equal-power 4 s crossfade (audio.yaml music_xfade_s, mix.xfade_ramps, test) |
+| Same pose + expression for 4-15 s, 92 V6-STATIC (005) | make_script.rotate(): one character never repeats pose+expression in consecutive shots; check stays MINOR until P-018 Doctor checks are built |
+| Rare names misheard/mispronounced (berth B, Penhale; 005) | sentence reroll in job.yaml (reroll: {s0055: 1, s0152: 1}) |
 
 Open (next): legacy QA video analysis takes about 25 min per 6 min video (this is what breaks the 15 percent Doctor budget); cache its result by chunk hash so audio-only fixes skip it, and run the Doctor tech and voice scans in parallel jobs.

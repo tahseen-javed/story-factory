@@ -64,15 +64,15 @@ Rosa whispers one more thing you will need. "The heaters drink power. The lights
 Forty minutes pass. Battery at fifty-one percent. Frost creeps across the inside of the glass.
 ## CH2 | THE HEATERS
 // ACT act2a
-@ corridor.night | hero:stand/worried | rosa:stand/worried | fr:ots | ov:option_cards("ALL HEATERS","LIGHTS ONLY","ONE ROOM","1","draught,glow,ledge")
+@ corridor.night | hero:stand/worried | rosa:look_up/determined | fr:ots | ov:option_cards("ALL HEATERS","LIGHTS ONLY","ONE ROOM","1","draught,glow,ledge")
 Freeze. Option one, keep the heaters in all three coaches running on low, so nobody is cold anywhere.
-@ corridor.night | hero:stand/worried | rosa:stand/worried | fr:wide | ov:option_cards("ALL HEATERS","LIGHTS ONLY","ONE ROOM","2","draught,glow,ledge")
+@ corridor.night | hero:look_up/determined | rosa:stand/worried | fr:wide | ov:option_cards("ALL HEATERS","LIGHTS ONLY","ONE ROOM","2","draught,glow,ledge")
 Option two, switch the heaters off and keep the lights on, because people panic in the dark.
-@ corridor.night | hero:stand/worried | rosa:stand/worried | fr:medium | ov:option_cards("ALL HEATERS","LIGHTS ONLY","ONE ROOM","3","draught,glow,ledge")
+@ corridor.night | hero:stand/worried | rosa:look_up/determined | fr:medium | ov:option_cards("ALL HEATERS","LIGHTS ONLY","ONE ROOM","3","draught,glow,ledge")
 Option three, one heater, one compartment, everyone squeezed together under Mrs. Okafor's blankets.
-@ corridor.night | hero:stand/worried | rosa:stand/worried | fr:wide | ov:option_cards("ALL HEATERS","LIGHTS ONLY","ONE ROOM","0","draught,glow,ledge") | fx:flicker
+@ corridor.night | hero:look_up/determined | rosa:stand/worried | fr:wide | ov:option_cards("ALL HEATERS","LIGHTS ONLY","ONE ROOM","0","draught,glow,ledge") | fx:flicker
 Pause the video. Decide now.
-@ corridor.night | hero:stand/worried | rosa:stand/worried | fr:ots | ov:option_cards("ALL HEATERS","LIGHTS ONLY","ONE ROOM","0","draught,glow,ledge")
+@ corridor.night | hero:stand/worried | rosa:look_up/determined | fr:ots | ov:option_cards("ALL HEATERS","LIGHTS ONLY","ONE ROOM","0","draught,glow,ledge")
 Your battery keeps falling.
 // HOLD decision 4.5
 @ compartment.night | hero:sit/worried | okafor:sit/relieved | theo:sit/neutral | fr:medium,wide
@@ -95,26 +95,26 @@ Four hours left. Battery at forty-four percent.
 // ACT midpoint
 @ corridor.night | rosa:write/neutral | hero:stand/neutral | fr:medium,insert,ots
 Rescue needs a passenger list, so Rosa checks tickets by torchlight.
-@ coach2.night | okafor:sit/neutral | rosa:write/neutral | fr:profile,insert
+@ coach2.night | okafor:sit/neutral | rosa:write/worried | fr:profile,insert
 Mrs. Okafor, coach two, seat fourteen. Theo, student pass, coach three.
 @ coach2.night | vane:reach/neutral | rosa:reach/shocked | fr:insert,closeup,ots
 Then Mr. Vane hands over a ticket that is soft and yellow, with an ink stamp instead of a barcode.
 @ coach2.night | rosa:stand/shocked | vane:stand/neutral | fr:closeup,low,wide
 "Coach four, berth B," Rosa reads. This train has three coaches.
-@ window.night | vane:stand/neutral | fr:silhouette,insert,profile
+@ window.night | vane:look_up/worried | fr:silhouette,insert,profile
 Nobody speaks. Mr. Vane just watches the frosted window.
 @ coach2.night | hero:stand/worried | vane:stand/neutral | fr:ots | ov:option_cards("MOVE HIM","IGNORE IT","ASK HIM","1","gap,wind,star")
 Freeze. Option one, move Mr. Vane to the empty front coach until rescue, because a fake ticket might hide something worse.
-@ coach2.night | hero:stand/worried | vane:stand/neutral | fr:wide | ov:option_cards("MOVE HIM","IGNORE IT","ASK HIM","2","gap,wind,star")
+@ coach2.night | hero:look_up/determined | vane:look_up/worried | fr:wide | ov:option_cards("MOVE HIM","IGNORE IT","ASK HIM","2","gap,wind,star")
 Option two, ignore it, because tickets don't matter tonight.
 @ coach2.night | hero:stand/worried | vane:stand/neutral | fr:medium | ov:option_cards("MOVE HIM","IGNORE IT","ASK HIM","3","gap,wind,star")
 Option three, ask him one question that only a real passenger of coach four could answer.
-@ coach2.night | hero:stand/worried | vane:stand/neutral | fr:wide | ov:option_cards("MOVE HIM","IGNORE IT","ASK HIM","0","gap,wind,star") | fx:flicker
+@ coach2.night | hero:look_up/determined | vane:look_up/worried | fr:wide | ov:option_cards("MOVE HIM","IGNORE IT","ASK HIM","0","gap,wind,star") | fx:flicker
 Pause the video. Decide now.
 @ coach2.night | hero:stand/worried | vane:stand/neutral | fr:ots | ov:option_cards("MOVE HIM","IGNORE IT","ASK HIM","0","gap,wind,star")
 Your clock keeps running.
 // HOLD decision 4.5
-@ coach2.night | hero:point/determined | vane:stand/neutral | fr:ots,closeup
+@ coach2.night | hero:point/determined | vane:look_up/worried | fr:ots,closeup
 You choose option three. "What was coach four?"
 @ coach2.night | vane:stand/relieved | fr:closeup,medium
 For the first time, he smiles.
@@ -132,15 +132,15 @@ Theo finds a lighter.
 Ten minutes later the compartment glows orange, and you switch off the last heater. Battery holding at forty-one percent.
 @ stove.night | okafor:stand/relieved | vane:stand/relieved | fr:medium,closeup
 Mrs. Okafor laughs and wraps half of her endless scarf around Mr. Vane's shoulders.
-@ stove.night | hero:stand/relieved | okafor:stand/relieved | theo:stand/relieved | fr:wide,medium | cta:subscribe | fx:embers
+@ stove.night | hero:stand/relieved | okafor:look_up/sad | theo:stand/relieved | fr:wide,medium | cta:subscribe | fx:embers
 If you trusted the old man, you read people like a survivor. If you didn't, stay close, because the next freeze bites harder. Subscribe so the next train finds you.
-@ window.night | vane:stand/relieved | fr:closeup,profile
+@ window.night | vane:look_up/sad | fr:closeup,profile
 Here is what you got wrong. He never lied. His ticket was simply older than the train.
 ## CH4 | THREE IN THE MORNING
 // ACT sacrifice
 @ snow.night | fr:xwide,wide | fx:snow | track:{hours:"3"}
 Three in the morning. Snow piles higher. The windows go dark.
-@ cab.night | rosa:stand/shocked | hero:stand/scared | fr:ots,wide | fx:alarm_pulse | track:{hours:"1.5",phone:"20%"}
+@ cab.night | rosa:look_up/worried | hero:stand/scared | fr:ots,wide | fx:alarm_pulse | track:{hours:"1.5",phone:"20%"}
 At four forty, three things happen at once. A sharp beep from the battery panel, flashing twenty percent.
 @ coach2.night | fr:low,wide,insert
 A long crack from the roof above your heads.
@@ -150,11 +150,11 @@ And a soft, steady hiss from the stove pipe.
 Earlier, when the fire caught, Mr. Vane had tapped that pipe. "If she ever hisses," he said, "the chimney is drowning in snow."
 @ stove.night | hero:stand/scared | rosa:stand/scared | fr:ots | ov:option_cards("SHUT LIGHTS","GET DOWN","CLEAR PIPE","1","battery,gap,chimney")
 Freeze. Option one, the battery alarm. Shut down the marker lights now.
-@ stove.night | hero:stand/scared | rosa:stand/scared | fr:wide | ov:option_cards("SHUT LIGHTS","GET DOWN","CLEAR PIPE","2","battery,gap,chimney")
+@ stove.night | hero:look_up/shocked | rosa:look_up/shocked | fr:wide | ov:option_cards("SHUT LIGHTS","GET DOWN","CLEAR PIPE","2","battery,gap,chimney")
 Option two, the crack in the roof. Get everyone down onto the corridor floor.
 @ stove.night | hero:stand/scared | rosa:stand/scared | fr:medium | ov:option_cards("SHUT LIGHTS","GET DOWN","CLEAR PIPE","3","battery,gap,chimney")
 Option three, the hiss. Reach up through the roof hatch and push the snow cap off the chimney with Rosa's signal pole.
-@ stove.night | hero:stand/scared | rosa:stand/scared | fr:wide | ov:option_cards("SHUT LIGHTS","GET DOWN","CLEAR PIPE","0","battery,gap,chimney") | fx:flicker
+@ stove.night | hero:look_up/shocked | rosa:look_up/shocked | fr:wide | ov:option_cards("SHUT LIGHTS","GET DOWN","CLEAR PIPE","0","battery,gap,chimney") | fx:flicker
 Pause the video. Decide now.
 @ stove.night | hero:stand/scared | rosa:stand/scared | fr:ots | ov:option_cards("SHUT LIGHTS","GET DOWN","CLEAR PIPE","0","battery,gap,chimney")
 The air is getting thick.
@@ -178,11 +178,11 @@ Theo hears it first. Far away, a low engine, grinding, fading in and out with th
 Rosa's hand hovers over the controls. "The horn runs on stored air," she says. "Three blasts. That's all we get."
 @ cab.dusk | hero:stand/scared | rosa:stand/worried | fr:ots | ov:option_cards("ALL LIGHTS","HORN NOW","WAIT, THEN HORN","1","glow,wind,star")
 Freeze. Option one, switch on every marker light now and burn the last nine percent.
-@ cab.dusk | hero:stand/scared | rosa:stand/worried | fr:wide | ov:option_cards("ALL LIGHTS","HORN NOW","WAIT, THEN HORN","2","glow,wind,star")
+@ cab.dusk | hero:look_up/shocked | rosa:look_up/determined | fr:wide | ov:option_cards("ALL LIGHTS","HORN NOW","WAIT, THEN HORN","2","glow,wind,star")
 Option two, blow all three horn blasts right away, so they know early.
 @ cab.dusk | hero:stand/scared | rosa:stand/worried | fr:medium | ov:option_cards("ALL LIGHTS","HORN NOW","WAIT, THEN HORN","3","glow,wind,star")
 Option three, wait until the engine is close and loud, then blow the horn three times.
-@ cab.dusk | hero:stand/scared | rosa:stand/worried | fr:wide | ov:option_cards("ALL LIGHTS","HORN NOW","WAIT, THEN HORN","0","glow,wind,star") | fx:flicker
+@ cab.dusk | hero:look_up/shocked | rosa:look_up/determined | fr:wide | ov:option_cards("ALL LIGHTS","HORN NOW","WAIT, THEN HORN","0","glow,wind,star") | fx:flicker
 Pause the video. Decide now.
 @ cab.dusk | hero:stand/scared | rosa:stand/worried | fr:ots | ov:option_cards("ALL LIGHTS","HORN NOW","WAIT, THEN HORN","0","glow,wind,star")
 They might drive right past.
@@ -200,14 +200,14 @@ The snowcat crew helps everyone out into a pink sunrise. Mr. Vane goes last. He 
 It is dated forty years ago tonight. Same train, same pass, same snow. He was a boy in coach four, and the guard lit the iron stove and told stories until morning.
 @ valley.day | vane:stand/neutral | rosa:stand/shocked | fr:profile,closeup,medium
 "The guard's name," Mr. Vane said, "was Penhale."
-@ valley.day | rosa:stand/shocked | fr:closeup,insert
+@ valley.day | rosa:look_up/worried | fr:closeup,insert
 Rosa stares down at her shiny badge. "That was my grandad," she said.
 @ valley.day | vane:stand/relieved | rosa:stand/relieved | fr:medium,wide,low
 "I ride this train every year on this night," he said. "Just in case."
 @ valley.day | hero:look_up/neutral | fr:back,wide
 So be honest. At nine percent, with that engine fading in and out, could you have waited?
 // LASTLINE
-@ valley.day | vane:stand/relieved | rosa:stand/relieved | hero:stand/relieved | fr:wide,low
+@ valley.day | vane:look_up/sad | rosa:look_up/sad | hero:stand/relieved | fr:wide,low
 The ticket that should not exist was the only one that mattered.
-@ valley.day | vane:stand/relieved | rosa:stand/relieved | hero:stand/relieved | fr:wide,medium | cta:subscribe
+@ valley.day | vane:stand/relieved | rosa:stand/relieved | hero:look_up/sad | fr:wide,medium | cta:subscribe
 Next time, you'll have less light and a stranger who really is lying. Subscribe, and keep your ticket.

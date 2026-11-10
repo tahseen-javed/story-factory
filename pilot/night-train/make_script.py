@@ -137,6 +137,30 @@ MUSIC_MOODS:
 - CH4: tense
 
 """
+G1 = ["stand", "look_up", "shrug", "point", "reach"]
+CALM = ["neutral", "worried", "determined", "relieved", "sad"]
+TENSE = ["scared", "shocked", "worried", "determined"]
+LAST = {}
+
+
+def rotate(tags):
+    """Never the same pose+expression twice in a row for one character (P-018 / Doctor V6-STATIC)."""
+    out = []
+    for seg in tags.split(" | "):
+        m = re.fullmatch(r"(hero|rosa|okafor|theo|vane):(\w+)/(\w+)", seg.strip())
+        if m:
+            c, p, e = m.groups()
+            if LAST.get(c) == (p, e):
+                fam = TENSE if e in TENSE else CALM
+                e = fam[(fam.index(e) + 1) % len(fam)] if e in fam else fam[0]
+                if p in G1:
+                    p = G1[(G1.index(p) + 1) % len(G1)]
+            LAST[c] = (p, e)
+            seg = f"{c}:{p}/{e}"
+        out.append(seg)
+    return " | ".join(out)
+
+
 pos, rows = 0, []
 for a, tags in T:
     if tags is None:
@@ -154,7 +178,7 @@ for r in rows:
     if r[0] == "raw":
         out.append(r[1])
     else:
-        out += ["@ " + r[2], TXT[st[k]:en[k]].strip()]
+        out += ["@ " + rotate(r[2]), TXT[st[k]:en[k]].strip()]
         k += 1
 text = "\n".join(out) + "\n"
 open(os.path.join(D, "script.md"), "w", encoding="utf-8", newline="\n").write(text)

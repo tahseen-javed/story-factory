@@ -21,6 +21,9 @@ style_seed:
   thumbnail_layout: close_right
   outfit: red_curly
   wpm: 170
+reroll:
+  s0055: 1
+  s0152: 1
 improvements:
   - P-018 shot sizes, poses and expressions rotate every beat
   - meters at 2x size
