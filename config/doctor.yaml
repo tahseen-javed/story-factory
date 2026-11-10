@@ -7,6 +7,7 @@ audio:
   lra: [4.0, 8.0]
   voice_short_term_lufs: [-16.5, -13.0]     # median while speaking (spec -16..-14)
   music_below_voice_db: [15.0, 21.0]        # median gap voice minus music while speaking (spec 18-22)
+  mix_venv_smooth_s: 3.0                    # default ducking smoothing (audio.yaml venv_smooth_s); the jump fix doubles it, max 8 s
   music_local_min_gap_db: 12.0              # anywhere while speaking: music louder than this is a BLOCKER
   music_rise_max_db: 6.5                    # music may rise at most this much in non-speech moments
   music_jump_max_lu: 3.0                    # change over 1 s

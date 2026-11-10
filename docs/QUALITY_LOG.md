@@ -9,5 +9,6 @@
 
 | 003 Three Button Trap (40 s test, 46.9 s) | test kind | 8.8 (owner, FINAL) | n/a | n/a | lost points ONLY for having no background music. Voice, visuals, pacing, decision hold, no captions = GOLDEN BASELINE for all future videos (format locked, P-011/P-014). |
 | 004 Sea Cave (6:16, delivered by one-time owner override, no certificate) | v1 | 8.0 (owner) | n/a | n/a | too many static two-shots with both characters standing, too little camera movement and scene variety (7 locations instead of ~19), weak hook, small meters. Music, voice and meters following the narration worked. Led to P-018. |
+| 005 Night Train (6:50, delivered by one-time owner override, NO certificate) | v4 | pending (owner) | n/a | n/a | run 42848053013 chunks + master.wav concat/mux locally. Open at delivery: A2-CHANGED Penhale (voice drops the last syllable, real), A3-MUSIC-JUMP 3.3 LU inside a long sentence (real, ducking pumping), A3-MUSIC-LOUD at 404 s and berth/birth (checker artefacts, calibrated afterwards). Script 1168 words at the locked voice = 6:50, not 8:30. |
 
 Rule: every next video must beat the previous owner rating (target above 8.8, i.e. 9.0+). Add the owner's number here as soon as it is given.

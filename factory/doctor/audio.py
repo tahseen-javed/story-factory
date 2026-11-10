@@ -164,7 +164,7 @@ def check_music(voice, music, sfx, amb, plan, th):
         if not (lo <= m["music_below_voice_db"] <= hi):
             f.append(finding(th, "A3-MUSIC-MEDIAN", "music_median", 0, tt[-1], m["music_below_voice_db"], [lo, hi], "music is not 18-22 dB under the voice while speaking"))
         gap = vs - ms
-        loud = speaking & (gap < a["music_local_min_gap_db"])
+        loud = (sp >= 0.8) & (gap < a["music_local_min_gap_db"])   # P-017 calibration: a window that is mostly the end of speech reads the voice too low while the bed rises by design
         for t0, t1 in segments(loud, tt, 0.5, 0.5):
             f.append(finding(th, "A3-MUSIC-LOUD", "music_local", t0, t1 + 2.5, float(gap[(tt >= t0) & (tt <= t1)].min()), a["music_local_min_gap_db"], "music too loud under speech"))
         above = speaking & (ms > vs)
@@ -180,9 +180,12 @@ def check_music(voice, music, sfx, amb, plan, th):
                     f.append(finding(th, "A3-MUSIC-RISE", "music_rise", t0, t1 + 2.5, float(rise.max()), a["music_rise_max_db"], "music rises more than 6 dB in non-speech moments"))
     mm, mt = lufs.momentary(music, 0.1)
     k = int(1.0 / 0.1)
-    if len(mm) > k:
+    if len(mm) > 2 * k:
+        cs_ = np.concatenate([[0.0], np.cumsum(mm)])
+        mm = (cs_[k:] - cs_[:-k]) / k   # P-017 calibration: mean loudness of adjacent 1 s blocks; note articulation moves 0.4 s loudness by +-2 LU, a real level step moves the block mean
+        mt = mt[:len(mm)]
         jump = np.abs(mm[k:] - mm[:-k])
-        mid = (mt[:-k] + 0.5)
+        mid = (mt[:-k] + 1.0)
         # ducking under a sentence start/end is by design: a jump is only a defect when no speech boundary lies in (t-1.0 s, t+3.6 s): the 3 s short-term window smears a ducking release over that range
         bounds = np.sort(np.array([x for s in plan["sentences"] for x in (s["start"], s["end"])] or [1e9]))
         j0 = np.searchsorted(bounds, mt[:-k] - 1.0)

@@ -16,5 +16,7 @@
 | A3-MUSIC-JUMP 3.3-3.6 LU at chapter changes (005, run 42834012559) | linear 1.5 s crossfade of two uncorrelated beds dips 3 dB; now equal-power 4 s crossfade (audio.yaml music_xfade_s, mix.xfade_ramps, test) |
 | Same pose + expression for 4-15 s, 92 V6-STATIC (005) | make_script.rotate(): one character never repeats pose+expression in consecutive shots; check stays MINOR until P-018 Doctor checks are built |
 | Rare names misheard/mispronounced (berth B, Penhale; 005) | sentence reroll in job.yaml (reroll: {s0055: 1, s0152: 1}) |
+| A3-MUSIC-JUMP 3.6 LU inside one sentence and A3-MUSIC-LOUD 10 dB at 404 s (005 round 2): the synthesised beds swell by themselves | mix.level_bed(): bed loudness flattened over a 3 s window (audio.yaml music_level), before the crossfade; test |
+| Chatterbox drops the last syllable of a name at a sentence end (Penhale -> Pen, TTS-stage ASR evidence in meta_7.json) | TTS-side respelling in plan.TTS_REPLACE (script words unchanged), reroll 3 |
 
 Open (next): legacy QA video analysis takes about 25 min per 6 min video (this is what breaks the 15 percent Doctor budget); cache its result by chunk hash so audio-only fixes skip it, and run the Doctor tech and voice scans in parallel jobs.

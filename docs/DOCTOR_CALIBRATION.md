@@ -11,3 +11,6 @@ Golden baseline: 003 (owner 8.8). Evidence: 003 and 004 Sea Cave (147 sentences,
 | 2026-11-09 | A4-HOTSTART on a 0.3 s fade-in | 100 ms window | 30 ms window | tests/test_doctor.py |
 | 2026-11-09 | A2-CLIP / A4-STEM-CLIP BLOCKER | stems are pre-limiter | MINOR; master clipping stays BLOCKER | tests/test_doctor.py |
 | 2026-11-09 | CTA sticker flagged over a face | guessed box too big | box (80,830)-(800,975) | tests/test_doctor.py |
+| 2026-11-10 | A2-CHANGED berth->birth (005, run 42848053013) | berth and birth are homophones | homophone map in voice.py SPELL | tests/test_calibration.py |
+| 2026-11-10 | A3-MUSIC-JUMP 3.3-5.4 LU inside long sentences (005, runs 42834012559/42848053013) | 0.4 s momentary loudness of a note-based bed swings +-2 LU with note onsets; not an audible level step | jump measured between adjacent 1 s block means (a real +8 dB step still fails) | tests/test_calibration.py |
+| 2026-11-10 | A3-MUSIC-LOUD 10.2-10.7 dB at 404-407 s (005 round 2) | window 0.6-0.7 speech fraction at the end of the last sentence reads the voice low while the bed rises by design | local loudness check needs speech fraction >= 0.8 (fixture music +8 dB still fails) | tests/test_doctor.py test_30 |

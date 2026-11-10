@@ -23,7 +23,7 @@ style_seed:
   wpm: 170
 reroll:
   s0055: 1
-  s0152: 1
+  s0152: 3
 improvements:
   - P-018 shot sizes, poses and expressions rotate every beat
   - meters at 2x size

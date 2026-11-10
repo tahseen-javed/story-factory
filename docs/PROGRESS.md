@@ -53,3 +53,6 @@ Last updated: 2026-11-08 (UTC 20:15). Repo: https://github.com/tahseen-javed/sto
 - Owner ordered "skip the Doctor if it still finds an issue, give me the video now". File came from refinalize run 42659932273 (owner_override=yes, plain artifact, no release). Not a rule: P-012 certificate gate stays for all other videos.
 - Runtime 6:16 (script 1121 words at the locked voice; not 8:00). Doctor left 3 MAJOR: music step 3.3 LU at 97.8 s, Walt's/waltz homophone (code fixed), 1 sentence f0 drift (threshold fixed). Loudness -14.4 LUFS, TP -2.2, music 18.2 dB under the voice, 100% audible, voice WER 1%.
 - Open: owner rating for 004; Phase 2 stages not built (character embeddings, per-chunk re-roll, mutation tests, scorecard md, re-run on 002/003).
+
+## 2026-11-10 005 Night Train
+Delivered by owner override (emergency, no certificate): Documents\Animated Long Video 1st Channel Night Train 07min.*. Round 1 fix pushed (6548fae). Round 2 fixes (uncommitted before this commit): ducking smoothing default 3 s, 1 s block-mean jump measure, local-loud needs speech fraction >= 0.8, berth/birth homophone, Pen-hale TTS respelling + reroll 3. NOT yet verified end to end: a clean 005 v2 needs one produce run (~55 min) + Doctor pass. Next: owner rating into docs/QUALITY_LOG.md.

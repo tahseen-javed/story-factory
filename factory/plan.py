@@ -30,6 +30,8 @@ TTS_REPLACE = [
     (r"%", " percent"),
     (r"\s+—\s+", ", "),
     (r"\bthree B\b", "three bee"),
+    (r"\bberth B\b", "berth bee"),
+    (r"\bPenhale\b", "Pen-hale"),
     (r"\bOK\b", "okay"),
 ]
 

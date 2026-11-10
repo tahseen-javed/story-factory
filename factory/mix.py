@@ -20,6 +20,18 @@ from . import musiclib, synth
 from .synth import SR
 
 
+def level_bed(seg, sr: int, win_s: float = 3.0, max_db: float = 6.0):
+    """Calm bed: flatten loudness changes slower than win_s (swells, loop-seam dips), keep the note texture. Same gain on both channels."""
+    from scipy.ndimage import uniform_filter1d
+
+    mono = seg.mean(axis=0).astype("float64")
+    env = np.sqrt(uniform_filter1d(mono ** 2, size=max(3, int(win_s * sr)), mode="nearest") + 1e-12)
+    target = float(np.sqrt(np.mean(mono ** 2))) + 1e-9
+    g = np.clip(target / env, 10 ** (-max_db / 20), 10 ** (max_db / 20))
+    g = uniform_filter1d(g, size=max(3, int(1.0 * sr)), mode="nearest")
+    return (seg * g[None, :]).astype("float32")
+
+
 def xfade_ramps(n: int):
     """Equal-power crossfade ramps: fin**2 + fout**2 == 1, so two uncorrelated beds keep one level through the change (a linear fade dips 3 dB)."""
     x = np.linspace(0.0, np.pi / 2, n)
@@ -149,6 +161,8 @@ def run(audio_plan_path: str, voice_dir: str, out_dir: str, cfg_audio: dict, luf
         if seg is None:
             seg = synth.render_music(ch["mood"], (s1 - s0) / SR, seed=ci)
         seg = seg * (0.1 / (float(np.sqrt(np.mean(seg.astype('float64') ** 2))) + 1e-9))   # same loudness for every mood, so the crossfade has no level step
+        if cfg_audio.get("music_level", True):
+            seg = level_bed(seg, SR)
         n = seg.shape[1]
         if ci > 0:
             seg[:, :xf] *= fin
@@ -199,7 +213,7 @@ def run(audio_plan_path: str, voice_dir: str, out_dir: str, cfg_audio: dict, luf
     cs = np.cumsum(np.pad(music_gain_db, (k_sm // 2, k_sm // 2), mode="edge"))
     intensity_db = ((cs[k_sm:] - cs[:-k_sm]) / k_sm)[:total].astype("float32")
     duck_db = float(cfg_audio.get("duck_db", 6))
-    smooth_s = float(mp.get("venv_smooth_s", 0.0))
+    smooth_s = float(mp.get("venv_smooth_s", cfg_audio.get("venv_smooth_s", 0.0)))
     if smooth_s > 0:   # extra smoothing of the ducking envelope (fix for pumping / jumps)
         k_ = max(1, int(smooth_s * SR))
         from scipy.ndimage import uniform_filter1d

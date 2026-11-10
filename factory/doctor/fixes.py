@@ -34,7 +34,7 @@ def adjust_mix_params(params: dict, findings: list, metrics: dict, th: dict) -> 
         p["duck_db"] = max(3.0, round(float(p.get("duck_db", th.get('mix_duck_db', 6.0))) - 2.0, 1))
         log.append(f"duck_db -> {p['duck_db']}")
     if codes & {"A3-MUSIC-JUMP"}:
-        p["venv_smooth_s"] = round(max(0.25, float(p.get("venv_smooth_s", 0.0)) * 2 or 0.25), 2)
+        p["venv_smooth_s"] = round(min(8.0, max(0.25, float(p.get("venv_smooth_s", th.get("mix_venv_smooth_s", 3.0))) * 2)), 2)
         log.append(f"venv_smooth_s -> {p['venv_smooth_s']}")
     if "A3-MUSIC-DROPOUT" in codes:
         p["music_floor_db"] = -24.0
