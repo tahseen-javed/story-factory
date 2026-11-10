@@ -1,0 +1,102 @@
+name: remix
+# One-off fast path: swap single sentences of an already rendered video (same timeline, chunks untouched), re-mix audio, concat + mux. No QA stage here.
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: produce run with assembled, chunk-* and music-* artifacts
+        required: true
+      tts_run:
+        description: produce run (until=tts) holding the new tts-* artifacts
+        required: true
+      ids:
+        description: sentence ids to swap, comma separated
+        default: s0152
+      venv_smooth_s:
+        description: ducking envelope smoothing in seconds
+        default: '4.0'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  remix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+    - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+      with:
+        python-version: '3.11'
+    - name: Libraries
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y -qq ffmpeg
+        python -m pip install -q numpy==1.26.4 scipy==1.13.1 soundfile==0.12.1
+    - name: Download artifacts
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        mkdir -p build/assembled build/chunks build/musiclib build/tts2
+        gh run download ${{ inputs.run_id }} -n assembled -D build/assembled
+        gh run download ${{ inputs.run_id }} -p 'chunk-*' -D build/chunks
+        gh run download ${{ inputs.run_id }} -p 'music-*' -D build/musiclib
+        gh run download ${{ inputs.tts_run }} -p 'tts-*' -D build/tts2
+    - name: Swap sentences into their old slots (timeline unchanged)
+      run: |
+        python - <<'EOF'
+        import glob, json, os, subprocess
+        import soundfile as sf
+        ids = [x.strip() for x in "${{ inputs.ids }}".split(",") if x.strip()]
+        ap = json.load(open("build/assembled/audio_plan.json"))
+        v = ap["voice"]
+        for sid in ids:
+            i = next(k for k, s in enumerate(v) if s["id"] == sid)
+            nxt = v[i + 1]["start"] if i + 1 < len(v) else ap["total_s"]
+            slot = nxt - v[i]["start"] - 0.12
+            new = glob.glob(f"build/tts2/**/{sid}.wav", recursive=True)[0]
+            x, sr = sf.read(new)
+            d = len(x) / sr
+            dst = f"build/assembled/voice/{sid}.wav"
+            old = sf.info(dst).duration
+            if d <= slot:
+                subprocess.run(["cp", new, dst], check=True)
+                print(sid, "swapped, old", round(old, 3), "new", round(d, 3), "slot", round(slot, 3))
+            else:
+                r = d / slot
+                assert r <= 1.15, f"{sid} too long for its slot: {d} vs {slot}"
+                subprocess.run(["ffmpeg", "-y", "-v", "error", "-i", new, "-filter:a", f"atempo={r:.4f}", dst], check=True)
+                print(sid, "swapped with atempo", round(r, 3))
+        mp = json.load(open("build/assembled/mix_params.json")) if os.path.exists("build/assembled/mix_params.json") else {}
+        mp["venv_smooth_s"] = float("${{ inputs.venv_smooth_s }}")
+        json.dump(mp, open("build/assembled/mix_params.json", "w"))
+        print(mp)
+        EOF
+    - name: Re-mix, music check, concat, mux
+      run: |
+        MUSIC_LIB_DIR=build/musiclib python -m factory.mix --plan build/assembled/audio_plan.json --voice build/assembled/voice --out build/assembled
+        python - <<'EOF'
+        import json
+        import soundfile as sf
+        from factory import miniyaml
+        from factory.doctor import audio as A
+        TH = miniyaml.load_file("config/doctor.yaml")
+        mono = lambda p: (lambda x: x if x.ndim == 1 else x.mean(1))(sf.read(p, dtype="float32")[0])
+        d = "build/assembled"
+        ap = json.load(open(d + "/audio_plan.json"))
+        plan = {"sentences": [{"id": s["id"], "start": s["start"], "end": s["end"]} for s in ap["voice"]], "silence": ap.get("silence", []), "holds": ap.get("holds", [])}
+        m, f = A.check_music(mono(d + "/stem_voice.wav"), mono(d + "/stem_music.wav"), mono(d + "/stem_sfx.wav"), mono(d + "/stem_amb.wav"), plan, TH)
+        print("MUSIC CHECK", [(x["severity"], x["code"], x["t0"], round(x.get("value") or 0, 2)) for x in f if x["severity"] != "MINOR"], round(m.get("music_jump_max_lu", 0), 2), round(m.get("music_below_voice_db", 0), 1))
+        from factory import finalize
+        from factory.plan import load_cfg
+        import os
+        os.makedirs("build/final", exist_ok=True)
+        print("chunks", finalize.concat("build/chunks", "build/final/video.mp4"))
+        finalize.mux("build/final/video.mp4", d + "/master.wav", "build/final/final.mp4", load_cfg())
+        EOF
+        ffmpeg -hide_banner -nostats -i build/final/final.mp4 -af ebur128=peak=true -f null - 2>&1 | tail -12 | head -12
+    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: remix-final
+        path: build/final/final.mp4
+        retention-days: 3
+        compression-level: 0
