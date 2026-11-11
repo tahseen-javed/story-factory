@@ -1,0 +1,39 @@
+nnn: 6
+slug: gull-rock-light
+mode: pilot
+kind: test
+short_title: Gull Rock Light
+length_min: 9
+base_name: "006 Gull Rock Light 09min"
+style_version: 4
+topic: gull_rock_light
+end_screen_s: 3
+style_seed:
+  opening: countdown
+  ritual: radio_check
+  ending: final_choice
+  accent: gold
+  lut: dusty_dusk
+  music_set: calm_dorian
+  camera_rhythm: drift_heavy
+  transition: zoom_through
+  titlecard: clock_strip
+  thumbnail_layout: object_center
+  outfit: navy_cap
+  wpm: 170
+reroll: {}
+improvements:
+  - P-020 shots scale with length (auto plan 18+/min), 13 places x 2+ angles, poses and expressions rotate every beat
+  - owner script word for word, 4 freezes with varied answers 2,2,3,3
+  - meters oil + ferry clock at 2x, hook montage in 8 seconds
+expect:
+  - "oil for two and a half hours|oil|2.5H"
+  - "Oil for four and a half hours|oil|4.5H"
+  - "Oil for thirty minutes|oil|30M"
+  - "Oil for five minutes|oil|5M"
+extras:
+  titles: "Three Logbooks, One Forgery|Stuck in a Lighthouse: Which Choice Would You Make?|4 Hours of Oil, 3 Logbooks, 1 Lie"
+  thumb_text: "ONE FORGERY"
+  description: "Four hours of lamp oil, three logbooks and one forgery. At every freeze, pause the video and decide before the narrator reveals the answer. This is a fictional story."
+  tags: "lighthouse story, survival story, animated story, what would you do, choose your path, storm night, mystery story, interactive story, 2d animation"
+  pinned_comment: "At the last freeze, would you have walked away from the biggest light?"
