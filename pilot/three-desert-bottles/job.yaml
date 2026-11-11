@@ -21,7 +21,11 @@ style_seed:
   thumbnail_layout: split_pair
   outfit: plum_beanie
   wpm: 170
-reroll: {}
+reroll:
+  s0012: 2
+  s0049: 1
+  s0094: 3
+  s0193: 2
 improvements:
   - P-020 shots per minute above 006 (22+/min), 15 places x 2+ angles, poses and expressions rotate every beat
   - owner script word for word, 3 freezes with varied answers 3,2,3
