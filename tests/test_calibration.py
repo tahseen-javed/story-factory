@@ -23,6 +23,12 @@ class TestCalibration(unittest.TestCase):
         f, _, _ = voice.verify_text(s, ws, TH, None)
         self.assertEqual([x["code"] for x in f if x["severity"] in ("BLOCKER", "MAJOR")], [])
 
+    def test_hundred_and_and_ordinals_are_not_changed_words(self):
+        s = [{"id": "s0", "start": 0.0, "end": 5.0, "text": "A hundred and twelve steps for her ninetieth birthday."}]
+        ws = [("112", 0.0, 0.8), ("steps", 0.8, 1.2), ("for", 1.2, 1.5), ("her", 1.5, 1.8), ("90th", 1.8, 2.5), ("birthday", 2.5, 3.0)]
+        f, _, _ = voice.verify_text(s, ws, TH, None)
+        self.assertEqual([x["code"] for x in f if x["severity"] in ("BLOCKER", "MAJOR")], [])
+
     def test_same_voice_numbers_from_004_do_not_drift(self):
         v = TH["voice"]
         self.assertGreaterEqual(v["drift_mel_db"], 6.5)    # measured 6.0 dB between sentences of the same narrator

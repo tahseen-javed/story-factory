@@ -35,6 +35,7 @@ _EQUIV = [
     (r"\bg\s?5\b", "g five"), (r"\bg five\b", "g five"),
     (r"\b3b\b", "three b"), (r"\bthree bee\b", "three b"), (r"\bthree-b\b", "three b"),
     (r"\bokay\b", "ok"), (r"\bkay\b", "ok"), (r"\btoo\b", "two"),
+    (r"\ba (hundred|thousand)\b", r"one \1"), (r"\b(hundred|thousand) and\b", r"\1"),
 ]
 
 
@@ -58,11 +59,23 @@ def _num_tokens(m: "re.Match") -> str:
     return int_to_words(int(s.replace(",", "")))
 
 
+_ORD = {"one": "first", "two": "second", "three": "third", "five": "fifth", "eight": "eighth", "nine": "ninth", "twelve": "twelfth"}
+
+
+def _ord(m: "re.Match") -> str:
+    """90th -> ninetieth, 21st -> twenty first (Whisper writes ordinals as digits)."""
+    w = int_to_words(int(m.group(1))).split(" ")
+    last = w[-1]
+    last = _ORD.get(last) or (last[:-1] + "ieth" if last.endswith("y") else last + "th")
+    return " ".join(w[:-1] + [last])
+
+
 def normalize(text: str) -> list:
     t = text.lower().replace("’", "'")
     t = re.sub(r"\b(\d+)([a-z])\b", r"\1 \2", t)  # 3b -> 3 b
     t = re.sub(r"(\d+)\s*%", r"\1 percent", t)
     t = re.sub(r"\$\s*(\d[\d,]*)", r"\1 dollars", t)
+    t = re.sub(r"\b(\d+)(?:st|nd|rd|th)\b", _ord, t)
     t = re.sub(r"\d{1,3}(?:,\d{3})+|\d+:\d{2}|\d+", _num_tokens, t)
     t = re.sub(r"[^a-z0-9' ]+", " ", t.replace("-", " "))
     t = re.sub(r"\s+", " ", t).strip()

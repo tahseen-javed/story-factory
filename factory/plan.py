@@ -31,6 +31,7 @@ TTS_REPLACE = [
     (r"\s+—\s+", ", "),
     (r"\bthree B\b", "three bee"),
     (r"\bwas Penhale\b", "was Pen-hale"),   # only the final-name sentence: the engine drops the last syllable at a sentence end
+    (r"\bon Gull Rock at six\b", "on Gull-Rock at six"),   # 006: the engine said gall/gold at the first mention
     (r"\bOK\b", "okay"),
 ]
 
