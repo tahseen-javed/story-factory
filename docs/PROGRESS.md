@@ -60,3 +60,6 @@ Delivered by owner override (emergency, no certificate): Documents\Animated Long
 ## 2026-11-11 005 final delivered (owner rating 8.5)
 Delivered v2 via remix.yml (run 42879519006): same 17 chunks, ducking smoothing 4 s, s0152 swapped (Pen-hale respelling; TTS-stage ASR still doubtful, the name may sound like Pin-hale), alimiter, -14.4 LUFS, peak -1.7 dBFS, 6:50. No certificate (owner override). Doctor music check clean (jump 2.88 LU).
 Next (P-019): TTS shard cache key must be per sentence (tts_hash covers the whole script, so one changed sentence re-synthesised all 162 sentences = 25 min). Then run the Doctor on 005 v2 when time allows.
+
+## 2026-11-11 resume point: two new videos (006 Flash Flood Garage, 007 Ember Road)
+Owner wants both (about 8:30 each, P-019 time control, P-020 shots scale with length: 118+ shots). Written so far: pilot/flash-flood-garage/narration.txt (1468 words, 4 freezes) and make_script.py. Bug: make_script.py final tiling check says narration changed; diff script.md body against narration.txt. Then job.yaml (nnn 6, kind test), characters.yaml silent entries jojo/bell/alder, validate, preflight, tests, push. Then Ember Road the same way. Mark t04/t05 used in library/topics.yaml when pushed. Tell the owner they may close the laptop only after both are pushed; fetch within 3 days.
