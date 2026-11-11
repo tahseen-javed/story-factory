@@ -17,6 +17,15 @@ from . import miniyaml
 from .asr_check import Asr, wer
 
 
+def _same_reroll(pm, s, base_seed):
+    """P-019: a restored sentence is reused only if it was made with the current reroll (seed = base + idx*31 + attempt*1009 + reroll*7919)."""
+    sd = pm.get("seed")
+    if sd is None:
+        return True
+    d = int(sd) - base_seed - int(s["idx"]) * 31 - int(s.get("reroll", 0)) * 7919
+    return d >= 0 and d % 1009 == 0 and d // 1009 < 16
+
+
 def _cfg():
     from .validate import load_cfg   # factory.yaml + data files (characters.yaml holds the locked narrator voice)
 
@@ -144,9 +153,10 @@ def run(plan_path: str, out_dir: str, shard: int, nshards: int, only: list | Non
             prev = {}
     TEMPS = [0.75, 0.65, 0.85, 0.7, 0.8, 0.6, 0.9, 0.55, 0.75]
     lo, hi = t["duration_ratio"]
+    base_seed = int(((cfg.get("characters") or {}).get("narrator") or {}).get("seed", t["seed"]))
     for s in mine:
         pm = prev.get(s["id"])
-        if pm and pm.get("ok") and pm.get("wer", 1) <= wer_max and os.path.exists(os.path.join(out_dir, f"{s['id']}.wav")):
+        if pm and pm.get("ok") and pm.get("wer", 1) <= wer_max and os.path.exists(os.path.join(out_dir, f"{s['id']}.wav")) and _same_reroll(pm, s, base_seed):
             meta.append(pm)
             print(f"[tts] {s['id']} kept (wer={pm.get('wer')})", flush=True)
             continue
