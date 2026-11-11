@@ -21,7 +21,10 @@ style_seed:
   thumbnail_layout: object_center
   outfit: navy_cap
   wpm: 170
-reroll: {}
+reroll:
+  s0004: 2
+  s0007: 1
+  s0206: 3
 improvements:
   - P-020 shots scale with length (auto plan 18+/min), 13 places x 2+ angles, poses and expressions rotate every beat
   - owner script word for word, 4 freezes with varied answers 2,2,3,3

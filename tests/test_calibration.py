@@ -17,6 +17,12 @@ class TestCalibration(unittest.TestCase):
         f, _, _ = voice.verify_text(s, ws, TH, None)
         self.assertEqual([x["code"] for x in f if x["severity"] in ("BLOCKER", "MAJOR")], [])
 
+    def test_homophones_ferry_fairy_rowed_rode(self):
+        s = [{"id": "s0", "start": 0.0, "end": 4.0, "text": "The ferry's horn rowed past the ferry."}]
+        ws = [("The", 0.0, 0.3), ("fairies", 0.3, 0.7), ("horn", 0.7, 1.0), ("rode", 1.0, 1.4), ("past", 1.4, 1.8), ("the", 1.8, 2.0), ("fairy", 2.0, 2.5)]
+        f, _, _ = voice.verify_text(s, ws, TH, None)
+        self.assertEqual([x["code"] for x in f if x["severity"] in ("BLOCKER", "MAJOR")], [])
+
     def test_same_voice_numbers_from_004_do_not_drift(self):
         v = TH["voice"]
         self.assertGreaterEqual(v["drift_mel_db"], 6.5)    # measured 6.0 dB between sentences of the same narrator
