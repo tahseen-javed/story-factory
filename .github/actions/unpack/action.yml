@@ -40,7 +40,7 @@ runs:
         src="$RUNNER_TEMP/dl-${{ inputs.name }}"
         mkdir -p "${{ inputs.dest }}"
         if [ "${{ inputs.mode }}" = "job" ]; then
-          sudo apt-get install -y -qq age >/dev/null
+          sudo timeout 600 apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20 install -y -qq age >/dev/null
           umask 077; printf '%s\n' "$AGE_KEY" > "$RUNNER_TEMP/age.key"
           find "$src" -name '*.tar.age' -print0 | while IFS= read -r -d '' f; do
             age -d -i "$RUNNER_TEMP/age.key" < "$f" | tar -C "${{ inputs.dest }}" -xf -

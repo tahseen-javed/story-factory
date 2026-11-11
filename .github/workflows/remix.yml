@@ -29,8 +29,8 @@ jobs:
         python-version: '3.11'
     - name: Libraries
       run: |
-        sudo apt-get update -qq
-        sudo apt-get install -y -qq ffmpeg
+        sudo timeout 600 apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20 update -qq
+        sudo timeout 600 apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20 install -y -qq ffmpeg
         python -m pip install -q numpy==1.26.4 scipy==1.13.1 soundfile==0.12.1
     - name: Download artifacts
       env:

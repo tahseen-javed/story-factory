@@ -24,7 +24,7 @@ runs:
       if: inputs.mode == 'job'
       shell: bash
       run: |
-        sudo apt-get install -y -qq age >/dev/null
+        sudo timeout 600 apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20 install -y -qq age >/dev/null
         mkdir -p "$RUNNER_TEMP/enc"
         tar -C "${{ inputs.path }}" -cf - . | age -r "${{ inputs.recipient }}" > "$RUNNER_TEMP/enc/${{ inputs.name }}.tar.age"
     - name: Upload encrypted
