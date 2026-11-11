@@ -1,0 +1,43 @@
+nnn: 7
+slug: three-desert-bottles
+mode: pilot
+kind: test
+short_title: Three Desert Bottles
+length_min: 8
+base_name: "007 Three Desert Bottles 08min"
+style_version: 4
+topic: desert_bottles
+end_screen_s: 3
+style_seed:
+  opening: cold_open
+  ritual: supply_count
+  ending: echo_opening
+  accent: coral
+  lut: warm_day
+  music_set: hopeful_pluck
+  camera_rhythm: steady_push
+  transition: hard_cuts
+  titlecard: marker_scrawl
+  thumbnail_layout: split_pair
+  outfit: plum_beanie
+  wpm: 170
+reroll: {}
+improvements:
+  - P-020 shots per minute above 006 (22+/min), 15 places x 2+ angles, poses and expressions rotate every beat
+  - owner script word for word, 3 freezes with varied answers 3,2,3
+  - meters hours + phone + heat + town/station miles at 2x, hook montage in 8 seconds
+expect:
+  - "Eight hours of daylight|hours|8"
+  - "Seven and a half hours left|hours|7.5"
+  - "Battery eleven percent|phone|11%"
+  - "Six hours left|hours|6"
+  - "Five hours left|hours|5"
+  - "Four hours left|hours|4"
+  - "Three hours left|hours|3"
+  - "Battery nine percent|phone|9%"
+extras:
+  titles: "Three Bottles, One Desert Road|Stranded in the Desert: Which Bottle Would You Drink?|8 Hours, 3 Bottles, 1 Dead Car"
+  thumb_text: "WHICH BOTTLE?"
+  description: "Your car dies on a desert road with three bottles of water. At every freeze, pause the video and decide before the narrator reveals the answer. This is a fictional story."
+  tags: "desert survival story, survival story, animated story, what would you do, choose your path, stranded in the desert, car breakdown, interactive story, 2d animation"
+  pinned_comment: "At the last freeze, would you have poured the full bottle, or kept it?"
