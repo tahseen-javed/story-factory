@@ -23,5 +23,10 @@ if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
   fi
   cd - >/dev/null || true
 fi
+if printf '%s
+' "$@" | grep -qx age && ! command -v age >/dev/null; then
+  echo "[ci_apt] static age fallback"
+  curl -fsSL --retry 3 --connect-timeout 20 -o /tmp/age.tgz https://github.com/FiloSottile/age/releases/download/v1.2.0/age-v1.2.0-linux-amd64.tar.gz && tar -xzf /tmp/age.tgz -C /tmp && sudo install -m 755 /tmp/age/age /tmp/age/age-keygen /usr/local/bin/
+fi
 ffmpeg -version | head -1
 exit 0
