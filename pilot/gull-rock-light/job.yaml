@@ -27,6 +27,7 @@ reroll:
   s0206: 3
   s0055: 2
   s0112: 2
+  s0070: 1
 improvements:
   - P-020 shots scale with length (auto plan 18+/min), 13 places x 2+ angles, poses and expressions rotate every beat
   - owner script word for word, 4 freezes with varied answers 2,2,3,3
