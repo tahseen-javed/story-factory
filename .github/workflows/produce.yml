@@ -133,7 +133,7 @@ jobs:
       - name: Install
         if: steps.shardcache.outputs.cache-hit != 'true'
         run: |
-          sudo timeout 600 apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20 update -qq && sudo timeout 600 apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20 install -y -qq ffmpeg libsndfile1
+          bash tools/ci_apt.sh ffmpeg libsndfile1
           python -m pip install --upgrade pip
           python -m pip install torch==2.6.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cpu
           python -m pip install -r requirements/tts.txt
@@ -228,7 +228,7 @@ jobs:
       - name: Render this mood (skipped on cache hit)
         if: steps.musiccache.outputs.cache-hit != 'true'
         run: |
-          sudo timeout 600 apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20 update -qq && sudo timeout 600 apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20 install -y -qq libsndfile1
+          bash tools/ci_apt.sh libsndfile1
           python -m pip install numpy==1.26.4 scipy==1.13.1 soundfile==0.12.1
           python -m factory.musiclib build/musiclib ${{ matrix.mood }}
       - uses: ./.github/actions/pack
@@ -253,7 +253,7 @@ jobs:
           python-version: "3.11"
       - name: Install audio dependencies
         run: |
-          sudo timeout 600 apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20 update -qq && sudo timeout 600 apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20 install -y -qq ffmpeg libsndfile1
+          bash tools/ci_apt.sh ffmpeg libsndfile1
           python -m pip install numpy==1.26.4 scipy==1.13.1 soundfile==0.12.1 pillow==10.4.0
       - uses: ./.github/actions/unpack
         with:
@@ -334,8 +334,7 @@ jobs:
           python-version: "3.11"
       - name: System libraries
         run: |
-          sudo timeout 600 apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20 update -qq
-          sudo timeout 600 apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20 install -y -qq ffmpeg libnss3 libdbus-1-3 libatk1.0-0t64 libasound2t64 libxrandr2 libxkbcommon-x11-0 libxfixes3 libxcomposite1 libxdamage1 libgbm-dev libcups2t64 libatk-bridge2.0-0t64 libpango-1.0-0 libcairo2
+          bash tools/ci_apt.sh ffmpeg libnss3 libdbus-1-3 libatk1.0-0t64 libasound2t64 libxrandr2 libxkbcommon-x11-0 libxfixes3 libxcomposite1 libxdamage1 libgbm-dev libcups2t64 libatk-bridge2.0-0t64 libpango-1.0-0 libcairo2
           python -m pip install numpy==1.26.4 pillow==10.4.0 opencv-python-headless==4.10.0.84 rapidocr-onnxruntime==1.3.24
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
@@ -390,8 +389,7 @@ jobs:
           python-version: "3.11"
       - name: System libraries
         run: |
-          sudo timeout 600 apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20 update -qq
-          sudo timeout 600 apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20 install -y -qq ffmpeg libnss3 libdbus-1-3 libatk1.0-0t64 libasound2t64 libxrandr2 libxkbcommon-x11-0 libxfixes3 libxcomposite1 libxdamage1 libgbm-dev libcups2t64 libatk-bridge2.0-0t64 libpango-1.0-0 libcairo2
+          bash tools/ci_apt.sh ffmpeg libnss3 libdbus-1-3 libatk1.0-0t64 libasound2t64 libxrandr2 libxkbcommon-x11-0 libxfixes3 libxcomposite1 libxdamage1 libgbm-dev libcups2t64 libatk-bridge2.0-0t64 libpango-1.0-0 libcairo2
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: video/node_modules
@@ -437,8 +435,7 @@ jobs:
           python-version: "3.11"
       - name: System libraries
         run: |
-          sudo timeout 600 apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20 update -qq
-          sudo timeout 600 apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20 install -y -qq ffmpeg age libnss3 libdbus-1-3 libatk1.0-0t64 libasound2t64 libxrandr2 libxkbcommon-x11-0 libxfixes3 libxcomposite1 libxdamage1 libgbm-dev libcups2t64 libatk-bridge2.0-0t64 libpango-1.0-0 libcairo2
+          bash tools/ci_apt.sh ffmpeg age libnss3 libdbus-1-3 libatk1.0-0t64 libasound2t64 libxrandr2 libxkbcommon-x11-0 libxfixes3 libxcomposite1 libxdamage1 libgbm-dev libcups2t64 libatk-bridge2.0-0t64 libpango-1.0-0 libcairo2
           python -m pip install numpy==1.26.4 scipy==1.13.1 soundfile==0.12.1 pillow==10.4.0 opencv-python-headless==4.10.0.84
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
