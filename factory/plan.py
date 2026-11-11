@@ -31,8 +31,12 @@ TTS_REPLACE = [
     (r"\s+—\s+", ", "),
     (r"\bthree B\b", "three bee"),
     (r"\bwas Penhale\b", "was Pen-hale"),   # only the final-name sentence: the engine drops the last syllable at a sentence end
-    (r"\bon Gull Rock at six\b", "on Gull-Rock at six"),   # 006: the engine said gall/gold at the first mention
     (r"\bOK\b", "okay"),
+]
+
+
+TTS_ALTS = [   # spellings tried in rotation on the retries of a sentence the engine keeps mispronouncing (rare names, 006 lesson)
+    (r"\bon Gull Rock at six\b", ["on Gul Rock at six", "on Gull Rock, at six", "on Gul Rock, at six"]),
 ]
 
 
@@ -40,6 +44,14 @@ def tts_text(s: str) -> str:
     for pat, rep in TTS_REPLACE:
         s = re.sub(pat, rep, s)
     return s.strip()
+
+
+def tts_alts(s: str) -> list:
+    out = []
+    for pat, alts in TTS_ALTS:
+        if re.search(pat, s):
+            out += [tts_text(re.sub(pat, a, s)) for a in alts]
+    return out
 
 
 def sha(*parts) -> str:
@@ -73,7 +85,7 @@ def build_plan(job_dir: str, cfg=None) -> dict:
                 last_in_ch = (si == len(ch.shots) - 1) and (k == len(sents) - 1)
                 emo = any(c.expr in ("scared", "shocked", "angry") for c in s.chars) or t.rstrip().endswith("!")
                 sentences.append({
-                    "id": f"s{sidx:04d}", "idx": sidx, "shot": s.idx, "chapter": ch.n, "text": t, "tts_text": tts_text(t),
+                    "id": f"s{sidx:04d}", "idx": sidx, "shot": s.idx, "chapter": ch.n, "text": t, "tts_text": tts_text(t), "tts_alts": tts_alts(t),
                     "reroll": int((job.get("reroll") or {}).get(f"s{sidx:04d}", 0)),   # Video Doctor voice re-roll counter (job.yaml reroll: {sentence id: n})
                     "words": count_words(t), "expected_s": round(count_words(t) / (wpm / 60.0), 2),
                     "pause_after_s": pause_after(t, audio_cfg, chapter_end=last_in_ch and ci < n_ch - 1),
@@ -148,7 +160,7 @@ def emit_outputs(plan: dict) -> None:
     path = os.environ.get("GITHUB_OUTPUT")
     if not path:
         return
-    tts_hash = sha(*[s["tts_text"] + "|" + str(s.get("reroll", 0)) for s in plan["sentences"]], plan["voice"], plan["wpm"])
+    tts_hash = sha(*[s["tts_text"] + "|" + str(s.get("reroll", 0)) + "|" + "|".join(s.get("tts_alts") or []) for s in plan["sentences"]], plan["voice"], plan["wpm"])
     img_hash = sha(*[g["base"]["hash"] for g in plan["image_groups"]], *[v["hash"] for g in plan["image_groups"] for v in g["variants"]])
     n_tts = min(plan["tts_shards"], max(1, len(plan["sentences"])))
     n_img = min(plan["image_shards"], max(1, len(plan["image_groups"])))

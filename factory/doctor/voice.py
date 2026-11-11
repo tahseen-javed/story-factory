@@ -24,7 +24,7 @@ import time
 NUM = {"0": "zero", "1": "one", "2": "two", "3": "three", "4": "four", "5": "five", "6": "six", "7": "seven", "8": "eight", "9": "nine", "10": "ten", "11": "eleven", "12": "twelve",
        "13": "thirteen", "14": "fourteen", "15": "fifteen", "16": "sixteen", "17": "seventeen", "18": "eighteen", "19": "nineteen", "20": "twenty"}
 SPELL = {"neighbour": "neighbor", "neighbours": "neighbors", "colour": "color", "favourite": "favorite", "grey": "gray", "metre": "meter", "metres": "meters", "centre": "center",
-         "realise": "realize", "organise": "organize", "mum": "mom", "draught": "draft", "waltz": "walts", "birth": "berth", "rowed": "rode", "fairy": "ferry", "fairies": "ferrys",   # homophones: Walt's = waltz, ferry = fairy, rowed = rode
+         "realise": "realize", "organise": "organize", "mum": "mom", "draught": "draft", "waltz": "walts", "birth": "berth", "rowed": "rode", "fairy": "ferry", "fairies": "ferrys", "fairys": "ferrys",   # homophones: Walt's = waltz, ferry = fairy, rowed = rode
           "okay": "ok", "mrs": "missus", "mr": "mister", "ms": "miss", "dr": "doctor"}
 
 

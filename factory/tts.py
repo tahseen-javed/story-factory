@@ -158,7 +158,7 @@ def run(plan_path: str, out_dir: str, shard: int, nshards: int, only: list | Non
             ex = 0.7 if s.get("emotional") else float(nar.get("exaggeration", t["exaggeration"]))
             try:
                 cfgw = (float(nar.get("cfg_weight", t["cfg_weight"])) if not s.get("emotional") else 0.35) + [0.0, 0.12, -0.12, 0.2, -0.2, 0.0][attempt % 6]
-                raw = eng.generate(s["tts_text"], seed, ex + 0.05 * (attempt % 3), min(0.95, max(0.1, cfgw)), TEMPS[attempt % len(TEMPS)])
+                raw = eng.generate(([s["tts_text"]] + list(s.get("tts_alts") or []))[attempt % (1 + len(s.get("tts_alts") or []))], seed, ex + 0.05 * (attempt % 3), min(0.95, max(0.1, cfgw)), TEMPS[attempt % len(TEMPS)])
             except Exception as e:  # noqa: BLE001
                 print(f"[tts] {s['id']} generation error: {e!r}")
                 continue

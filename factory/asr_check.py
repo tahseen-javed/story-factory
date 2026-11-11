@@ -36,6 +36,7 @@ _EQUIV = [
     (r"\b3b\b", "three b"), (r"\bthree bee\b", "three b"), (r"\bthree-b\b", "three b"),
     (r"\bokay\b", "ok"), (r"\bkay\b", "ok"), (r"\btoo\b", "two"),
     (r"\ba (hundred|thousand)\b", r"one \1"), (r"\b(hundred|thousand) and\b", r"\1"),
+    (r"\bfairy's\b", "ferry's"), (r"\bfairies\b", "ferry's"), (r"\bfairy\b", "ferry"),
 ]
 
 
