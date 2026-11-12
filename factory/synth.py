@@ -99,13 +99,15 @@ def _pad(freq, n, rng, bright=1.0):
     for det in (-0.006, 0.0, 0.007):
         f = freq * (1 + det)
         ph = rng.uniform(0, 2 * np.pi)
-        for h in range(1, 9):
-            out += np.sin(2 * np.pi * f * h * t + ph * h) / (h ** (1.3 / bright))
+        for h in range(1, 4):
+            out += np.sin(2 * np.pi * f * h * t + ph * h) / (h ** (2.2 / bright))
     return out
 
 
 def render_music(mood: str, seconds: float, seed: int = 0) -> np.ndarray:
     m = MOOD.get(mood, MOOD["tense"])
+    # P-014 v2 (owner: the first beds were noisy): one calm texture for every mood, no kicks, hats, ticks or arpeggios, soft pad only
+    m = {**m, "pulse": None, "lead": "sparse" if m["lead"] in ("arp", "pluck") else m["lead"], "cut": min(m["cut"], 2200)}
     rng = _rng("music", mood, seed)
     n = int(seconds * SR)
     beat = 60.0 / m["tempo"]
@@ -119,13 +121,13 @@ def render_music(mood: str, seconds: float, seed: int = 0) -> np.ndarray:
         s0 = b * bn
         notes = [_note(m["root"] * 2, m["scale"], deg + k) for k in (0, 2, 4)]
         pad_n = bn + int(0.9 * SR)
-        env = adsr(pad_n, a=bar * 0.38, d=0.2, s=0.8, r=0.9)
+        env = adsr(pad_n, a=bar * 0.55, d=0.2, s=0.8, r=1.2)
         for k, f in enumerate(notes):
             v = _pad(f, pad_n, rng, bright=m["level"]) * env
             pan = [0.35, 0.5, 0.65][k]
             L[s0:s0 + pad_n] += v * (1 - pan) * 0.9
             R[s0:s0 + pad_n] += v * pan * 0.9
-        sub = np.sin(2 * np.pi * _note(m["root"], m["scale"], deg) * np.arange(pad_n) / SR) * adsr(pad_n, 0.25, 0.2, 0.85, 0.7) * 1.4
+        sub = np.sin(2 * np.pi * _note(m["root"], m["scale"], deg) * np.arange(pad_n) / SR) * adsr(pad_n, 0.25, 0.2, 0.85, 0.7) * 0.9
         L[s0:s0 + pad_n] += sub
         R[s0:s0 + pad_n] += sub
         # lead layer
@@ -148,7 +150,7 @@ def render_music(mood: str, seconds: float, seed: int = 0) -> np.ndarray:
                 f = _note(m["root"] * 4, m["scale"], deg + int(rng.integers(0, 7)))
                 ln = int(beat * 2.2 * SR)
                 tt = np.arange(ln) / SR
-                note = (np.sin(2 * np.pi * f * tt) + 0.2 * np.sin(2 * np.pi * 3 * f * tt)) * np.exp(-tt * 2.2) * 0.26
+                note = (np.sin(2 * np.pi * f * tt) + 0.2 * np.sin(2 * np.pi * 3 * f * tt)) * np.exp(-tt * 2.2) * 0.12
                 p = s0 + int((k * (4 / count) * beat + (0.0 if m["lead"] == "pluck" else rng.uniform(0, beat))) * SR)
                 pan = rng.uniform(0.25, 0.75)
                 seg = note[: len(L) - p]
@@ -179,9 +181,9 @@ def render_music(mood: str, seconds: float, seed: int = 0) -> np.ndarray:
                 L[p:p + ln] += tk
                 R[p:p + ln] += tk
     out = np.vstack([L[:n], R[:n]])
-    out[0] = lp(out[0], m["cut"], 2)
-    out[1] = lp(out[1], m["cut"], 2)
-    wind = lp(rng.normal(0, 1, n), 380, 2) * 0.05
+    out[0] = lp(out[0], m["cut"], 4)
+    out[1] = lp(out[1], m["cut"], 4)
+    wind = lp(rng.normal(0, 1, n), 380, 2) * 0.015
     out += wind
     out = reverb(out, t60=2.4, wet=0.32, seed=hash(mood) % 1000 if False else 7)
     out = hp(out, 28, 1)

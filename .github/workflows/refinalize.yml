@@ -54,9 +54,11 @@ jobs:
 
         gh run download $R -p ''chunk-*'' -D build/chunks
 
-        gh run download $R -p ''music-*'' -D build/musiclib
+        echo fresh soft music library (P-014 v2)
 
         pip install -q numpy==1.26.4 scipy==1.13.1 soundfile==0.12.1
+
+        python -m factory.musiclib build/musiclib
 
         MUSIC_LIB_DIR=build/musiclib python -m factory.mix --plan build/assembled/audio_plan.json --voice build/assembled/voice --out build/assembled
 

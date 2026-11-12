@@ -1,7 +1,7 @@
 # Sound design v2: 4 layers (voice, music, ambience, sfx), dynamic range, silence beats.
 version: 2
 duck_db: 6           # the bed may rise at most 6 dB when nobody speaks (P-012 A3)
-music_below_voice_db: 17
+music_below_voice_db: 21
 venv_smooth_s: 3.0          # ducking envelope smoothing: no pumping inside long sentences (P-017 prevention; the Doctor fix doubles it)
 music_level: false          # flatten swells of the synthesised beds (P-017 prevention: A3-MUSIC-JUMP / A3-MUSIC-LOUD from content swells)
 music_xfade_s: 4.0         # equal-power crossfade between chapter moods (P-017 prevention: A3-MUSIC-JUMP at chapter changes)
