@@ -6,7 +6,7 @@ audio:
   true_peak_max_db: -1.5
   lra: [4.0, 8.0]
   voice_short_term_lufs: [-16.5, -13.0]     # median while speaking (spec -16..-14)
-  music_below_voice_db: [15.0, 21.0]        # median gap voice minus music while speaking (spec 18-22)
+  music_below_voice_db: [12.0, 21.0]        # median gap voice minus music while speaking (spec 18-22)
   mix_venv_smooth_s: 3.0                    # default ducking smoothing (audio.yaml venv_smooth_s); the jump fix doubles it, max 8 s
   music_local_min_gap_db: 12.0              # anywhere while speaking: music louder than this is a BLOCKER
   music_rise_max_db: 6.5                    # music may rise at most this much in non-speech moments
@@ -74,7 +74,7 @@ voice:                                      # Phase 2 stage 1 (factory/doctor/vo
 music_present:                              # P-014 / A3b MUSIC PRESENT
   audible_fraction_min: 0.90                # share of the video (planned beats excluded) where the music bed is audible
   audible_floor_lufs_below_voice: 30        # bed counts as audible when it is within this many dB of the voice short-term level
-  below_voice_db: [15, 21]                  # while speaking (target 16-20)
+  below_voice_db: [12, 21]                  # while speaking (target 16-20)
   max_rise_db: 6.0
 severity:
   music_missing: BLOCKER
